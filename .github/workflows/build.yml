@@ -1,0 +1,24 @@
+name: C/C++ CI
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  build:
+
+    runs-on: ubuntu-latest
+    container: locietta/loia-dev-base:latest
+    
+    steps:
+    - uses: actions/checkout@v2
+    - name: install dependencies
+      run: |
+        pacman -Syyu
+        pacman -S pahole
+    - name: download sources
+      run: ./download.sh
+    - name: build kernel
+      run: ./build.sh
