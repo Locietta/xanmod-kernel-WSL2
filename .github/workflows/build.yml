@@ -16,8 +16,8 @@ jobs:
     - uses: actions/checkout@v2
     - name: install dependencies
       run: |
-        pacman -Syyu
-        pacman -S pahole
+        pacman -Syyu --noconfirm
+        pacman -S --noconfirm pahole
     - name: download sources
       run: ./download.sh
     - name: build kernel
