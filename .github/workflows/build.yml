@@ -17,7 +17,7 @@ jobs:
     
     - name: Install dependencies
       run: |
-        pacman -S --noconfirm pahole
+        pacman -S --noconfirm pahole lld
     
     - name: Build kernel
       run: |
