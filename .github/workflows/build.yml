@@ -14,11 +14,16 @@ jobs:
     
     steps:
     - uses: actions/checkout@v2
-    - name: install dependencies
+    
+    - name: Install dependencies
       run: |
-        pacman -Syyu --noconfirm
         pacman -S --noconfirm pahole
-    - name: download sources
-      run: ./download.sh
-    - name: build kernel
+    
+    - name: Build kernel
       run: ./build.sh
+    
+    - name: Upload bzImage
+      uses: actions/upload-artifact@v3
+      with:
+        name: bzImage
+        path: linux/arch/x86/boot/bzImage
