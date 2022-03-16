@@ -20,7 +20,9 @@ jobs:
         pacman -S --noconfirm pahole
     
     - name: Build kernel
-      run: ./build.sh
+      run: |
+        chmod +x ./build.sh
+        ./build.sh
     
     - name: Upload bzImage
       uses: actions/upload-artifact@v3
