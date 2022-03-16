@@ -17,11 +17,10 @@ jobs:
     
     - name: Install dependencies
       run: |
-        pacman -S --noconfirm pahole lld
+        pacman -S --noconfirm pahole
     
     - name: Build kernel
       run: |
-        chmod +x ./build.sh
         ./build.sh
     
     - name: Upload bzImage
