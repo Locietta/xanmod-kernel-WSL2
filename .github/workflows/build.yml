@@ -17,7 +17,7 @@ jobs:
     
     - name: Install dependencies
       run: |
-        pacman -S --noconfirm pahole
+        pacman -S --noconfirm pahole xmlto kmod inetutils bc libelf cpio perl
     
     - name: Build kernel
       run: |
