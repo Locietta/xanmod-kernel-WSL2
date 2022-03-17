@@ -1,5 +1,7 @@
 # xanmod-kernel-WSL2
 
+![Kernel CI](https://github.com/locietta/xanmod-kernel-WSL2/actions/workflows/build.yml/badge.svg)
+
 [Xanmod kernel](https://github.com/xanmod/linux) for WSL2 with dxgkrnl support, built by clang13.0 with ThinLTO enabled.
 
 Everything done by Github Action, you can fork this repo to modify the config if needed(e.g. to tune the kernel for your machine architecture), or directly download the `bzImage` from CI result.
