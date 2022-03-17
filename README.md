@@ -16,3 +16,9 @@ scripts/config -e MSKYLAKE
 ```
 
 For other possible options, see [kernel compiler patch](https://github.com/graysky2/kernel_compiler_patch).
+
+#### Systemd
+
+I've removed "microsoft" in kernel version text, this will prevent [sorah/subsystemd](https://github.com/sorah/subsystemctl) to work, since it depends on the version text to ensure it runs in WSL environment.
+
+The workaround is moving to [wsl-distrod](https://github.com/nullpo-head/wsl-distrod), which is better maintained as sorah suggests.
