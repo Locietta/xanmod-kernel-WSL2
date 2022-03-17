@@ -1,4 +1,4 @@
-name: C/C++ CI
+name: Kernel CI
 
 on:
   push:
@@ -28,5 +28,5 @@ jobs:
     - name: Upload bzImage
       uses: actions/upload-artifact@v3
       with:
-        name: bzImage
+        name: xanmod-locietta-lto
         path: linux/arch/x86/boot/bzImage
