@@ -1,7 +1,7 @@
 #
 # Download kernel source code and apply dxgkrnl patch
 #
-git clone https://github.com/xanmod/linux.git -b 5.16 --depth 1 linux
+git clone https://github.com/xanmod/linux.git --depth 1 linux
 pushd linux
 git apply ../0001-5.16.y-dxgkrnl-patch.patch
 
