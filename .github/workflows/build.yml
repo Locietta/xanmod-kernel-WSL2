@@ -19,7 +19,7 @@ jobs:
     
     - name: Install dependencies
       run: |
-        pacman -S --noconfirm pahole xmlto kmod inetutils bc libelf cpio perl
+        pacman -S --noconfirm pahole xmlto inetutils bc cpio
     
     - name: Prepare source code
       run: |
