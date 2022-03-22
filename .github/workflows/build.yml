@@ -24,19 +24,15 @@ jobs:
     - name: Prepare source code
       run: |
         git clone https://github.com/xanmod/linux.git --depth 1 linux
-        pushd linux
-        ../config.sh
-
-    - name: Load version info into env
-      run: |
+        cd linux && ../config.sh
+        # Load version info into env
         echo "CURRENT_VERSION=$(make kernelrelease)" | tee -a $GITHUB_ENV
         echo "RELEASED_VERSION=$(curl --silent 'https://github.com/locietta/xanmod-kernel-WSL2/releases/latest' | sed 's#.*tag/\(.*\)\".*#\1#')" | tee -a $GITHUB_ENV
 
     - name: Build kernel
       if: ${{ env.CURRENT_VERSION != env.RELEASED_VERSION }}
       run: |
-        ../build.sh
-        popd
+        cd linux && ../build.sh
 
     - name: Upload bzImage
       uses: actions/upload-artifact@v3
