@@ -25,7 +25,7 @@ jobs:
       run: |
         git clone https://github.com/xanmod/linux.git --depth 1 linux
         pushd linux
-        ./config.sh
+        ../config.sh
 
     - name: Load version info into env
       run: |
@@ -35,7 +35,7 @@ jobs:
     - name: Build kernel
       if: ${{ env.CURRENT_VERSION != env.RELEASED_VERSION }}
       run: |
-        ./build.sh
+        ../build.sh
         popd
 
     - name: Upload bzImage
