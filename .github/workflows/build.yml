@@ -21,19 +21,26 @@ jobs:
       run: |
         pacman -S --noconfirm pahole xmlto kmod inetutils bc libelf cpio perl
     
+    - name: Prepare source code
+      run: |
+        git clone https://github.com/xanmod/linux.git --depth 1 linux
+        pushd linux
+        ./config.sh
+
+    - name: Load version info into env
+      run: |
+        echo "CURRENT_VERSION=$(make kernelrelease)" | tee -a $GITHUB_ENV
+        echo "RELEASED_VERSION=$(curl --silent 'https://github.com/locietta/xanmod-kernel-WSL2/releases/latest' | sed 's#.*tag/\(.*\)\".*#\1#')" | tee -a $GITHUB_ENV
+
     - name: Build kernel
+      if: ${{ env.CURRENT_VERSION != env.RELEASED_VERSION }}
       run: |
         ./build.sh
-    
-    - name: Load version info
-      run: |
-        echo "CURRENT_VERSION=$(file linux/arch/x86/boot/bzImage | sed 's#.*version \(.*\)-locietta-WSL2.*#\1-locietta-WSL2#')" >> $GITHUB_ENV
-        echo "RELEASED_VERSION=$(curl --silent 'https://github.com/locietta/xanmod-kernel-WSL2/releases/latest' | sed 's#.*tag/\(.*\)\".*#\1#')" >> $GITHUB_ENV
-        echo "CURRENT_VERSION : ${{ env.CURRENT_VERSION }}"
-        echo "RELEASED_VERSION: ${{ env.RELEASED_VERSION }}"
+        popd
 
     - name: Upload bzImage
       uses: actions/upload-artifact@v3
+      if: ${{ env.CURRENT_VERSION != env.RELEASED_VERSION }}
       with:
         name: bzImage
         path: linux/arch/x86/boot/bzImage
