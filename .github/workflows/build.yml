@@ -6,7 +6,7 @@ on:
   pull_request:
     branches: [ main ]
   schedule:
-    - cron: '0 22 * * 0,4'
+    - cron: '0 22 * * *'
 
 jobs:
   build:
@@ -25,8 +25,26 @@ jobs:
       run: |
         ./build.sh
     
+    - name: Load version info
+      run: |
+        echo "CURRENT_VERSION=$(file linux/arch/x86/boot/bzImage | sed 's#.*version \(.*\)-locietta-WSL2.*#\1-locietta-WSL2#')" >> $GITHUB_ENV
+        echo "RELEASED_VERSION=$(curl --silent 'https://github.com/locietta/xanmod-kernel-WSL2/releases/latest' | sed 's#.*tag/\(.*\)\".*#\1#')" >> $GITHUB_ENV
+        echo "CURRENT_VERSION : ${{ env.CURRENT_VERSION }}"
+        echo "RELEASED_VERSION: ${{ env.RELEASED_VERSION }}"
+
     - name: Upload bzImage
       uses: actions/upload-artifact@v3
       with:
         name: bzImage
         path: linux/arch/x86/boot/bzImage
+
+    - name: Release
+      uses: softprops/action-gh-release@v1
+      if: ${{ env.CURRENT_VERSION != env.RELEASED_VERSION }}
+      with:
+        name:  ${{ env.CURRENT_VERSION }}
+        tag_name:  ${{ env.CURRENT_VERSION }}
+        files: |
+          linux/arch/x86/boot/bzImage
+        token: ${{ secrets.CUSTOM_GITHUB_TOKEN }}
+        generate_release_notes: true
