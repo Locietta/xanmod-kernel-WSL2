@@ -47,13 +47,14 @@ jobs:
       if: ${{ env.CURRENT_VERSION != env.RELEASED_VERSION }}
       run: |
         cd linux && ../build.sh
+        mv arch/x86/boot/bzImage ./${{ matrix.image-name }}
 
     - name: Upload bzImage
       uses: actions/upload-artifact@v3
       if: ${{ env.CURRENT_VERSION != env.RELEASED_VERSION }}
       with:
         name: ${{ matrix.image-name }}
-        path: linux/arch/x86/boot/bzImage
+        path: ${{ matrix.image-name }}
 
     - id: out
       run: |
@@ -76,6 +77,7 @@ jobs:
         name:  ${{ needs.build.outputs.current_version }}
         tag_name:  ${{ needs.build.outputs.current_version }}
         files: |
-          release_images/*
+          release_images/*/*
         token: ${{ secrets.CUSTOM_GITHUB_TOKEN }}
         generate_release_notes: true
+        fail_on_unmatched_files: true
