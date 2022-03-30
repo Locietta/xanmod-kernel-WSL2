@@ -1,15 +1,16 @@
 # xanmod-kernel-WSL2
 
 ![Kernel CI](https://github.com/locietta/xanmod-kernel-WSL2/actions/workflows/build.yml/badge.svg)
+![version](https://badgen.net/github/release/Locietta/xanmod-kernel-WSL2)
 
-[Xanmod kernel](https://github.com/xanmod/linux) for WSL2 with dxgkrnl support, built by clang13.0 with ThinLTO enabled.
+Cutting edge [Xanmod](https://github.com/xanmod/linux) kernel  patched with [dxgkrnl](https://lore.kernel.org/lkml/719fe06b7cbe9ac12fa4a729e810e3383ab421c1.1646163378.git.iourit@linux.microsoft.com/) support for **WSL2**, compiled by latest stable [clang](https://clang.llvm.org/) with ThinLTO enabled.
 
-The dxgkrnl patch is from [this lkml thread](https://lore.kernel.org/lkml/719fe06b7cbe9ac12fa4a729e810e3383ab421c1.1646163378.git.iourit@linux.microsoft.com/).
+The kernel is automatically built and released by GitHub Action. Latest stable source is fetched everyday from upstream, and latest stable clang is obtained from [Arch Linux](https://archlinux.org/).
 
 ## Usage
 
-* Download the kernel image `bzImage` from [CI](https://github.com/Locietta/xanmod-kernel-WSL2/actions)
-* Place it to somewhere appropriate. (e.g. `D:\.WSL\bzImage`)  
+* Download kernel image from [latest release](https://github.com/Locietta/xanmod-kernel-WSL2/releases/latest).
+* Place it to somewhere appropriate. (e.g. `D:\.WSL\bzImage`) 
 * Save the `.wslconfig` in current user's home directory with the content:
 ```ini
 [wsl2]
@@ -21,23 +22,22 @@ kernel = the\\path\\to\\bzImage
 ```
 * Reboot your WSL2 to check your new kernel and enjoy!
 
-If you wanna any modification to kernel config, feel free to fork this repo~
+> For more information about `.wslconfig`, see official  [documentation](https://docs.microsoft.com/en-us/windows/wsl/wsl-config#configure-global-options-with-wslconfig).
 
-## Notes
+### Notes for Systemd
 
-### Architecture
+Kernel version text is modified, this will prevent [sorah/subsystemd](https://github.com/sorah/subsystemctl) and [arkane-systems/genie](https://github.com/arkane-systems/genie) to work, since they depend on the version text to check if in WSL environment. (They works only when the version text contains "microsoft"...)
 
-In `build.sh`, I'm enabling the optimization for Intel Skylake chips (for my laptop), you may comment this line, or change it to your own favor. 
+The workaround is moving to [wsl-distrod](https://github.com/nullpo-head/wsl-distrod), which is better maintained as sorah suggests. Or you can use [my personal fork of subsystemd](https://github.com/Locietta/subsystemctl/releases/tag/v0.2.0-1).
 
+## Credits
 
-```bash
-scripts/config -e MSKYLAKE
-```
+* The Linux community for this awesome OS kernel.
+* Microsoft for WSL2 and dxgkrnl patches.
+* [Xanmod](https://github.com/xanmod/linux) project for various optimizations.
 
-For other possible options, see [kernel compiler patch](https://github.com/graysky2/kernel_compiler_patch).
+## Contributing
 
-### Systemd
+Sending an issue to let me know bugs, missing features or anything else.
 
-Kernel version text is modified, this will prevent [sorah/subsystemd](https://github.com/sorah/subsystemctl) to work, since it depends on the version text to ensure it runs in WSL environment. (It works only when the version text contains "microsoft")
-
-The workaround is moving to [wsl-distrod](https://github.com/nullpo-head/wsl-distrod), which is better maintained as sorah suggests.
+Or open a PR if you'd like to improve.
