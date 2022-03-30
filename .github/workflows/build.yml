@@ -10,10 +10,22 @@ on:
 
 jobs:
   build:
-
     runs-on: ubuntu-latest
     container: locietta/loia-dev-base:latest
+    outputs:
+      current_version: ${{ steps.out.outputs.current_version }}
+      release_version: ${{ steps.out.outputs.release_version }}
     
+    strategy: 
+      matrix:
+        include:
+          - arch: GENERIC_CPU2
+            image-name: bzImage-old
+          - arch: GENERIC_CPU3
+            image-name: bzImage
+          - arch: MSKYLAKE
+            image-name: bzImage-skylake
+
     steps:
     - uses: actions/checkout@v2
     
@@ -25,6 +37,8 @@ jobs:
       run: |
         git clone https://github.com/xanmod/linux.git --depth 1 linux
         cd linux && ../config.sh
+        scripts/config -e ${{ matrix.arch }}
+        clang --version
         # Load version info into env
         echo "CURRENT_VERSION=$(make kernelrelease)" | tee -a $GITHUB_ENV
         echo "RELEASED_VERSION=$(curl --silent 'https://github.com/locietta/xanmod-kernel-WSL2/releases/latest' | sed 's#.*tag/\(.*\)\".*#\1#')" | tee -a $GITHUB_ENV
@@ -33,21 +47,48 @@ jobs:
       if: ${{ env.CURRENT_VERSION != env.RELEASED_VERSION }}
       run: |
         cd linux && ../build.sh
+        mv arch/x86/boot/bzImage ../${{ matrix.image-name }}
 
     - name: Upload bzImage
       uses: actions/upload-artifact@v3
       if: ${{ env.CURRENT_VERSION != env.RELEASED_VERSION }}
       with:
-        name: bzImage
-        path: linux/arch/x86/boot/bzImage
+        name: ${{ matrix.image-name }}
+        path: ${{ matrix.image-name }}
 
+    - id: out
+      run: |
+        echo "::set-output name=current_version::${{ env.CURRENT_VERSION }}"
+        echo "::set-output name=release_version::${{ env.RELEASED_VERSION }}"
+
+  release:
+    runs-on: ubuntu-latest
+    needs: build
+
+    steps:
+    - uses: actions/checkout@v2
+    - uses: actions/download-artifact@v3
+      with:
+        path: release_images/
     - name: Release
       uses: softprops/action-gh-release@v1
-      if: ${{ env.CURRENT_VERSION != env.RELEASED_VERSION }}
+      if: ${{ needs.build.outputs.current_version != needs.build.outputs.release_version }}
       with:
-        name:  ${{ env.CURRENT_VERSION }}
-        tag_name:  ${{ env.CURRENT_VERSION }}
+        name:  ${{ needs.build.outputs.current_version }}
+        tag_name:  ${{ needs.build.outputs.current_version }}
+        body: |
+          Provide builds on different archs with matrix build utility of GitHub Action.
+
+          * `bzImage` for generic-x86_64-v3
+          * `bzImage-old` for generic-x86_64-v2
+          * `bzImage-skylake` for intel skylake
+
+          To check your supported x86_64 level, see [how to check supported x86_64 level of the hardware](https://unix.stackexchange.com/questions/631217/how-do-i-check-if-my-cpu-supports-x86-64-v2?msclkid=42ca61e9aa7111ecbcab7bb1a4204357).
+          If you happen to use intel skylake chips (like me), you can choose `bzImage-skylake` for best tuning.
+          
+          **NOTE for Win11 users**: the minimum requirement of Win11 ensures generic-x86_64-v3 support, so feel free to use `bzImage`.
         files: |
-          linux/arch/x86/boot/bzImage
+          release_images/*/*
         token: ${{ secrets.CUSTOM_GITHUB_TOKEN }}
         generate_release_notes: true
+        fail_on_unmatched_files: true
