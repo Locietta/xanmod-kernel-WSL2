@@ -1,7 +1,7 @@
-From 40215c16e6ed1c7357df8f84d081815fa5491b1c Mon Sep 17 00:00:00 2001
+From 01a901c5e07202e49c7668a1adf1a3a42a41d1aa Mon Sep 17 00:00:00 2001
 From: Locietta <locietta@qq.com>
-Date: Sun, 13 Mar 2022 16:41:44 +0800
-Subject: [PATCH] 5.16.y dxgkrnl patch
+Date: Mon, 4 Apr 2022 22:33:34 +0800
+Subject: [PATCH v2] 5.16.y dxgkrnl patch
 
 ---
  MAINTAINERS                     |    6 +
@@ -18,11 +18,11 @@ Subject: [PATCH] 5.16.y dxgkrnl patch
  drivers/hv/dxgkrnl/hmgr.c       |  566 ++++
  drivers/hv/dxgkrnl/hmgr.h       |  112 +
  drivers/hv/dxgkrnl/ioctl.c      | 5368 +++++++++++++++++++++++++++++++
- drivers/hv/dxgkrnl/misc.c       |   43 +
+ drivers/hv/dxgkrnl/misc.c       |   42 +
  drivers/hv/dxgkrnl/misc.h       |   96 +
  include/linux/hyperv.h          |   16 +
  include/uapi/misc/d3dkmthk.h    | 1671 ++++++++++
- 18 files changed, 16181 insertions(+)
+ 18 files changed, 16180 insertions(+)
  create mode 100644 drivers/hv/dxgkrnl/Kconfig
  create mode 100644 drivers/hv/dxgkrnl/Makefile
  create mode 100644 drivers/hv/dxgkrnl/dxgadapter.c
@@ -39,10 +39,10 @@ Subject: [PATCH] 5.16.y dxgkrnl patch
  create mode 100644 include/uapi/misc/d3dkmthk.h
 
 diff --git a/MAINTAINERS b/MAINTAINERS
-index 83614d717..a5df17c79 100644
+index 86efa1146..6fda37d23 100644
 --- a/MAINTAINERS
 +++ b/MAINTAINERS
-@@ -8877,6 +8877,12 @@ F:	Documentation/devicetree/bindings/mtd/ti,am654-hbmc.yaml
+@@ -8955,6 +8955,12 @@ F:	Documentation/devicetree/bindings/mtd/ti,am654-hbmc.yaml
  F:	drivers/mtd/hyperbus/
  F:	include/linux/mtd/hyperbus.h
  
@@ -14492,10 +14492,10 @@ index 000000000..92e1031ba
 +}
 diff --git a/drivers/hv/dxgkrnl/misc.c b/drivers/hv/dxgkrnl/misc.c
 new file mode 100644
-index 000000000..39e52b165
+index 000000000..709229f79
 --- /dev/null
 +++ b/drivers/hv/dxgkrnl/misc.c
-@@ -0,0 +1,43 @@
+@@ -0,0 +1,42 @@
 +// SPDX-License-Identifier: GPL-2.0
 +
 +/*
@@ -14538,7 +14538,6 @@ index 000000000..39e52b165
 +{
 +	return ret < 0 ? "err" : "";
 +}
-+
 diff --git a/drivers/hv/dxgkrnl/misc.h b/drivers/hv/dxgkrnl/misc.h
 new file mode 100644
 index 000000000..721d4f5be
@@ -14642,10 +14641,10 @@ index 000000000..721d4f5be
 +
 +#endif /* _MISC_H_ */
 diff --git a/include/linux/hyperv.h b/include/linux/hyperv.h
-index b823311ea..9d21055b0 100644
+index fe2e0179e..183434af9 100644
 --- a/include/linux/hyperv.h
 +++ b/include/linux/hyperv.h
-@@ -1414,6 +1414,22 @@ void vmbus_free_mmio(resource_size_t start, resource_size_t size);
+@@ -1416,6 +1416,22 @@ void vmbus_free_mmio(resource_size_t start, resource_size_t size);
  	.guid = GUID_INIT(0xda0a7802, 0xe377, 0x4aac, 0x8e, 0x77, \
  			  0x05, 0x58, 0xeb, 0x10, 0x73, 0xf8)
  
