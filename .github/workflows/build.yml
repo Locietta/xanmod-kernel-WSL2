@@ -44,14 +44,14 @@ jobs:
         echo "RELEASED_VERSION=$(curl --silent 'https://github.com/locietta/xanmod-kernel-WSL2/releases/latest' | sed 's#.*tag/\(.*\)\".*#\1#')" | tee -a $GITHUB_ENV
 
     - name: Build kernel
-      if: ${{ env.CURRENT_VERSION != env.RELEASED_VERSION }}
+      if: ${{ env.CURRENT_VERSION != env.RELEASED_VERSION || github.event_name == 'pull_request' }}
       run: |
         cd linux && ../build.sh
         mv arch/x86/boot/bzImage ../${{ matrix.image-name }}
 
     - name: Upload bzImage
       uses: actions/upload-artifact@v3
-      if: ${{ env.CURRENT_VERSION != env.RELEASED_VERSION }}
+      if: ${{ env.CURRENT_VERSION != env.RELEASED_VERSION || github.event_name == 'pull_request' }}
       with:
         name: ${{ matrix.image-name }}
         path: ${{ matrix.image-name }}
