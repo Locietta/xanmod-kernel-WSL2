@@ -1,0 +1,14 @@
+changelog:
+  exclude:
+    labels:
+      - documentation
+  categories:
+    - title: Kernel Features
+      labels:
+        kernel-feature
+    - title: Auto Release
+      labels:
+        - auto-release
+    - title: Updater Tools
+      labels:
+        - updater
