@@ -1,0 +1,21 @@
+changelog:
+  exclude:
+    labels:
+      - documentation
+  categories:
+    - title: Kernel Features and Patches
+      labels:
+        kernel-feature
+        kernel-patch
+    - title: Performance
+      labels:
+        performance
+    - title: Auto Release
+      labels:
+        - auto-release
+    - title: Update Tools
+      labels:
+        - update-tool
+    - title: Bug Fixes
+      labels: 
+        - bug
