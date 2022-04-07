@@ -3,12 +3,16 @@ changelog:
     labels:
       - documentation
   categories:
-    - title: Kernel Features
+    - title: Kernel Features and Patches
       labels:
         kernel-feature
+        kernel-patch
     - title: Auto Release
       labels:
         - auto-release
     - title: Updater Tools
       labels:
-        - updater
+        - updater-tool
+    - title: Bug Fixes
+      labels: 
+        - bug
