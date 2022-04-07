@@ -7,12 +7,15 @@ changelog:
       labels:
         kernel-feature
         kernel-patch
+    - title: Performance
+      labels:
+        performance
     - title: Auto Release
       labels:
         - auto-release
-    - title: Updater Tools
+    - title: Update Tools
       labels:
-        - updater-tool
+        - update-tool
     - title: Bug Fixes
       labels: 
         - bug
