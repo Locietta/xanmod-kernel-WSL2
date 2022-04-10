@@ -5,6 +5,8 @@ on:
     branches: [ main ]
   pull_request:
     branches: [ main ]
+  workflow_dispatch:
+    # manual trigger
   schedule:
     - cron: '0 22 * * *'
 
