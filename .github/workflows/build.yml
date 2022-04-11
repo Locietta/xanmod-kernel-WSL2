@@ -92,7 +92,6 @@ jobs:
           And if you happen to use intel skylake chips (just like me), you can choose `bzImage-skylake` for best tuning.
           
           **NOTE for Win11**: the minimum requirement of Win11 ensures generic-x86_64-v3 support, so feel free to use `bzImage`.
-
         files: |
           release_images/*/*
         token: ${{ secrets.CUSTOM_GITHUB_TOKEN }}
