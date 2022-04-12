@@ -37,12 +37,12 @@ jobs:
       run: |
         pacman -S --noconfirm pahole xmlto inetutils bc cpio
     #     if [ "$GITHUB_EVENT_NAME" == "pull_request" ]; then
-    #       echo "::set-output name=sha_short::$(git rev-parse ${{ github.event.pull_request.head.sha }})"
+    #       echo "::set-output name=sha::$(git rev-parse ${{ github.event.pull_request.head.sha }})"
     #     else 
-    #       echo "::set-output name=sha_short::$(git rev-parse HEAD)"
+    #       echo "::set-output name=sha::$(git rev-parse HEAD)"
     #     fi
     # - name: Check outputs
-    #   run: echo ${{ steps.dep.outputs.sha_short }} 
+    #   run: echo ${{ steps.dep.outputs.sha }} 
     
     - name: Prepare source code
       run: |
@@ -86,9 +86,9 @@ jobs:
     - id: fetch_commit_sha
       run: |
         if [ ${{ github.event_name == 'pull_request' }} ]; then
-          echo "::set-output name=sha_short::$(git rev-parse ${{ github.event.pull_request.head.sha }})"
+          echo "::set-output name=sha::${{ github.event.pull_request.head.sha }}"
         else 
-          echo "::set-output name=sha_short::$(git rev-parse HEAD)"
+          echo "::set-output name=sha::${{ github.sha }}"
         fi
 
     - name: Release
@@ -98,7 +98,7 @@ jobs:
         name:  ${{ needs.build.outputs.current_version }}
         tag_name:  ${{ needs.build.outputs.current_version }}
         draft: ${{ github.event_name == 'pull_request' }}
-        target_commitish: ${{ steps.fetch_commit_sha.outputs.sha_short }} 
+        target_commitish: ${{ steps.fetch_commit_sha.outputs.sha }} 
         body: |
           Cutting edge XanMod kernel for WSL2, built with Clang ${{ needs.build.outputs.clang_version }} shipped by Arch Linux.
           Provide builds on different archs with matrix build utility of GitHub Action.
