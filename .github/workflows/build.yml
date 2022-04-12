@@ -37,9 +37,9 @@ jobs:
       run: |
         pacman -S --noconfirm pahole xmlto inetutils bc cpio
     #     if [ "$GITHUB_EVENT_NAME" == "pull_request" ]; then
-    #       echo "::set-output name=sha_short::$(git rev-parse --short ${{ github.event.pull_request.head.sha }})"
+    #       echo "::set-output name=sha_short::$(git rev-parse ${{ github.event.pull_request.head.sha }})"
     #     else 
-    #       echo "::set-output name=sha_short::$(git rev-parse --short HEAD)"
+    #       echo "::set-output name=sha_short::$(git rev-parse HEAD)"
     #     fi
     # - name: Check outputs
     #   run: echo ${{ steps.dep.outputs.sha_short }} 
@@ -86,9 +86,9 @@ jobs:
     - id: fetch_commit_sha
       run: |
         if [ ${{ github.event_name == 'pull_request' }} ]; then
-          echo "::set-output name=sha_short::$(git rev-parse --short ${{ github.event.pull_request.head.sha }})"
+          echo "::set-output name=sha_short::$(git rev-parse ${{ github.event.pull_request.head.sha }})"
         else 
-          echo "::set-output name=sha_short::$(git rev-parse --short HEAD)"
+          echo "::set-output name=sha_short::$(git rev-parse HEAD)"
         fi
 
     - name: Release
