@@ -81,6 +81,7 @@ jobs:
         name:  ${{ needs.build.outputs.current_version }}
         tag_name:  ${{ needs.build.outputs.current_version }}
         draft: ${{ github.event_name == 'pull_request' }}
+        target_commitish: ${{ github.ref_name }}
         body: |
           Cutting edge XanMod kernel for WSL2, built with Clang ${{ needs.build.outputs.clang_version }} shipped by Arch Linux.
           Provide builds on different archs with matrix build utility of GitHub Action.
