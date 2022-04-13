@@ -30,6 +30,10 @@ jobs:
             image-name: bzImage-skylake
 
     steps:
+    - name: Trust this directory
+      run: git config --global --add safe.directory /__w/xanmod-kernel-WSL2/xanmod-kernel-WSL2 # v2.35.2 or later
+      # run: GIT_CEILING_DIRECTORIES=/__w # don't work
+
     - uses: actions/checkout@v2
     
     - name: Install dependencies
