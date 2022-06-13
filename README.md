@@ -9,9 +9,11 @@ The kernel is automatically built and released by GitHub Action. Latest stable s
 
 ## Usage
 
+### Manual Installation
+
 * Download kernel image from [latest release](https://github.com/Locietta/xanmod-kernel-WSL2/releases/latest).
 * Place it to somewhere appropriate. (e.g. `D:\.WSL\bzImage`) 
-* Save the `.wslconfig` in current user's home directory with the content:
+* Save the `.wslconfig` in current user's home directory with following content:
 ```ini
 [wsl2]
 kernel = the\\path\\to\\bzImage
@@ -22,7 +24,28 @@ kernel = the\\path\\to\\bzImage
 ```
 * Reboot your WSL2 to check your new kernel and enjoy!
 
+### via Scoop
+
+[scoop](https://scoop.sh/) is a command-line installer on windows. If you have scoop installed, then you can download this kernel with following command.
+
+```bash
+scoop bucket add sniffer https://github.com/Locietta/sniffer
+scoop install xanmod-WSL2
+
+# other builds
+# scoop install xanmod-WSL2-skylake
+# scoop install xanmod-WSL2-old
+```
+
+**But you still need to set `.wslconfig` to point the kernel path.** The path is typically `<scoop path>\\apps\\xanmod-WSL2\\current\\bzImage`.
+
 > For more information about `.wslconfig`, see microsoft's official  [documentation](https://docs.microsoft.com/en-us/windows/wsl/wsl-config#configure-global-options-with-wslconfig).
+
+### Update kernel
+
+To update the kernel for WSL2, you can either use a [bash script](https://github.com/taalojarvi/scripts/blob/main/wsl_updater.sh) (thanks to @taalojarvi) within WSL2, or use `scoop update *`. 
+
+NOTE: Both methods need a reboot of WSL2 (namely, `wsl --shutdown` and open a new WSL2 instance).
 
 ### Notes for Systemd
 
