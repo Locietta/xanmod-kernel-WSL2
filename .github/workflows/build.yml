@@ -65,13 +65,16 @@ jobs:
       run: |
         cd linux && ../build.sh
         mv arch/x86/boot/bzImage ../${{ matrix.image-name }}
+        cd .. && sha256sum ${{ matrix.image-name }} > ${{ matrix.image-name }}.sha256
 
     - name: Upload bzImage
       uses: actions/upload-artifact@v3
       if: ${{ env.CURRENT_VERSION != env.RELEASED_VERSION || github.event_name == 'pull_request' }}
       with:
         name: ${{ matrix.image-name }}
-        path: ${{ matrix.image-name }}
+        path: |
+          ${{ matrix.image-name }}
+          ${{ matrix.image-name }}.sha256
 
     - id: out
       run: |
