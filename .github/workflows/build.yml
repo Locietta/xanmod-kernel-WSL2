@@ -39,7 +39,7 @@ jobs:
     - name: Install dependencies
       id: dep
       run: |
-        pacman -S --noconfirm pahole xmlto inetutils bc cpio
+        pacman -S --noconfirm pahole xmlto inetutils bc cpio jq
     #     if [ "$GITHUB_EVENT_NAME" == "pull_request" ]; then
     #       echo "::set-output name=sha::$(git rev-parse ${{ github.event.pull_request.head.sha }})"
     #     else 
@@ -56,7 +56,9 @@ jobs:
         # Load version info into env
         echo "CLANG_VERSION=$(pacman -Qs clang | grep local/clang | sed "s#.*local/clang \(.*\)#\1#")" | tee -a $GITHUB_ENV
         echo "CURRENT_VERSION=$(make kernelrelease)" | tee -a $GITHUB_ENV
-        echo "RELEASED_VERSION=$(curl --silent 'https://github.com/locietta/xanmod-kernel-WSL2/releases/latest' | sed 's#.*tag/\(.*\)\".*#\1#')" | tee -a $GITHUB_ENV
+        echo "RELEASED_VERSION=$(curl -sL -H 'Authorization: token ${{ secrets.CUSTOM_GITHUB_TOKEN }}'\
+          https://api.github.com/repos/Locietta/xanmod-kernel-WSL2/releases/latest | jq -r '.tag_name')"\
+          | tee -a $GITHUB_ENV
 
     - name: Build kernel
       if: ${{ env.CURRENT_VERSION != env.RELEASED_VERSION || github.event_name == 'pull_request' }}
