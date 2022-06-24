@@ -5,7 +5,7 @@
 
 Cutting edge [XanMod](https://github.com/xanmod/linux) kernel  patched with [dxgkrnl](https://lore.kernel.org/lkml/719fe06b7cbe9ac12fa4a729e810e3383ab421c1.1646163378.git.iourit@linux.microsoft.com/) support for **WSL2**, compiled by [clang](https://clang.llvm.org/) with ThinLTO enabled.
 
-The kernel is automatically built and released by GitHub Action. Latest stable source is fetched everyday from upstream, and the clang compiler is obtained from [Arch Linux](https://archlinux.org/).
+The kernel is automatically built and released by **GitHub Action**. Latest source is fetched everyday from upstream, and the clang compiler is obtained from [Arch Linux](https://archlinux.org/).
 
 ## Usage
 
@@ -24,9 +24,11 @@ kernel = the\\path\\to\\bzImage
 ```
 * Reboot your WSL2 to check your new kernel and enjoy!
 
+> For more information about `.wslconfig`, see microsoft's official [documentation](https://docs.microsoft.com/en-us/windows/wsl/wsl-config#configure-global-options-with-wslconfig).
+
 ### via Scoop
 
-[scoop](https://scoop.sh/) is a command-line installer on windows. If you have scoop installed, then you can download this kernel with following command.
+[scoop](https://scoop.sh/) is a command-line installer on windows. If you have scoop installed, then you can install this kernel with following commands:
 
 ```bash
 scoop bucket add sniffer https://github.com/Locietta/sniffer
@@ -37,15 +39,13 @@ scoop install xanmod-WSL2
 # scoop install xanmod-WSL2-old
 ```
 
-**But you still need to set `.wslconfig` to point the kernel path.** The path is typically `<scoop path>\\apps\\xanmod-WSL2\\current\\bzImage`.
-
-> For more information about `.wslconfig`, see microsoft's official  [documentation](https://docs.microsoft.com/en-us/windows/wsl/wsl-config#configure-global-options-with-wslconfig).
+Scoop will automatically set `.wslconfig` for you, but you still need a reboot of WSL2.
 
 ### Update kernel
 
-To update the kernel for WSL2, you can either use a [bash script](https://github.com/taalojarvi/scripts/blob/main/wsl_updater.sh) (thanks to @taalojarvi) within WSL2, or use `scoop update *`. 
+To update kernel for WSL2, you can either use a [bash script](https://github.com/taalojarvi/scripts/blob/main/wsl_updater.sh) (thanks to @taalojarvi) within WSL2, or use `scoop update *`. 
 
-NOTE: Both methods need a reboot of WSL2 (namely, `wsl --shutdown` and open a new WSL2 instance).
+**NOTE**: Both methods need a reboot of WSL2 (namely, `wsl --shutdown` and open a new WSL2 instance).
 
 ### Notes for Systemd
 
