@@ -3,7 +3,7 @@
 ![](https://img.shields.io/github/license/Locietta/xanmod-kernel-WSL2)
 ![version](https://badgen.net/github/release/Locietta/xanmod-kernel-WSL2)
 
-Cutting edge [XanMod](https://github.com/xanmod/linux) kernel  patched with [dxgkrnl](https://lore.kernel.org/lkml/719fe06b7cbe9ac12fa4a729e810e3383ab421c1.1646163378.git.iourit@linux.microsoft.com/) support for **WSL2**, compiled by [clang](https://clang.llvm.org/) with ThinLTO enabled.
+Cutting edge [XanMod](https://github.com/xanmod/linux) kernel  patched with [dxgkrnl](https://github.com/microsoft/WSL2-Linux-Kernel/tree/linux-msft-wsl-5.15.62.1/drivers/hv/dxgkrnl) support for **WSL2**, compiled by [clang](https://clang.llvm.org/) with ThinLTO enabled.
 
 The kernel is automatically built and released by **GitHub Action**. Latest source is fetched everyday from upstream, and the clang compiler is obtained from [Arch Linux](https://archlinux.org/).
 
