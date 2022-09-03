@@ -1,7 +1,8 @@
 #
 # Apply dxgkrnl patch
 #
-git apply ../0001-5.16.y-dxgkrnl-patch.patch
+git apply ../0001-5.15.y-dxgkrnl.patch
+git apply ../0002-dxgkrnl-enable-mainline-support.patch
 
 #
 # generate .config
