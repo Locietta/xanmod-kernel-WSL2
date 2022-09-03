@@ -124,5 +124,5 @@ jobs:
         files: |
           release_images/*/*
         token: ${{ secrets.CUSTOM_GITHUB_TOKEN }}
-        generate_release_notes: true
+        # generate_release_notes: true
         fail_on_unmatched_files: true
