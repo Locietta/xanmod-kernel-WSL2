@@ -13,7 +13,7 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
-    container: locietta/loia-dev-base:latest
+    container: locietta/loia-dev-base:aur
     outputs:
       current_version: ${{ steps.out.outputs.current_version }}
       release_version: ${{ steps.out.outputs.release_version }}
@@ -39,7 +39,7 @@ jobs:
     - name: Install dependencies
       id: dep
       run: |
-        pacman -S --noconfirm pahole xmlto inetutils bc cpio jq
+        pacman -S --noconfirm pahole xmlto inetutils bc cpio jq llvm-git clang-git
     
     - name: Prepare source code
       run: |
@@ -47,7 +47,7 @@ jobs:
         cd linux && ../config.sh
         scripts/config -e ${{ matrix.arch }}
         # Load version info into env
-        echo "CLANG_VERSION=$(pacman -Qs clang | grep local/clang | sed "s#.*local/clang \(.*\)#\1#")" | tee -a $GITHUB_ENV
+        echo "CLANG_VERSION=$(pacman -Qs clang | grep local/clang | sed "s#.*local/clang-git \(.*\) (chaotic-mesa-git)#\1#")" | tee -a $GITHUB_ENV
         echo "CURRENT_VERSION=$(make kernelrelease)" | tee -a $GITHUB_ENV
         echo "RELEASED_VERSION=$(curl -sL -H 'Authorization: token ${{ secrets.CUSTOM_GITHUB_TOKEN }}'\
           https://api.github.com/repos/Locietta/xanmod-kernel-WSL2/releases/latest | jq -r '.tag_name')"\
