@@ -34,19 +34,12 @@ jobs:
       run: git config --global --add safe.directory /__w/xanmod-kernel-WSL2/xanmod-kernel-WSL2 # v2.35.2 or later
       # run: GIT_CEILING_DIRECTORIES=/__w # don't work
 
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@main
     
     - name: Install dependencies
       id: dep
       run: |
         pacman -S --noconfirm pahole xmlto inetutils bc cpio jq
-    #     if [ "$GITHUB_EVENT_NAME" == "pull_request" ]; then
-    #       echo "::set-output name=sha::$(git rev-parse ${{ github.event.pull_request.head.sha }})"
-    #     else 
-    #       echo "::set-output name=sha::$(git rev-parse HEAD)"
-    #     fi
-    # - name: Check outputs
-    #   run: echo ${{ steps.dep.outputs.sha }} 
     
     - name: Prepare source code
       run: |
@@ -78,16 +71,16 @@ jobs:
 
     - id: out
       run: |
-        echo "::set-output name=current_version::${{ env.CURRENT_VERSION }}"
-        echo "::set-output name=release_version::${{ env.RELEASED_VERSION }}"
-        echo "::set-output name=clang_version::${{ env.CLANG_VERSION }}"
+        echo "current_version=${{ env.CURRENT_VERSION }}" >> $GITHUB_STATE
+        echo "release_version=${{ env.RELEASED_VERSION }}" >> $GITHUB_STATE
+        echo "clang_version=${{ env.CLANG_VERSION }}" >> $GITHUB_STATE
 
   release:
     runs-on: ubuntu-latest
     needs: build
 
     steps:
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@main
     - uses: actions/download-artifact@v3
       with:
         path: release_images/
@@ -95,9 +88,9 @@ jobs:
     - id: fetch_commit_sha
       run: |
         if [ ${{ github.event_name == 'pull_request' }} ]; then
-          echo "::set-output name=sha::${{ github.event.pull_request.head.sha }}"
+          echo "sha=${{ github.event.pull_request.head.sha }}" >> $GITHUB_STATE
         else 
-          echo "::set-output name=sha::${{ github.sha }}"
+          echo "sha=${{ github.sha }}" >> $GITHUB_STATE
         fi
 
     - name: Release
