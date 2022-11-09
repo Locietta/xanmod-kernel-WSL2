@@ -3,7 +3,7 @@
 ![](https://img.shields.io/github/license/Locietta/xanmod-kernel-WSL2)
 ![version](https://badgen.net/github/release/Locietta/xanmod-kernel-WSL2)
 
-Cutting edge [XanMod](https://github.com/xanmod/linux) kernel  patched with [dxgkrnl](https://github.com/microsoft/WSL2-Linux-Kernel/tree/linux-msft-wsl-5.15.62.1/drivers/hv/dxgkrnl) support for **WSL2**, compiled by [clang](https://clang.llvm.org/) with ThinLTO enabled.
+Cutting edge [XanMod](https://github.com/xanmod/linux) kernel patched with [dxgkrnl](https://github.com/microsoft/WSL2-Linux-Kernel/tree/linux-msft-wsl-5.15.62.1/drivers/hv/dxgkrnl) support for **WSL2**, compiled by [clang](https://clang.llvm.org/) with ThinLTO enabled.
 
 The kernel is automatically built and released by **GitHub Action**. Latest source is fetched everyday from upstream, and the clang compiler is obtained from [Arch Linux](https://archlinux.org/).
 
@@ -26,7 +26,7 @@ kernel = the\\path\\to\\bzImage
 
 > For more information about `.wslconfig`, see microsoft's official [documentation](https://docs.microsoft.com/en-us/windows/wsl/wsl-config#configure-global-options-with-wslconfig).
 
-### via Scoop
+### Install via Scoop
 
 [scoop](https://scoop.sh/) is a command-line installer on windows. If you have scoop installed, then you can install this kernel with following commands:
 
@@ -49,9 +49,11 @@ To update kernel for WSL2, you can either use a [bash script](https://github.com
 
 ### Notes for Systemd
 
-Kernel version text is modified, this will prevent [sorah/subsystemd](https://github.com/sorah/subsystemctl) and [arkane-systems/genie](https://github.com/arkane-systems/genie) to work, since they depend on the version text to check if in WSL environment. (They works only when the version text contains "microsoft"...)
+Compatible with [built-in systemd support](https://devblogs.microsoft.com/commandline/systemd-support-is-now-available-in-wsl/) since WSL 0.67.6 and [wsl-distrod](https://github.com/nullpo-head/wsl-distrod) for older WSL versions. 
 
-The workaround is moving to [wsl-distrod](https://github.com/nullpo-head/wsl-distrod), which is better maintained as sorah suggests. Or you can use [my personal fork of subsystemd](https://github.com/Locietta/subsystemctl/releases/tag/v0.2.0-1).
+But [sorah/subsystemd](https://github.com/sorah/subsystemctl) and [arkane-systems/genie](https://github.com/arkane-systems/genie) will refuse to work due to modified kernel version string (they demand "microsoft" in it...).
+
+I'll not add "microsoft" back into the version string (it's quite long now), since "WSL2" is sufficient, see [WSL#423](https://github.com/Microsoft/WSL/issues/423#issuecomment-221627364). And you can check it with `systemd-detect-virt`, it should return `wsl`. I'll make a change if there's any update.
 
 ## Credits
 
@@ -63,4 +65,4 @@ The workaround is moving to [wsl-distrod](https://github.com/nullpo-head/wsl-dis
 
 Sending an issue to let me know bugs, missing features or anything else.
 
-Or open a PR if you'd like to improve this project.
+Or open a PR if you'd like to improve this.
