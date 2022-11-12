@@ -71,9 +71,9 @@ jobs:
 
     - id: out
       run: |
-        echo "current_version=${{ env.CURRENT_VERSION }}" >> $GITHUB_STATE
-        echo "release_version=${{ env.RELEASED_VERSION }}" >> $GITHUB_STATE
-        echo "clang_version=${{ env.CLANG_VERSION }}" >> $GITHUB_STATE
+        echo "current_version=${{ env.CURRENT_VERSION }}" >> $GITHUB_OUTPUT
+        echo "release_version=${{ env.RELEASED_VERSION }}" >> $GITHUB_OUTPUT
+        echo "clang_version=${{ env.CLANG_VERSION }}" >> $GITHUB_OUTPUT
 
   release:
     runs-on: ubuntu-latest
@@ -88,9 +88,9 @@ jobs:
     - id: fetch_commit_sha
       run: |
         if [ ${{ github.event_name == 'pull_request' }} ]; then
-          echo "sha=${{ github.event.pull_request.head.sha }}" >> $GITHUB_STATE
+          echo "sha=${{ github.event.pull_request.head.sha }}" >> $GITHUB_OUTPUT
         else 
-          echo "sha=${{ github.sha }}" >> $GITHUB_STATE
+          echo "sha=${{ github.sha }}" >> $GITHUB_OUTPUT
         fi
 
     - name: Release
