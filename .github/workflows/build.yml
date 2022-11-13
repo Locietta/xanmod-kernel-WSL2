@@ -105,7 +105,7 @@ jobs:
         draft: ${{ github.event_name == 'pull_request' }}
         target_commitish: ${{ steps.fetch_commit_sha.outputs.sha }} 
         body: |
-          Cutting edge XanMod kernel for WSL2, built with Clang ${{ needs.build.outputs.clang_version }} shipped by Arch Linux.
+          Cutting edge XanMod kernel for WSL2, built with Debian clang version ${{ needs.build.outputs.clang_version }} from https://apt.llvm.org.
           Provide builds on different archs with matrix build utility of GitHub Action.
 
           * `bzImage` for generic-x86_64-v3
