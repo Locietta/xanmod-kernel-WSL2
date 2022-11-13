@@ -49,9 +49,11 @@ jobs:
         # Load version info into env
         echo "CLANG_VERSION=$(pacman -Qs clang | grep local/clang | sed "s#.*local/clang \(.*\)#\1#")" | tee -a $GITHUB_ENV
         echo "CURRENT_VERSION=$(make kernelrelease)" | tee -a $GITHUB_ENV
-        echo "RELEASED_VERSION=$(curl -sL -H 'Authorization: token ${{ secrets.CUSTOM_GITHUB_TOKEN }}'\
-          https://api.github.com/repos/Locietta/xanmod-kernel-WSL2/releases/latest | jq -r '.tag_name')"\
-          | tee -a $GITHUB_ENV
+        
+        export RELEASED_TAG=$(curl -sL -H 'Authorization: token ${{ secrets.CUSTOM_GITHUB_TOKEN }}'\
+          https://api.github.com/repos/Locietta/xanmod-kernel-WSL2/releases/latest | jq -r '.tag_name')
+        
+        echo "RELEASED_VERSION=$(echo $RELEASED_TAG | sed "s#\(.*-locietta-WSL2-xanmod[0-9][0-9]*\).*#\1#" )" | tee -a $GITHUB_ENV
 
     - name: Build kernel
       if: ${{ env.CURRENT_VERSION != env.RELEASED_VERSION || github.event_name == 'pull_request' }}
@@ -89,16 +91,18 @@ jobs:
       run: |
         if [ ${{ github.event_name == 'pull_request' }} ]; then
           echo "sha=${{ github.event.pull_request.head.sha }}" >> $GITHUB_OUTPUT
+          echo "RELEASE_TAG=${{ needs.build.outputs.current_version }}.1-PR" | tee -a $GITHUB_ENV
         else 
           echo "sha=${{ github.sha }}" >> $GITHUB_OUTPUT
+          echo "RELEASE_TAG=${{ needs.build.outputs.current_version }}.1" | tee -a $GITHUB_ENV
         fi
 
     - name: Release
       uses: softprops/action-gh-release@v1
-      if: ${{ needs.build.outputs.current_version != needs.build.outputs.release_version }}
+      if: ${{ needs.build.outputs.current_version != needs.build.outputs.release_version }} || github.event_name == 'pull_request'
       with:
-        name:  ${{ needs.build.outputs.current_version }}
-        tag_name:  ${{ needs.build.outputs.current_version }}
+        name:  ${{ env.RELEASE_TAG }}
+        tag_name:  ${{ env.RELEASE_TAG }}
         draft: ${{ github.event_name == 'pull_request' }}
         target_commitish: ${{ steps.fetch_commit_sha.outputs.sha }} 
         body: |
