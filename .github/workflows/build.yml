@@ -18,6 +18,7 @@ jobs:
       current_version: ${{ steps.out.outputs.current_version }}
       release_version: ${{ steps.out.outputs.release_version }}
       clang_version:   ${{ steps.out.outputs.clang_version }}
+      rebuild_flag:    ${{ steps.out.outputs.rebuild_flag }}
     
     strategy: 
       matrix:
@@ -45,17 +46,32 @@ jobs:
         git clone https://github.com/xanmod/linux.git --depth 1 linux
         cd linux && ../config.sh
         scripts/config -e ${{ matrix.arch }}
+
         # Load version info into env
-        echo "CLANG_VERSION=$(clang --version | grep Debian | sed "s#Debian clang version \(.*\)-.*#\1#")" | tee -a $GITHUB_ENV
-        echo "CURRENT_VERSION=$(make kernelrelease)" | tee -a $GITHUB_ENV
+        echo "CLANG_VERSION=$( \
+              clang --version | grep Debian | \
+              sed "s#Debian clang version \([0-9.]*\).*+\([a-z0-9]*\)-.*#\1@\2#" \
+              )" | tee -a $GITHUB_ENV
         
+        export CURRENT_VERSION=$(make kernelrelease)
         export RELEASED_TAG=$(curl -sL -H 'Authorization: token ${{ secrets.CUSTOM_GITHUB_TOKEN }}'\
           https://api.github.com/repos/Locietta/xanmod-kernel-WSL2/releases/latest | jq -r '.tag_name')
-        
-        echo "RELEASED_VERSION=$(echo $RELEASED_TAG | sed "s#\(.*-locietta-WSL2-xanmod[0-9][0-9]*\).*#\1#" )" | tee -a $GITHUB_ENV
+        export RELEASED_VERSION=$(echo $RELEASED_TAG | sed "s#\(.*-locietta-WSL2-xanmod[0-9][0-9]*\).*#\1#" )
+        export RELEASED_MINOR=$(echo $RELEASED_TAG | sed "s#\(.*-locietta-WSL2-xanmod[0-9][0-9]*\).*\([0-9][0-9]*\).*#\2#" )
+
+        echo "CURRENT_VERSION=$CURRENT_VERSION" | tee -a $GITHUB_ENV
+        echo "RELEASED_VERSION=$RELEASED_VERSION" | tee -a $GITHUB_ENV
+
+        if [[ $CURRENT_VERSION != $RELEASED_VERSION || \
+              ($CURRENT_VERSION = $RELEASED_VERSION && 1 -lt "$RELEASED_MINOR") || \
+              "${{ github.event_name }}" = 'pull_request' ]]; then
+          echo "REBUILD_FLAG=true" | tee -a $GITHUB_ENV
+        else 
+          echo "REBUILD_FLAG=false" | tee -a $GITHUB_ENV
+        fi
 
     - name: Build kernel
-      if: ${{ env.CURRENT_VERSION != env.RELEASED_VERSION || github.event_name == 'pull_request' }}
+      if: ${{ env.REBUILD_FLAG }}
       run: |
         cd linux && ../build.sh
         mv arch/x86/boot/bzImage ../${{ matrix.image-name }}
@@ -63,7 +79,7 @@ jobs:
 
     - name: Upload bzImage
       uses: actions/upload-artifact@v3
-      if: ${{ env.CURRENT_VERSION != env.RELEASED_VERSION || github.event_name == 'pull_request' }}
+      if: ${{ env.REBUILD_FLAG }}
       with:
         name: ${{ matrix.image-name }}
         path: |
@@ -75,6 +91,7 @@ jobs:
         echo "current_version=${{ env.CURRENT_VERSION }}" >> $GITHUB_OUTPUT
         echo "release_version=${{ env.RELEASED_VERSION }}" >> $GITHUB_OUTPUT
         echo "clang_version=${{ env.CLANG_VERSION }}" >> $GITHUB_OUTPUT
+        echo "rebuild_flag=${{ env.REBUILD_FLAG }}" >> $GITHUB_OUTPUT
 
   release:
     runs-on: ubuntu-latest
@@ -98,7 +115,7 @@ jobs:
 
     - name: Release
       uses: softprops/action-gh-release@v1
-      if: ${{ needs.build.outputs.current_version != needs.build.outputs.release_version }} || github.event_name == 'pull_request'
+      if: ${{ needs.build.outputs.rebuild_flag }}
       with:
         name:  ${{ env.RELEASE_TAG }}
         tag_name:  ${{ env.RELEASE_TAG }}
