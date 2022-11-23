@@ -42,6 +42,7 @@ jobs:
         apt-get update && apt install fakeroot build-essential libncurses-dev xz-utils libssl-dev flex libelf-dev bison zstd jq bc -y
     
     - name: Prepare source code
+      shell: bash
       run: |
         git clone https://github.com/xanmod/linux.git --depth 1 linux
         cd linux && ../config.sh
