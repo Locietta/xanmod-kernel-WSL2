@@ -1,5 +1,5 @@
 # xanmod-kernel-WSL2
-![Kernel CI](https://img.shields.io/github/workflow/status/Locietta/xanmod-kernel-WSL2/Kernel%20CI/main)
+![Kernel CI](https://img.shields.io/github/actions/workflow/status/Locietta/xanmod-kernel-WSL2/build.yml?branch=main)
 ![](https://img.shields.io/github/license/Locietta/xanmod-kernel-WSL2)
 ![version](https://badgen.net/github/release/Locietta/xanmod-kernel-WSL2)
 
