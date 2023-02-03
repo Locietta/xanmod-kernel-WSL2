@@ -1,5 +1,6 @@
 # xanmod-kernel-WSL2
 ![Kernel CI](https://img.shields.io/github/actions/workflow/status/Locietta/xanmod-kernel-WSL2/build.yml?branch=main)
+[![FOSSA Status](https://app.fossa.com/api/projects/git%2Bgithub.com%2FLocietta%2Fxanmod-kernel-WSL2.svg?type=shield)](https://app.fossa.com/projects/git%2Bgithub.com%2FLocietta%2Fxanmod-kernel-WSL2?ref=badge_shield)
 ![](https://img.shields.io/github/license/Locietta/xanmod-kernel-WSL2)
 ![version](https://badgen.net/github/release/Locietta/xanmod-kernel-WSL2)
 
@@ -67,3 +68,7 @@ I'll not add "microsoft" back into the version string (it's quite long now), sin
 Sending an issue to let me know bugs, missing features or anything else.
 
 Or open a PR if you'd like to improve this.
+
+
+## License
+[![FOSSA Status](https://app.fossa.com/api/projects/git%2Bgithub.com%2FLocietta%2Fxanmod-kernel-WSL2.svg?type=large)](https://app.fossa.com/projects/git%2Bgithub.com%2FLocietta%2Fxanmod-kernel-WSL2?ref=badge_large)
