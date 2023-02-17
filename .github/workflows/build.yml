@@ -13,7 +13,7 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
-    container: locietta/loia-dev-base:debian
+    container: locietta/loia-dev-base:latest
     outputs:
       current_version: ${{ steps.out.outputs.current_version }}
       release_version: ${{ steps.out.outputs.release_version }}
@@ -39,7 +39,7 @@ jobs:
     - name: Install dependencies
       id: dep
       run: |
-        apt-get update && apt install fakeroot build-essential libncurses-dev xz-utils libssl-dev flex libelf-dev bison zstd jq bc -y
+        pacman -S --noconfirm pahole xmlto inetutils bc cpio jq
     
     - name: Prepare source code
       shell: bash
@@ -49,10 +49,7 @@ jobs:
         scripts/config -e ${{ matrix.arch }}
 
         # Load version info into env
-        echo "CLANG_VERSION=$( \
-              clang --version | grep Debian | \
-              sed "s#Debian clang version \([0-9.]*\).*+\([a-z0-9]*\)-.*#\1@\2#" \
-              )" | tee -a $GITHUB_ENV
+        echo "CLANG_VERSION=$(pacman -Qs clang | grep local/clang | sed "s#.*local/clang \(.*\)#\1#")" | tee -a $GITHUB_ENV
         
         export CURRENT_VERSION=$(make kernelrelease)
         export RELEASED_TAG=$(curl -sL -H 'Authorization: token ${{ secrets.CUSTOM_GITHUB_TOKEN }}'\
@@ -64,7 +61,7 @@ jobs:
         echo "RELEASED_VERSION=$RELEASED_VERSION" | tee -a $GITHUB_ENV
 
         if [[ $CURRENT_VERSION != $RELEASED_VERSION || \
-              ($CURRENT_VERSION = $RELEASED_VERSION && 1 -lt "$RELEASED_MINOR") || \
+              ($CURRENT_VERSION = $RELEASED_VERSION && 1 -gt "$RELEASED_MINOR") || \
               "${{ github.event_name }}" = 'pull_request' ]]; then
           echo "REBUILD_FLAG=1" | tee -a $GITHUB_ENV
         else 
@@ -123,7 +120,7 @@ jobs:
         draft: ${{ github.event_name == 'pull_request' }}
         target_commitish: ${{ steps.fetch_commit_sha.outputs.sha }} 
         body: |
-          Cutting edge XanMod kernel for WSL2, built with Debian clang version ${{ needs.build.outputs.clang_version }} from https://apt.llvm.org.
+          Cutting edge XanMod kernel for WSL2, built with Clang ${{ needs.build.outputs.clang_version }} shipped by Arch Linux.
           Provide builds on different archs with matrix build utility of GitHub Action.
 
           * `bzImage` for generic-x86_64-v3

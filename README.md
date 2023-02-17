@@ -5,7 +5,7 @@
 
 Cutting edge [XanMod](https://github.com/xanmod/linux) kernel patched with [dxgkrnl](https://github.com/microsoft/WSL2-Linux-Kernel/tree/linux-msft-wsl-5.15.62.1/drivers/hv/dxgkrnl) support for **WSL2**, compiled by [clang](https://clang.llvm.org/) with ThinLTO enabled.
 
-The kernel is automatically built and released by **GitHub Action**. Latest source is fetched everyday from upstream, and the LLVM toolchain is from https://apt.llvm.org.
+The kernel is automatically built and released by **GitHub Action**. Latest source is fetched everyday from upstream, and the LLVM toolchain is obtained from [Arch Linux](https://archlinux.org/).
 
 ## Usage
 
@@ -60,7 +60,6 @@ I'll not add "microsoft" back into the version string (it's quite long now), sin
 * The Linux community for the awesome OS kernel.
 * Microsoft for WSL2 and dxgkrnl patches.
 * XanMod project for various optimizations.
-* [apt.llvm.org](https://apt.llvm.org/) for their latest Debian/Ubuntu LLVM toolchains.
 
 ## Contributing
 
