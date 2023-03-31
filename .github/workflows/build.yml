@@ -46,6 +46,7 @@ jobs:
       run: |
         git clone https://github.com/xanmod/linux.git --depth 1 linux
         cd linux && ../config.sh
+        scripts/config -d GENERIC_CPU3 # avoid override warning for duplicate arch flags 
         scripts/config -e ${{ matrix.arch }}
 
         # Load version info into env
