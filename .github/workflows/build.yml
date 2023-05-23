@@ -15,8 +15,6 @@ jobs:
     env:
       lts_version:
         $(curl -s https://www.kernel.org/ | grep -A1 longterm | head -n2 | tail -n1 | cut -d">" -f3 | cut -d"<" -f1|cut -d. -f-2)
-      CUSTOM_GITHUB_TOKEN: ${{ secrets.CUSTOM_GITHUB_TOKEN }}
-      # workaround token access for forks, see https://stackoverflow.com/questions/66892867/using-pull-request-vs-pull-request-target-on-a-branch-within-a-repo
     runs-on: ubuntu-latest
     container: locietta/loia-dev-base:latest
     outputs:
@@ -59,7 +57,7 @@ jobs:
         
         export CURRENT_VERSION=$(make kernelrelease)
         # must query with a token, or will fail with api rate limit on public runners
-        export RELEASED_TAG=$(curl -sL -H 'Authorization: Bearer ${{ env.CUSTOM_GITHUB_TOKEN }}'\
+        export RELEASED_TAG=$(curl -sL -H 'Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}'\
          https://api.github.com/repos/Locietta/xanmod-kernel-WSL2/tags\?per_page\=60 | jq -r '.[].name' | grep -v ${{ env.lts_version }} | head -n 1)
         export RELEASED_VERSION=$(echo $RELEASED_TAG | sed "s#\(.*-locietta-WSL2-xanmod[0-9][0-9]*\).*#\1#" )
         export RELEASED_MINOR=$(echo $RELEASED_TAG | sed "s#\(.*-locietta-WSL2-xanmod[0-9][0-9]*\).*\([0-9][0-9]*\).*#\2#" )
@@ -141,6 +139,6 @@ jobs:
           
         files: |
           release_images/*/*
-        token: ${{ env.CUSTOM_GITHUB_TOKEN }}
+        token: ${{ secrets.CUSTOM_GITHUB_TOKEN }}
         # generate_release_notes: true
         fail_on_unmatched_files: true
