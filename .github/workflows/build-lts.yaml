@@ -14,7 +14,7 @@ jobs:
   build:
     env:
       lts_version:
-        $(curl -s https://www.kernel.org/ | grep -A1 longterm | head -n2 | tail -n1 | cut -d">" -f3 | cut -d"<" -f1|cut -d. -f-2)
+        $(curl -s https://www.kernel.org/ | grep -A1 longterm | grep -E '[0-9]+\.[0-9]+' -o | head -n1)
     runs-on: ubuntu-latest
     container: locietta/loia-dev-base:latest
     outputs:
