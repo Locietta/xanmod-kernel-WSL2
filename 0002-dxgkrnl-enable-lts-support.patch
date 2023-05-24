@@ -1,0 +1,24 @@
+From 438d0c077e0a16ff9e0359c58dba3cf9c396ffcd Mon Sep 17 00:00:00 2001
+From: Locietta <locietta@qq.com>
+Date: Sat, 3 Sep 2022 09:50:12 +0800
+Subject: [PATCH] driver: hv: dxgkrnl: enable mainline kernel support
+
+add _MAIN_KERNEL_ macro in makefile.
+
+Signed-off-by: Locietta <locietta@gmail.com>
+---
+ drivers/hv/dxgkrnl/Makefile | 1 +
+ 1 file changed, 1 insertion(+)
+
+diff --git a/drivers/hv/dxgkrnl/Makefile b/drivers/hv/dxgkrnl/Makefile
+index 89824cda6..8ac90f2e5 100644
+--- a/drivers/hv/dxgkrnl/Makefile
++++ b/drivers/hv/dxgkrnl/Makefile
+@@ -3,3 +3,4 @@
+ 
+ obj-$(CONFIG_DXGKRNL)	+= dxgkrnl.o
+ dxgkrnl-y := dxgmodule.o hmgr.o misc.o dxgadapter.o ioctl.o dxgvmbus.o dxgprocess.o  dxgsyncfile.o
++subdir-ccflags-y := -D_MAIN_KERNEL_
+\ No newline at end of file
+-- 
+2.37.3
