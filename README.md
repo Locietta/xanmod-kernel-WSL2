@@ -55,7 +55,7 @@ To update kernel for WSL2, you can use `scoop update *` if installed by scoop. O
 
 **NOTE:** To make the kernel update applied, you have to reboot WSL2 (namely, `wsl --shutdown` and open a fresh WSL2 instance).
 
-> If you are interested in how we handle install and update, see [scoop manifest](https://github.com/Locietta/sniffer/blob/master/bucket/xanmod-WSL2.json) for this kernl.
+> If you are interested in how we handle install and update with scoop, see [scoop manifest](https://github.com/Locietta/sniffer/blob/master/bucket/xanmod-WSL2.json) for this kernl.
 
 ## Miscs
 
