@@ -1,17 +1,20 @@
 # xanmod-kernel-WSL2
 ![Kernel CI](https://img.shields.io/github/actions/workflow/status/Locietta/xanmod-kernel-WSL2/build.yml?branch=main)
+![Kernel LTS CI](https://img.shields.io/github/actions/workflow/status/Locietta/xanmod-kernel-WSL2/build-lts.yml?branch=main)
 ![](https://img.shields.io/github/license/Locietta/xanmod-kernel-WSL2)
 ![version](https://badgen.net/github/release/Locietta/xanmod-kernel-WSL2)
 
-Cutting edge [XanMod](https://github.com/xanmod/linux) kernel patched with [dxgkrnl](https://github.com/microsoft/WSL2-Linux-Kernel/tree/linux-msft-wsl-5.15.62.1/drivers/hv/dxgkrnl) support for **WSL2**, compiled by [clang](https://clang.llvm.org/) with ThinLTO enabled.
+Unoffical [XanMod](https://github.com/xanmod/linux) port with [dxgkrnl](https://github.com/microsoft/WSL2-Linux-Kernel/tree/linux-msft-wsl-5.15.62.1/drivers/hv/dxgkrnl) patched for **WSL2**, compiled by [clang](https://clang.llvm.org/) with ThinLTO enabled.
 
-The kernel is automatically built and released by **GitHub Action**. Latest source is fetched everyday from upstream, and the LLVM toolchain is obtained from [Arch Linux](https://archlinux.org/).
+This repo holds an automated **GitHub Action** workflow to build and release WSL kernel images. It checks if newer upstream version is available everyday, and trigger the build&release process accordingly. 
+
+We are currently releasing both latest stable and latest LTS kernels, LTS kernel builds are released with extra `-lts` suffix.
 
 ## Usage
 
 ### Manual Installation
 
-* Download kernel image from [latest release](https://github.com/Locietta/xanmod-kernel-WSL2/releases/latest).
+* Download kernel image from [releases](https://github.com/Locietta/xanmod-kernel-WSL2/releases).
 * Place it to somewhere appropriate. (e.g. `D:\.WSL\bzImage`) 
 * Save the `.wslconfig` in current user's home directory with following content:
 ```ini
@@ -35,19 +38,28 @@ scoop bucket add sniffer https://github.com/Locietta/sniffer
 scoop install xanmod-WSL2
 
 # other builds
-# scoop install xanmod-WSL2-skylake
 # scoop install xanmod-WSL2-old
+# scoop install xanmod-WSL2-skylake
+
+# LTS builds
+# scoop install xanmod-WSL2-lts
+# scoop install xanmod-WSL2-lts-old
+# scoop install xanmod-WSL2-lts-skylake
 ```
 
 Scoop will automatically set `.wslconfig` for you, but you still need a reboot of WSL2.
 
 ### Update kernel
 
-To update kernel for WSL2, you can either use a [bash script](https://github.com/taalojarvi/scripts/blob/main/wsl_updater.sh) (thanks to @taalojarvi) within WSL2, or use `scoop update *`. 
+To update kernel for WSL2, you can use `scoop update *` if installed by scoop. Or you can just manually replace your kernel image with newer one.
 
-**NOTE**: Both methods need a reboot of WSL2 (namely, `wsl --shutdown` and open a new WSL2 instance).
+**NOTE:** To make the kernel update applied, you have to reboot WSL2 (namely, `wsl --shutdown` and open a fresh WSL2 instance).
 
-### Notes for Systemd
+> If you are interested in how we handle install and update, see [scoop manifest](https://github.com/Locietta/sniffer/blob/master/bucket/xanmod-WSL2.json) for this kernl.
+
+## Miscs
+
+### Systemd
 
 Compatible with [built-in systemd support](https://devblogs.microsoft.com/commandline/systemd-support-is-now-available-in-wsl/) since WSL 0.67.6 and [wsl-distrod](https://github.com/nullpo-head/wsl-distrod) for older WSL versions. 
 
@@ -65,4 +77,4 @@ I'll not add "microsoft" back into the version string (it's quite long now), sin
 
 Sending an issue to let me know bugs, missing features or anything else.
 
-Or open a PR if you'd like to improve this.
+Open a PR if you'd like to improve this repo.
