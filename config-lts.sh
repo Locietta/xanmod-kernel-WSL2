@@ -3,6 +3,7 @@
 #
 git apply ../0001-5.15.y-dxgkrnl.patch
 git apply ../0002-dxgkrnl-enable-lts-support.patch
+git apply ../0003-dxgkrnl-2023-may.patch
 
 #
 # generate .config
