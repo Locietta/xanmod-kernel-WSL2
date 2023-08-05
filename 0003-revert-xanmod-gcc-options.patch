@@ -1,0 +1,31 @@
+From 181951a213f3b510e00e7b52bdaae48ec970c2df Mon Sep 17 00:00:00 2001
+From: Locietta <locietta@gmail.com>
+Date: Sat, 5 Aug 2023 16:26:20 +0800
+Subject: [PATCH] Revert "XANMOD: x86/build: Add more x86 code optimization
+ flags"
+
+This reverts commit 4c4f0ac20e30899f00749eea106c5ebcf8f76c6b.
+---
+ arch/x86/Makefile | 6 ------
+ 1 file changed, 6 deletions(-)
+
+diff --git a/arch/x86/Makefile b/arch/x86/Makefile
+index 057a6b26a..093a1185d 100644
+--- a/arch/x86/Makefile
++++ b/arch/x86/Makefile
+@@ -60,12 +60,6 @@ export REALMODE_CFLAGS
+ # e.g.: obj-y += foo_$(BITS).o
+ export BITS
+ 
+-# More compiler optimizations
+-ifdef CONFIG_CC_OPTIMIZE_FOR_PERFORMANCE
+-KBUILD_CFLAGS += -O3 -fexcess-precision=fast -freciprocal-math -fcx-limited-range
+-KBUILD_RUSTFLAGS += -Copt-level=3
+-endif
+-
+ #
+ # Prevent GCC from generating any FP code by mistake.
+ #
+-- 
+2.41.0
+
