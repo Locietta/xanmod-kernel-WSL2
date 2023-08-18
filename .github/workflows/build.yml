@@ -35,7 +35,7 @@ jobs:
 
     steps:
     - name: Trust this directory
-      run: git config --global --add safe.directory /__w/xanmod-kernel-WSL2/xanmod-kernel-WSL2 # v2.35.2 or later
+      run: git config --global --add safe.directory '*' # v2.35.3 or later
 
     - uses: actions/checkout@main
     
