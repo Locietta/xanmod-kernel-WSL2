@@ -11,7 +11,7 @@ on:
     - cron: '0 6,14,22 * * *'
 
 jobs:
-  build-lts:
+  build:
     env:
       lts_version:
         $(curl -s https://www.kernel.org/ | grep -A1 longterm | grep -E '[0-9]+\.[0-9]+' -o | head -n1)
@@ -35,14 +35,14 @@ jobs:
 
     steps:
     - name: Trust this directory
-      run: git config --global --add safe.directory /__w/xanmod-kernel-WSL2/xanmod-kernel-WSL2 # v2.35.2 or later
+      run: git config --global --add safe.directory '*' # v2.35.3 or later
 
     - uses: actions/checkout@main
     
     - name: Install dependencies
       id: dep
       run: |
-        pacman -S --noconfirm pahole xmlto inetutils bc cpio jq
+        pacman -Syyu --noconfirm pahole xmlto inetutils bc cpio jq llvm-git llvm-libs-git clang-git lld-git
     
     - name: Prepare source code
       shell: bash
@@ -54,7 +54,7 @@ jobs:
         scripts/config -e ${{ matrix.arch }}
 
         # Load version info into env
-        echo "CLANG_VERSION=$(pacman -Qs clang | grep local/clang | sed "s#.*local/clang \(.*\)#\1#")" | tee -a $GITHUB_ENV
+        echo "CLANG_VERSION=$(pacman -Qs clang | grep local/clang-git | sed "s#.*local/clang-git \(.*\) (\(.*\))#\1#")" | tee -a $GITHUB_ENV
         
         export CURRENT_VERSION=$(make kernelrelease)
         # must query with a token, or will fail with api rate limit on public runners
@@ -99,7 +99,7 @@ jobs:
 
   release-lts:
     runs-on: ubuntu-latest
-    needs: build-lts
+    needs: build
 
     steps:
     - uses: actions/checkout@main
@@ -111,22 +111,22 @@ jobs:
       run: |
         if [ ${{ github.event_name }} = 'pull_request' ]; then
           echo "sha=${{ github.event.pull_request.head.sha }}" >> $GITHUB_OUTPUT
-          echo "RELEASE_TAG=${{ needs.build-lts.outputs.current_version }}.1-PR" | tee -a $GITHUB_ENV
+          echo "RELEASE_TAG=${{ needs.build.outputs.current_version }}.1-PR" | tee -a $GITHUB_ENV
         else 
           echo "sha=${{ github.sha }}" >> $GITHUB_OUTPUT
-          echo "RELEASE_TAG=${{ needs.build-lts.outputs.current_version }}.1" | tee -a $GITHUB_ENV
+          echo "RELEASE_TAG=${{ needs.build.outputs.current_version }}.1" | tee -a $GITHUB_ENV
         fi
 
     - name: Release
       uses: softprops/action-gh-release@v1
-      if: ${{ needs.build-lts.outputs.rebuild_flag }}
+      if: ${{ needs.build.outputs.rebuild_flag }}
       with:
         name:  ${{ env.RELEASE_TAG }}-lts
         tag_name:  ${{ env.RELEASE_TAG }}-lts
         draft: ${{ github.event_name == 'pull_request' }}
         target_commitish: ${{ steps.fetch_commit_sha.outputs.sha }} 
         body: |
-          Latest XanMod LTS kernel for WSL2, built with Clang ${{ needs.build.outputs.clang_version }} shipped by Arch Linux.
+          Latest XanMod LTS kernel for WSL2, built with Clang ${{ needs.build.outputs.clang_version }} shipped by [archlinuxcn](https://github.com/archlinuxcn/repo).
           Provide builds on different archs with matrix build utility of GitHub Action.
 
           * `bzImage` for generic-x86_64-v3
