@@ -11,7 +11,7 @@ on:
     - cron: '0 6,14,22 * * *'
 
 jobs:
-  build-lts:
+  build:
     env:
       lts_version:
         $(curl -s https://www.kernel.org/ | grep -A1 longterm | grep -E '[0-9]+\.[0-9]+' -o | head -n1)
@@ -99,7 +99,7 @@ jobs:
 
   release-lts:
     runs-on: ubuntu-latest
-    needs: build-lts
+    needs: build
 
     steps:
     - uses: actions/checkout@main
@@ -111,22 +111,22 @@ jobs:
       run: |
         if [ ${{ github.event_name }} = 'pull_request' ]; then
           echo "sha=${{ github.event.pull_request.head.sha }}" >> $GITHUB_OUTPUT
-          echo "RELEASE_TAG=${{ needs.build-lts.outputs.current_version }}.1-PR" | tee -a $GITHUB_ENV
+          echo "RELEASE_TAG=${{ needs.build.outputs.current_version }}.1-PR" | tee -a $GITHUB_ENV
         else 
           echo "sha=${{ github.sha }}" >> $GITHUB_OUTPUT
-          echo "RELEASE_TAG=${{ needs.build-lts.outputs.current_version }}.1" | tee -a $GITHUB_ENV
+          echo "RELEASE_TAG=${{ needs.build.outputs.current_version }}.1" | tee -a $GITHUB_ENV
         fi
 
     - name: Release
       uses: softprops/action-gh-release@v1
-      if: ${{ needs.build-lts.outputs.rebuild_flag }}
+      if: ${{ needs.build.outputs.rebuild_flag }}
       with:
         name:  ${{ env.RELEASE_TAG }}-lts
         tag_name:  ${{ env.RELEASE_TAG }}-lts
         draft: ${{ github.event_name == 'pull_request' }}
         target_commitish: ${{ steps.fetch_commit_sha.outputs.sha }} 
         body: |
-          Latest XanMod LTS kernel for WSL2, built with Clang ${{ needs.build.outputs.clang_version }} shipped by shipped by [archlinuxcn](https://github.com/archlinuxcn/repo).
+          Latest XanMod LTS kernel for WSL2, built with Clang ${{ needs.build.outputs.clang_version }} shipped by [archlinuxcn](https://github.com/archlinuxcn/repo).
           Provide builds on different archs with matrix build utility of GitHub Action.
 
           * `bzImage` for generic-x86_64-v3
