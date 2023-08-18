@@ -16,7 +16,7 @@ jobs:
       lts_version:
         $(curl -s https://www.kernel.org/ | grep -A1 longterm | grep -E '[0-9]+\.[0-9]+' -o | head -n1)
     runs-on: ubuntu-latest
-    container: locietta/loia-dev-base:llvm-git
+    container: locietta/loia-dev-base:latest
     outputs:
       current_version: ${{ steps.out.outputs.current_version }}
       release_version: ${{ steps.out.outputs.release_version }}
@@ -42,7 +42,7 @@ jobs:
     - name: Install dependencies
       id: dep
       run: |
-        pacman -S --noconfirm pahole xmlto inetutils bc cpio jq
+        pacman -Syyu --noconfirm pahole xmlto inetutils bc cpio jq llvm-git llvm-libs-git clang-git lld-git
     
     - name: Prepare source code
       shell: bash
