@@ -16,7 +16,7 @@ jobs:
       lts_version:
         $(curl -s https://www.kernel.org/ | grep -A1 longterm | grep -E '[0-9]+\.[0-9]+' -o | head -n1)
     runs-on: ubuntu-latest
-    container: locietta/loia-dev-base:latest
+    container: locietta/loia-dev-base:llvm-git
     outputs:
       current_version: ${{ steps.out.outputs.current_version }}
       release_version: ${{ steps.out.outputs.release_version }}
@@ -53,7 +53,7 @@ jobs:
         scripts/config -e ${{ matrix.arch }}
 
         # Load version info into env
-        echo "CLANG_VERSION=$(pacman -Qs clang | grep local/clang | sed "s#.*local/clang \(.*\)#\1#")" | tee -a $GITHUB_ENV
+        echo "CLANG_VERSION=$(pacman -Qs clang | grep local/clang-git | sed "s#.*local/clang-git \(.*\) (\(.*\))#\1#")" | tee -a $GITHUB_ENV
         
         export CURRENT_VERSION=$(make kernelrelease)
         # must query with a token, or will fail with api rate limit on public runners
@@ -125,7 +125,7 @@ jobs:
         draft: ${{ github.event_name == 'pull_request' }}
         target_commitish: ${{ steps.fetch_commit_sha.outputs.sha }} 
         body: |
-          Cutting edge XanMod kernel for WSL2, built with Clang ${{ needs.build.outputs.clang_version }} shipped by Arch Linux.
+          Cutting edge XanMod kernel for WSL2, built with Clang ${{ needs.build.outputs.clang_version }} shipped by [archlinuxcn](https://github.com/archlinuxcn/repo).
           Provide builds on different archs with matrix build utility of GitHub Action.
 
           * `bzImage` for generic-x86_64-v3

@@ -3,7 +3,6 @@
 #
 git apply ../0001-6.1.y-dxgkrnl.patch
 git apply ../0002-dxgkrnl-enable-lts-support.patch
-git apply ../0003-remove-fexcess-precision-for-clang15.patch
 
 #
 # generate .config
