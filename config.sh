@@ -3,11 +3,12 @@
 #
 git apply ../0001-6.1.y-dxgkrnl.patch
 git apply ../0002-dxgkrnl-enable-mainline-support.patch
-git apply ../0003-srso-lto.patch
+
 if [ $? != 0 ]; then
     echo "Patch conflict!"
     exit 1 # so it can be catched by github action
 fi
+
 #
 # generate .config
 #
