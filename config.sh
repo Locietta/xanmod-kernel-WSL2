@@ -3,6 +3,7 @@
 #
 git apply ../0001-6.1.y-dxgkrnl.patch
 git apply ../0002-dxgkrnl-enable-mainline-support.patch
+git apply ../0003-bbrv3-fix-clang-build.patch
 
 if [ $? != 0 ]; then
     echo "Patch conflict!"
