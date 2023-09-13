@@ -22,6 +22,9 @@ jobs:
       release_version: ${{ steps.out.outputs.release_version }}
       clang_version:   ${{ steps.out.outputs.clang_version }}
       rebuild_flag:    ${{ steps.out.outputs.rebuild_flag }}
+    defaults:
+      run:
+        shell: bash
     
     strategy: 
       matrix:
@@ -46,8 +49,6 @@ jobs:
       run: git config --global --add safe.directory '*' # v2.35.3 or later
     
     - name: Prepare source code
-      shell: bash
-      
       run: |
         git clone https://github.com/xanmod/linux.git -b ${{ env.lts_version }} --depth 1 linux
         cd linux && ../config-lts.sh
