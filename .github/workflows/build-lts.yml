@@ -14,7 +14,7 @@ jobs:
   build:
     env:
       lts_version:
-        $(curl -s https://www.kernel.org/ | grep -A1 longterm | grep -E '[0-9]+\.[0-9]+' -o | head -n1)
+        $(curl -s https://xanmod.org/ | grep -A1 LTS | grep -E '[0-9]+\.[0-9]+' -o | head -n1)
     runs-on: ubuntu-latest
     container: locietta/loia-dev-base:latest
     outputs:
@@ -47,7 +47,6 @@ jobs:
     
     - name: Prepare source code
       shell: bash
-      
       run: |
         git clone https://github.com/xanmod/linux.git -b ${{ env.lts_version }} --depth 1 linux
         cd linux && ../config-lts.sh
