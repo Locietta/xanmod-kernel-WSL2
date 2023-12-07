@@ -8,7 +8,7 @@ Unoffical [XanMod](https://github.com/xanmod/linux) port with [dxgkrnl](https://
 
 This repo holds an automated **GitHub Action** workflow to build and release WSL kernel images. It checks if newer upstream version is available everyday, and trigger the build&release process accordingly. 
 
-We are currently releasing both latest stable and latest LTS kernels, LTS kernel builds are released with extra `-lts` suffix.
+We are currently releasing both latest stable (MAIN) and LTS Xanmod kernels, LTS kernel builds are released with extra `-lts` suffix.
 
 ## Usage
 
