@@ -1,0 +1,34 @@
+From ad22a7ae993d4667a73883054f7780a4f38ba904 Mon Sep 17 00:00:00 2001
+From: Locietta <locietta@qq.com>
+Date: Sun, 7 Jan 2024 00:29:12 +0800
+Subject: [PATCH] nf_nat_fullcone: fix clang uninitialized var werror
+
+---
+ net/netfilter/nf_nat_fullcone.c | 4 ++++
+ 1 file changed, 4 insertions(+)
+
+diff --git a/net/netfilter/nf_nat_fullcone.c b/net/netfilter/nf_nat_fullcone.c
+index c63470fd8..9ecc7edd5 100644
+--- a/net/netfilter/nf_nat_fullcone.c
++++ b/net/netfilter/nf_nat_fullcone.c
+@@ -1379,6 +1379,8 @@ static unsigned int nf_nat_handle_postrouting(u8 nfproto, struct sk_buff *skb, u
+ 			is_src_mapping_active = src_mapping != NULL && check_mapping(src_mapping, net, zone);
+ 		} else if (nfproto == NFPROTO_IPV6) {
+ 			is_src_mapping_active = src_mapping_6 != NULL && check_mapping6(src_mapping_6, net, zone);
++		} else {
++			unreachable();
+ 		}
+ 
+ 		if (is_src_mapping_active) {
+@@ -1430,6 +1432,8 @@ static unsigned int nf_nat_handle_postrouting(u8 nfproto, struct sk_buff *skb, u
+ 
+ 				want_port =
+ 				    find_appropriate_port6(net, zone, original_port, &newrange->min_addr, range);
++			} else {
++				unreachable();
+ 			}
+ 
+ 			newrange->flags = NF_NAT_RANGE_MAP_IPS | NF_NAT_RANGE_PROTO_SPECIFIED;
+-- 
+2.43.0
+
