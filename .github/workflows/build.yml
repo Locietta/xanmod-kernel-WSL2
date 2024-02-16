@@ -81,7 +81,7 @@ jobs:
         cd .. && sha256sum ${{ matrix.image-name }} > ${{ matrix.image-name }}.sha256
 
     - name: Upload bzImage
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@main
       if: ${{ env.REBUILD_FLAG }}
       with:
         name: ${{ matrix.image-name }}
@@ -102,7 +102,7 @@ jobs:
 
     steps:
     - uses: actions/checkout@main
-    - uses: actions/download-artifact@v3
+    - uses: actions/download-artifact@main
       with:
         path: release_images/
 
@@ -117,7 +117,7 @@ jobs:
         fi
 
     - name: Release
-      uses: softprops/action-gh-release@v1
+      uses: softprops/action-gh-release@master
       if: ${{ needs.build.outputs.rebuild_flag }}
       with:
         name:  ${{ env.RELEASE_TAG }}
