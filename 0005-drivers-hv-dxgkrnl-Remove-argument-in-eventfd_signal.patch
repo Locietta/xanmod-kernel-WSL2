@@ -1,0 +1,43 @@
+From 84a5a0144c53939c220b37c0805d64ce17c92086 Mon Sep 17 00:00:00 2001
+From: Yang Jeong Hun <onyxclover9931@gmail.com>
+Date: Mon, 11 Mar 2024 18:03:16 +0900
+Subject: [PATCH 1/6] drivers: hv: dxgkrnl: Remove argument in eventfd_signal()
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+
+Error Logs:
+drivers/hv/dxgkrnl/dxgmodule.c: In function ‘signal_host_cpu_event’:
+drivers/hv/dxgkrnl/dxgmodule.c:173:17: error: too many arguments to function ‘eventfd_signal’
+  173 |                 eventfd_signal(event->cpu_event, 1);
+      |                 ^~~~~~~~~~~~~~
+In file included from drivers/hv/dxgkrnl/dxgmodule.c:15:
+./include/linux/eventfd.h:87:20: note: declared here
+   87 | static inline void eventfd_signal(struct eventfd_ctx *ctx)
+      |                    ^~~~~~~~~~~~~~
+
+ * In 3652117f854819a148ff0fbe4492587d3520b5e5, eventfd_signal() has been simplified.
+ * So We don't need to set "1" argument anymore.
+ * This commit remove "1" argument in dxgmodule.c.
+
+Signed-off-by: Yang Jeong Hun <onyxclover9931@gmail.com>
+---
+ drivers/hv/dxgkrnl/dxgmodule.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/drivers/hv/dxgkrnl/dxgmodule.c b/drivers/hv/dxgkrnl/dxgmodule.c
+index 1501e0aae93b..d8941db048d0 100644
+--- a/drivers/hv/dxgkrnl/dxgmodule.c
++++ b/drivers/hv/dxgkrnl/dxgmodule.c
+@@ -170,7 +170,7 @@ void signal_host_cpu_event(struct dxghostevent *eventhdr)
+ 	}
+ 	if (event->cpu_event) {
+ 		DXG_TRACE("signal cpu event");
+-		eventfd_signal(event->cpu_event, 1);
++		eventfd_signal(event->cpu_event);
+ 		if (event->destroy_after_signal)
+ 			eventfd_ctx_put(event->cpu_event);
+ 	} else {
+-- 
+2.44.0
+
