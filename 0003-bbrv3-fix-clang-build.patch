@@ -1,14 +1,17 @@
-From 229949907e120db70b12fa76e34a9b4cc013c7c9 Mon Sep 17 00:00:00 2001
-From: xingxing <xingxing@raysengine.com>
-Date: Tue, 29 Aug 2023 19:23:03 +0800
-Subject: [PATCH] bbrv3: fix clang build
+From ecf3ee230d503de7560c077fa7d6b2051eb6de50 Mon Sep 17 00:00:00 2001
+From: Locietta <locietta@qq.com>
+Date: Fri, 12 Apr 2024 15:05:00 +0800
+Subject: [PATCH v2] bbrv3: fix clang build
+
+* warns on `&&` with `bbr_param(sk, ecn_factor)` which expands to constant
+* warns on functions without prototype
 
 ---
- net/ipv4/tcp_bbr.c | 6 +++---
- 1 file changed, 3 insertions(+), 3 deletions(-)
+ net/ipv4/tcp_bbr.c | 10 +++++-----
+ 1 file changed, 5 insertions(+), 5 deletions(-)
 
 diff --git a/net/ipv4/tcp_bbr.c b/net/ipv4/tcp_bbr.c
-index f4f477a69..294bafe39 100644
+index c60d51bf7..c8053ffdb 100644
 --- a/net/ipv4/tcp_bbr.c
 +++ b/net/ipv4/tcp_bbr.c
 @@ -1077,7 +1077,7 @@ static int bbr_update_ecn_alpha(struct sock *sk)
@@ -29,6 +32,15 @@ index f4f477a69..294bafe39 100644
  		ecn_thresh = (u64)rs->delivered * bbr_param(sk, ecn_thresh) >>
  				BBR_SCALE;
  		if (rs->delivered_ce > ecn_thresh) {
+@@ -1312,7 +1312,7 @@ static void bbr_bound_cwnd_for_inflight_model(struct sock *sk)
+ }
+ 
+ /* How should we multiplicatively cut bw or inflight limits based on ECN? */
+-u32 bbr_ecn_cut(struct sock *sk)
++static u32 bbr_ecn_cut(struct sock *sk)
+ {
+ 	struct bbr *bbr = inet_csk_ca(sk);
+ 
 @@ -1382,7 +1382,7 @@ static void bbr_adapt_lower_bounds(struct sock *sk,
  		return;
  
@@ -38,6 +50,15 @@ index f4f477a69..294bafe39 100644
  		bbr_init_lower_bounds(sk, false);
  		bbr_ecn_lower_bounds(sk, &ecn_inflight_lo);
  	}
+@@ -2033,7 +2033,7 @@ static bool bbr_run_fast_path(struct sock *sk, bool *update_model,
+ 	return false;
+ }
+ 
+-__bpf_kfunc void bbr_main(struct sock *sk, const struct rate_sample *rs)
++__bpf_kfunc static void bbr_main(struct sock *sk, const struct rate_sample *rs)
+ {
+ 	struct tcp_sock *tp = tcp_sk(sk);
+ 	struct bbr *bbr = inet_csk_ca(sk);
 -- 
-2.41.0
+2.44.0
 
