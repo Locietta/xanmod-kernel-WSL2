@@ -35,15 +35,18 @@ kernel = the\\path\\to\\bzImage
 
 ```bash
 scoop bucket add sniffer https://github.com/Locietta/sniffer
-scoop install xanmod-WSL2
+scoop install xanmod-WSL2 # alias to xanmod-WSL2-x64v3
 
 # other builds
-# scoop install xanmod-WSL2-old
+# scoop install xanmod-WSL2-x64v2
+# scoop install xanmod-WSL2-x64v4
 # scoop install xanmod-WSL2-skylake
 
 # LTS builds
-# scoop install xanmod-WSL2-lts
-# scoop install xanmod-WSL2-lts-old
+# scoop install xanmod-WSL2-lts # alias to xanmod-WSL2-lts-x64v3
+# scoop install xanmod-WSL2-lts-x64v2
+# scoop install xanmod-WSL2-lts-x64v3
+# scoop install xanmod-WSL2-lts-x64v4
 # scoop install xanmod-WSL2-lts-skylake
 ```
 
@@ -55,7 +58,7 @@ To update kernel for WSL2, you can use `scoop update *` if installed by scoop. O
 
 **NOTE:** To make the kernel update applied, you have to reboot WSL2 (namely, `wsl --shutdown` and open a fresh WSL2 instance).
 
-> If you are interested in how we handle install and update with scoop, see [scoop manifest](https://github.com/Locietta/sniffer/blob/master/bucket/xanmod-WSL2.json) for this kernl.
+> If you are interested in how we handle install and update with scoop, see [scoop manifest](https://github.com/Locietta/sniffer/blob/master/bucket/xanmod-WSL2.json) for this kernel.
 
 ## Miscs
 
