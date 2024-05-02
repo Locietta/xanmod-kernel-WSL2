@@ -24,9 +24,11 @@ jobs:
       matrix:
         include:
           - arch: GENERIC_CPU2
-            image-name: bzImage-old
+            image-name: bzImage-x64v2
           - arch: GENERIC_CPU3
-            image-name: bzImage
+            image-name: bzImage-x64v3
+          - arch: GENERIC_CPU4
+            image-name: bzImage-x64v4 
           - arch: MSKYLAKE
             image-name: bzImage-skylake
 
@@ -128,8 +130,7 @@ jobs:
           Cutting edge XanMod kernel for WSL2, built with Clang ${{ needs.build.outputs.clang_version }} shipped by [archlinuxcn](https://github.com/archlinuxcn/repo).
           Provide builds on different archs with matrix build utility of GitHub Action.
 
-          * `bzImage` for generic-x86_64-v3
-          * `bzImage-old` for generic-x86_64-v2
+          * `bzImage-x64v{2,3,4}` for generic-x86_64-v{2,3,4}
           * `bzImage-skylake` for intel skylake
 
           To check supported x86_64 level on your machine, see [how to check supported x86_64 level of the hardware](https://unix.stackexchange.com/questions/631217/how-do-i-check-if-my-cpu-supports-x86-64-v2?msclkid=42ca61e9aa7111ecbcab7bb1a4204357).
