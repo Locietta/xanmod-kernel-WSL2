@@ -1,7 +1,7 @@
-From e0225f31e626243bb3d0c01e31f9798a481fbb6d Mon Sep 17 00:00:00 2001
+From 150004f62e929f760dfeb1f36c7545685505e979 Mon Sep 17 00:00:00 2001
 From: Iouri Tarassov <iourit@linux.microsoft.com>
 Date: Tue, 15 Feb 2022 18:11:52 -0800
-Subject: [PATCH 01/47] drivers: hv: dxgkrnl: Add virtual compute device VMBus
+Subject: [PATCH 01/50] drivers: hv: dxgkrnl: Add virtual compute device VMBus
  channel guids
 
 Add VMBus channel guids, which are used by hyper-v virtual compute
@@ -13,10 +13,10 @@ Signed-off-by: Iouri Tarassov <iourit@linux.microsoft.com>
  1 file changed, 16 insertions(+)
 
 diff --git a/include/linux/hyperv.h b/include/linux/hyperv.h
-index bfbc37ce2..d57664929 100644
+index ddc8713ce..773a418c7 100644
 --- a/include/linux/hyperv.h
 +++ b/include/linux/hyperv.h
-@@ -1454,6 +1454,22 @@ void vmbus_free_mmio(resource_size_t start, resource_size_t size);
+@@ -1421,6 +1421,22 @@ void vmbus_free_mmio(resource_size_t start, resource_size_t size);
  	.guid = GUID_INIT(0xda0a7802, 0xe377, 0x4aac, 0x8e, 0x77, \
  			  0x05, 0x58, 0xeb, 0x10, 0x73, 0xf8)
  
@@ -40,13 +40,13 @@ index bfbc37ce2..d57664929 100644
   * Synthetic FC GUID
   * {2f9bcc4a-0069-4af3-b76b-6fd0be528cda}
 -- 
-2.41.0
+2.44.0
 
 
-From 6a35946daf73d3d0cb8d3e958678c50deb5548fe Mon Sep 17 00:00:00 2001
+From 6479d16e3ab12aeca320dcfab84452f94406f0e2 Mon Sep 17 00:00:00 2001
 From: Iouri Tarassov <iourit@linux.microsoft.com>
 Date: Wed, 24 Mar 2021 11:10:28 -0700
-Subject: [PATCH 02/47] drivers: hv: dxgkrnl: Driver initialization and loading
+Subject: [PATCH 02/50] drivers: hv: dxgkrnl: Driver initialization and loading
 
 - Create skeleton and add basic functionality for the Hyper-V
 compute device driver (dxgkrnl).
@@ -99,10 +99,10 @@ Signed-off-by: Iouri Tarassov <iourit@linux.microsoft.com>
  create mode 100644 include/uapi/misc/d3dkmthk.h
 
 diff --git a/MAINTAINERS b/MAINTAINERS
-index 668fe57e7..30cb524a2 100644
+index 3b79fd441..0b296ebd0 100644
 --- a/MAINTAINERS
 +++ b/MAINTAINERS
-@@ -9638,6 +9638,13 @@ F:	Documentation/devicetree/bindings/mtd/ti,am654-hbmc.yaml
+@@ -8730,6 +8730,13 @@ F:	Documentation/devicetree/bindings/mtd/ti,am654-hbmc.txt
  F:	drivers/mtd/hyperbus/
  F:	include/linux/mtd/hyperbus.h
  
@@ -117,10 +117,10 @@ index 668fe57e7..30cb524a2 100644
  L:	linuxppc-dev@lists.ozlabs.org
  S:	Odd Fixes
 diff --git a/drivers/hv/Kconfig b/drivers/hv/Kconfig
-index 00242107d..51cce0cc9 100644
+index d1123ceb3..5aa411cec 100644
 --- a/drivers/hv/Kconfig
 +++ b/drivers/hv/Kconfig
-@@ -54,4 +54,6 @@ config HYPERV_BALLOON
+@@ -28,4 +28,6 @@ config HYPERV_BALLOON
  	help
  	  Select this option to enable Hyper-V Balloon driver.
  
@@ -1012,13 +1012,13 @@ index 000000000..5d9736044
 +
 +#endif /* _D3DKMTHK_H */
 -- 
-2.41.0
+2.44.0
 
 
-From 206613be38300beabf57a0ea3a1ae2ab34f2d277 Mon Sep 17 00:00:00 2001
+From 8a1430fd26bb2f022dafca6434780d9815c6c6ad Mon Sep 17 00:00:00 2001
 From: Iouri Tarassov <iourit@linux.microsoft.com>
 Date: Tue, 15 Feb 2022 18:53:07 -0800
-Subject: [PATCH 03/47] drivers: hv: dxgkrnl: Add VMBus message support,
+Subject: [PATCH 03/50] drivers: hv: dxgkrnl: Add VMBus message support,
  initialize VMBus channels.
 
 Implement support for sending/receiving VMBus messages between
@@ -1673,13 +1673,13 @@ index 5d9736044..2ea04cc02 100644
   * Matches the Windows LUID definition.
   * LUID is a locally unique identifier (similar to GUID, but not global),
 -- 
-2.41.0
+2.44.0
 
 
-From 95199d9f21f2431951a47c482b6f233f2f06abdf Mon Sep 17 00:00:00 2001
+From 7f215fb668f834c99464935af76b23af2bb74e74 Mon Sep 17 00:00:00 2001
 From: Iouri Tarassov <iourit@linux.microsoft.com>
 Date: Tue, 15 Feb 2022 19:00:38 -0800
-Subject: [PATCH 04/47] drivers: hv: dxgkrnl: Creation of dxgadapter object
+Subject: [PATCH 04/50] drivers: hv: dxgkrnl: Creation of dxgadapter object
 
 Handle creation and destruction of dxgadapter object, which
 represents a virtual compute device, projected to the VM by
@@ -2834,13 +2834,13 @@ index 4c6047c32..d292e9a9b 100644
   * Some of the Windows return codes, which needs to be translated to Linux
   * IOCTL return codes. Positive values are success codes and need to be
 -- 
-2.41.0
+2.44.0
 
 
-From d6c4674f64245129f567f4be4c728a98a59ed705 Mon Sep 17 00:00:00 2001
+From b601870207e9a929902b4919ab43a6b056ac3ec7 Mon Sep 17 00:00:00 2001
 From: Iouri Tarassov <iourit@linux.microsoft.com>
 Date: Tue, 15 Feb 2022 19:12:48 -0800
-Subject: [PATCH 05/47] drivers: hv: dxgkrnl: Opening of /dev/dxg device and
+Subject: [PATCH 05/50] drivers: hv: dxgkrnl: Opening of /dev/dxg device and
  dxgprocess creation
 
 - Implement opening of the device (/dev/dxg) file object and creation of
@@ -4683,13 +4683,13 @@ index 2ea04cc02..c675d5827 100644
 +
  #endif /* _D3DKMTHK_H */
 -- 
-2.41.0
+2.44.0
 
 
-From 59e8fe4a006dda0c849dd6d38778d64be6585309 Mon Sep 17 00:00:00 2001
+From 3de62d2af5e88e12c37e398a277ebb949ff6848a Mon Sep 17 00:00:00 2001
 From: Iouri Tarassov <iourit@linux.microsoft.com>
 Date: Mon, 21 Mar 2022 19:18:50 -0700
-Subject: [PATCH 06/47] drivers: hv: dxgkrnl: Enumerate and open dxgadapter
+Subject: [PATCH 06/50] drivers: hv: dxgkrnl: Enumerate and open dxgadapter
  objects
 
 Implement ioctls to enumerate dxgadapter objects:
@@ -5237,13 +5237,13 @@ index 60e38d104..b08ea9430 100644
 +}
 +#endif
 -- 
-2.41.0
+2.44.0
 
 
-From a6d1fcd5d3cbf58ace1f526370a713a3b26d1161 Mon Sep 17 00:00:00 2001
+From 4be1e6befe211adb556a3adf28175cf530d51276 Mon Sep 17 00:00:00 2001
 From: Iouri Tarassov <iourit@linux.microsoft.com>
 Date: Tue, 1 Feb 2022 17:23:58 -0800
-Subject: [PATCH 07/47] drivers: hv: dxgkrnl: Creation of dxgdevice objects
+Subject: [PATCH 07/50] drivers: hv: dxgkrnl: Creation of dxgdevice objects
 
 Implement ioctls for creation and destruction of dxgdevice
 objects:
@@ -6064,13 +6064,13 @@ index c675d5827..7414f0f5c 100644
  	_IOWR(0x47, 0x3e, struct d3dkmt_enumadapters3)
  
 -- 
-2.41.0
+2.44.0
 
 
-From cf3daeed9b2c7621a240f33eee94f412c1c3e143 Mon Sep 17 00:00:00 2001
+From 6328bf1abd3058849fc6f9a0afc29f794e9c5e53 Mon Sep 17 00:00:00 2001
 From: Iouri Tarassov <iourit@linux.microsoft.com>
 Date: Tue, 1 Feb 2022 17:03:47 -0800
-Subject: [PATCH 08/47] drivers: hv: dxgkrnl: Creation of dxgcontext objects
+Subject: [PATCH 08/50] drivers: hv: dxgkrnl: Creation of dxgcontext objects
 
 Implement ioctls for creation/destruction of dxgcontext
 objects:
@@ -6731,13 +6731,13 @@ index 7414f0f5c..4ba0070b0 100644
  	_IOWR(0x47, 0x09, struct d3dkmt_queryadapterinfo)
  #define LX_DXENUMADAPTERS2		\
 -- 
-2.41.0
+2.44.0
 
 
-From daad0adf0b733a3b316933bd2beb8c2769e59161 Mon Sep 17 00:00:00 2001
+From 568aba870a41260b6434cdd1a853b6c22d643513 Mon Sep 17 00:00:00 2001
 From: Iouri Tarassov <iourit@linux.microsoft.com>
 Date: Tue, 1 Feb 2022 15:37:52 -0800
-Subject: [PATCH 09/47] drivers: hv: dxgkrnl: Creation of compute device
+Subject: [PATCH 09/50] drivers: hv: dxgkrnl: Creation of compute device
  allocations and resources
 
 Implemented ioctls to create and destroy virtual compute device
@@ -8993,13 +8993,13 @@ index 4ba0070b0..cf670b9c4 100644
  	_IOWR(0x47, 0x14, struct d3dkmt_enumadapters2)
  #define LX_DXCLOSEADAPTER		\
 -- 
-2.41.0
+2.44.0
 
 
-From e94bb4a59cd1c0cca8e9a20fa9c569018408f3bd Mon Sep 17 00:00:00 2001
+From 19e557abca16cd9ec4d0cb1aae240cf5a17e9316 Mon Sep 17 00:00:00 2001
 From: Iouri Tarassov <iourit@linux.microsoft.com>
 Date: Tue, 1 Feb 2022 14:38:32 -0800
-Subject: [PATCH 10/47] drivers: hv: dxgkrnl: Creation of compute device sync
+Subject: [PATCH 10/50] drivers: hv: dxgkrnl: Creation of compute device sync
  objects
 
 Implement ioctls to create and destroy compute devicesync objects:
@@ -10009,13 +10009,13 @@ index cf670b9c4..4e1069f41 100644
  	_IOWR(0x47, 0x3e, struct d3dkmt_enumadapters3)
  
 -- 
-2.41.0
+2.44.0
 
 
-From 247f36d41d31df40d44f5ea29654b0ce91bf4ffb Mon Sep 17 00:00:00 2001
+From dabaf51f635b9113bd37e22bedf4cbd0bd238a6a Mon Sep 17 00:00:00 2001
 From: Iouri Tarassov <iourit@linux.microsoft.com>
 Date: Tue, 1 Feb 2022 13:59:23 -0800
-Subject: [PATCH 11/47] drivers: hv: dxgkrnl: Operations using sync objects
+Subject: [PATCH 11/50] drivers: hv: dxgkrnl: Operations using sync objects
 
 Implement ioctls to submit operations with compute device
 sync objects:
@@ -11697,13 +11697,13 @@ index 4e1069f41..39055b0c1 100644
  	_IOWR(0x47, 0x3e, struct d3dkmt_enumadapters3)
  
 -- 
-2.41.0
+2.44.0
 
 
-From 94a3a5af1b5b317a09628472a5cc7b66400d8364 Mon Sep 17 00:00:00 2001
+From 9ed342ca0f45a0b80663dead0798b992f6857923 Mon Sep 17 00:00:00 2001
 From: Iouri Tarassov <iourit@linux.microsoft.com>
 Date: Mon, 31 Jan 2022 17:52:31 -0800
-Subject: [PATCH 12/47] drivers: hv: dxgkrnl: Sharing of dxgresource objects
+Subject: [PATCH 12/50] drivers: hv: dxgkrnl: Sharing of dxgresource objects
 
 Implement creation of shared resources and ioctls for sharing
 dxgresource objects between processes in the virtual machine.
@@ -13160,13 +13160,13 @@ index 39055b0c1..f74564cf7 100644
  
  #endif /* _D3DKMTHK_H */
 -- 
-2.41.0
+2.44.0
 
 
-From daad33cad30929042eb0d9a71fc8f3fe9f7a5fbe Mon Sep 17 00:00:00 2001
+From 4ae3485931bd22338276e24069e0cfac7a6e337f Mon Sep 17 00:00:00 2001
 From: Iouri Tarassov <iourit@linux.microsoft.com>
 Date: Mon, 31 Jan 2022 16:41:28 -0800
-Subject: [PATCH 13/47] drivers: hv: dxgkrnl: Sharing of sync objects
+Subject: [PATCH 13/50] drivers: hv: dxgkrnl: Sharing of sync objects
 
 Implement creation of a shared sync objects and the ioctl for sharing
 dxgsyncobject objects between processes in the virtual machine.
@@ -14714,13 +14714,13 @@ index f74564cf7..a78252901 100644
  	_IOWR(0x47, 0x3a, struct d3dkmt_waitforsynchronizationobjectfromcpu)
  #define LX_DXWAITFORSYNCHRONIZATIONOBJECTFROMGPU \
 -- 
-2.41.0
+2.44.0
 
 
-From 95074ef1218b53f82e1c980d3aac33a4ab056f0f Mon Sep 17 00:00:00 2001
+From 6f6de48af1662e1695e93752b945c80c4bd88e8b Mon Sep 17 00:00:00 2001
 From: Iouri Tarassov <iourit@linux.microsoft.com>
 Date: Thu, 20 Jan 2022 15:15:18 -0800
-Subject: [PATCH 14/47] drivers: hv: dxgkrnl: Creation of paging queue objects.
+Subject: [PATCH 14/50] drivers: hv: dxgkrnl: Creation of paging queue objects.
 
 Implement ioctls for creation/destruction of the paging queue objects:
   - LX_DXCREATEPAGINGQUEUE,
@@ -15353,13 +15353,13 @@ index a78252901..6ec70852d 100644
  	_IOWR(0x47, 0x19, struct d3dkmt_destroydevice)
  #define LX_DXDESTROYSYNCHRONIZATIONOBJECT \
 -- 
-2.41.0
+2.44.0
 
 
-From 835aa0209d931ff144c225152032eb85323b8879 Mon Sep 17 00:00:00 2001
+From a1b62bc5572bc36d48c9f2b495747b7989dfa01b Mon Sep 17 00:00:00 2001
 From: Iouri Tarassov <iourit@linux.microsoft.com>
 Date: Wed, 19 Jan 2022 18:02:09 -0800
-Subject: [PATCH 15/47] drivers: hv: dxgkrnl: Submit execution commands to the
+Subject: [PATCH 15/50] drivers: hv: dxgkrnl: Submit execution commands to the
  compute device
 
 Implements ioctls for submission of compute device buffers for execution:
@@ -15803,13 +15803,13 @@ index 6ec70852d..9238115d1 100644
  	_IOWR(0x47, 0x35, struct d3dkmt_submitsignalsyncobjectstohwqueue)
  #define LX_DXSUBMITWAITFORSYNCOBJECTSTOHWQUEUE \
 -- 
-2.41.0
+2.44.0
 
 
-From 9328fa53c28a770f12b37bcc2119de992e155687 Mon Sep 17 00:00:00 2001
+From f319dc6b1baedf4d74e79a5f84ad559053a6a79a Mon Sep 17 00:00:00 2001
 From: Iouri Tarassov <iourit@linux.microsoft.com>
 Date: Sat, 7 Aug 2021 18:11:34 -0700
-Subject: [PATCH 16/47] drivers: hv: dxgkrnl: Share objects with the host
+Subject: [PATCH 16/50] drivers: hv: dxgkrnl: Share objects with the host
 
 Implement the LX_DXSHAREOBJECTWITHHOST ioctl.
 This ioctl is used to create a Windows NT handle on the host
@@ -16073,13 +16073,13 @@ index 9238115d1..895861505 100644
  
  #endif /* _D3DKMTHK_H */
 -- 
-2.41.0
+2.44.0
 
 
-From 0cebced1664b02cc6cf27e7880d02b304dcaa040 Mon Sep 17 00:00:00 2001
+From b93616d825f018f5d800954be45eb19b2056904f Mon Sep 17 00:00:00 2001
 From: Iouri Tarassov <iourit@linux.microsoft.com>
 Date: Wed, 19 Jan 2022 16:53:47 -0800
-Subject: [PATCH 17/47] drivers: hv: dxgkrnl: Query the dxgdevice state
+Subject: [PATCH 17/50] drivers: hv: dxgkrnl: Query the dxgdevice state
 
 Implement the ioctl to query the dxgdevice state - LX_DXGETDEVICESTATE.
 The IOCTL is used to query the state of the given dxgdevice object (active,
@@ -16526,13 +16526,13 @@ index 895861505..8a013b07e 100644
  	_IOWR(0x47, 0x0f, struct d3dkmt_submitcommand)
  #define LX_DXCREATESYNCHRONIZATIONOBJECT \
 -- 
-2.41.0
+2.44.0
 
 
-From 219456f0d1f3dd5fa7ecce055ef59ea4f348923d Mon Sep 17 00:00:00 2001
+From d297951444ce4b1842b0a5f796456388939dd630 Mon Sep 17 00:00:00 2001
 From: Iouri Tarassov <iourit@linux.microsoft.com>
 Date: Wed, 19 Jan 2022 13:58:28 -0800
-Subject: [PATCH 18/47] drivers: hv: dxgkrnl: Map(unmap) CPU address to device
+Subject: [PATCH 18/50] drivers: hv: dxgkrnl: Map(unmap) CPU address to device
  allocation
 
 Implement ioctls to map/unmap CPU virtual addresses to compute device
@@ -17024,13 +17024,13 @@ index 8a013b07e..b498f09e6 100644
  	_IOWR(0x47, 0x3a, struct d3dkmt_waitforsynchronizationobjectfromcpu)
  #define LX_DXWAITFORSYNCHRONIZATIONOBJECTFROMGPU \
 -- 
-2.41.0
+2.44.0
 
 
-From 07a616f26de44cf60e23679841de257d8f66352a Mon Sep 17 00:00:00 2001
+From 820bc549e7a43a25ed41487175b19d31d87d2acd Mon Sep 17 00:00:00 2001
 From: Iouri Tarassov <iourit@linux.microsoft.com>
 Date: Wed, 19 Jan 2022 11:14:22 -0800
-Subject: [PATCH 19/47] drivers: hv: dxgkrnl: Manage device allocation
+Subject: [PATCH 19/50] drivers: hv: dxgkrnl: Manage device allocation
  properties
 
 Implement ioctls to manage properties of a compute device allocation:
@@ -17936,13 +17936,13 @@ index b498f09e6..af381101f 100644
  	_IOWR(0x47, 0x3e, struct d3dkmt_enumadapters3)
  #define LX_DXSHAREOBJECTS		\
 -- 
-2.41.0
+2.44.0
 
 
-From 4177bb2125ac838c97952bbf05e5d6f2f792e520 Mon Sep 17 00:00:00 2001
+From 8697ce9b5f6c82c1db7a24a00c9f136f50209c2b Mon Sep 17 00:00:00 2001
 From: Iouri Tarassov <iourit@linux.microsoft.com>
 Date: Tue, 18 Jan 2022 17:25:37 -0800
-Subject: [PATCH 20/47] drivers: hv: dxgkrnl: Flush heap transitions
+Subject: [PATCH 20/50] drivers: hv: dxgkrnl: Flush heap transitions
 
 Implement the ioctl to flush heap transitions
 (LX_DXFLUSHHEAPTRANSITIONS).
@@ -18129,13 +18129,13 @@ index af381101f..873feb951 100644
  	_IOWR(0x47, 0x25, struct d3dkmt_lock2)
  #define LX_DXQUERYALLOCATIONRESIDENCY	\
 -- 
-2.41.0
+2.44.0
 
 
-From 47053ad9f3d553559466635262f83f54d359c963 Mon Sep 17 00:00:00 2001
+From 4e16c1453e71d016315ad0094ca8f5ac8b8b687a Mon Sep 17 00:00:00 2001
 From: Iouri Tarassov <iourit@linux.microsoft.com>
 Date: Tue, 8 Feb 2022 18:34:07 -0800
-Subject: [PATCH 21/47] drivers: hv: dxgkrnl: Query video memory information
+Subject: [PATCH 21/50] drivers: hv: dxgkrnl: Query video memory information
 
 Implement the ioctl to query video memory information from the host
 (LX_DXQUERYVIDEOMEMORYINFO).
@@ -18365,13 +18365,13 @@ index 873feb951..b7d8b1d91 100644
  	_IOWR(0x47, 0x0e, struct d3dkmt_getdevicestate)
  #define LX_DXSUBMITCOMMAND		\
 -- 
-2.41.0
+2.44.0
 
 
-From 9140a447aaafba30d41885c840cdd5941ed9788c Mon Sep 17 00:00:00 2001
+From 4aa27ed5d3732886ed10f3205d69bf94bb8ae757 Mon Sep 17 00:00:00 2001
 From: Iouri Tarassov <iourit@linux.microsoft.com>
 Date: Tue, 18 Jan 2022 15:50:30 -0800
-Subject: [PATCH 22/47] drivers: hv: dxgkrnl: The escape ioctl
+Subject: [PATCH 22/50] drivers: hv: dxgkrnl: The escape ioctl
 
 Implement the escape ioctl (LX_DXESCAPE).
 
@@ -18669,13 +18669,13 @@ index b7d8b1d91..749edf28b 100644
  	_IOWR(0x47, 0x0e, struct d3dkmt_getdevicestate)
  #define LX_DXSUBMITCOMMAND		\
 -- 
-2.41.0
+2.44.0
 
 
-From 9c0d0f470a91245bbf868943f05892bc4c35acc8 Mon Sep 17 00:00:00 2001
+From 787f87f52b36da9c947c8f2d8b044a0905849452 Mon Sep 17 00:00:00 2001
 From: Iouri Tarassov <iourit@linux.microsoft.com>
 Date: Wed, 9 Feb 2022 10:57:57 -0800
-Subject: [PATCH 23/47] drivers: hv: dxgkrnl: Ioctl to put device to error
+Subject: [PATCH 23/50] drivers: hv: dxgkrnl: Ioctl to put device to error
  state
 
 Implement the ioctl to put the virtual compute device to the error
@@ -18849,13 +18849,13 @@ index 749edf28b..ce5a638a8 100644
  	_IOWR(0x47, 0x2a, struct d3dkmt_queryallocationresidency)
  #define LX_DXSETALLOCATIONPRIORITY	\
 -- 
-2.41.0
+2.44.0
 
 
-From 4a5ab456d4cc7307f2dea01e85dca10f31b78872 Mon Sep 17 00:00:00 2001
+From b387d4d5be9d8671242291bcd270311896e657a1 Mon Sep 17 00:00:00 2001
 From: Iouri Tarassov <iourit@linux.microsoft.com>
 Date: Wed, 9 Feb 2022 11:01:57 -0800
-Subject: [PATCH 24/47] drivers: hv: dxgkrnl: Ioctls to query statistics and
+Subject: [PATCH 24/50] drivers: hv: dxgkrnl: Ioctls to query statistics and
  clock calibration
 
 Implement ioctls to query statistics from the VGPU device
@@ -19271,13 +19271,13 @@ index ce5a638a8..ea18242ce 100644
  	_IOWR(0x47, 0x44, struct d3dkmt_shareobjectwithhost)
  
 -- 
-2.41.0
+2.44.0
 
 
-From 25a898d3359f67db0fcd5a22d6fbaa01af43fde5 Mon Sep 17 00:00:00 2001
+From 64820ab93217deeaff87283e1b4128e8a288f1df Mon Sep 17 00:00:00 2001
 From: Iouri Tarassov <iourit@linux.microsoft.com>
 Date: Tue, 18 Jan 2022 15:01:55 -0800
-Subject: [PATCH 25/47] drivers: hv: dxgkrnl: Offer and reclaim allocations
+Subject: [PATCH 25/50] drivers: hv: dxgkrnl: Offer and reclaim allocations
 
 Implement ioctls to offer and reclaim compute device allocations:
   - LX_DXOFFERALLOCATIONS,
@@ -19736,13 +19736,13 @@ index ea18242ce..46b9f6d30 100644
  	_IOWR(0x47, 0x2e, struct d3dkmt_setallocationpriority)
  #define LX_DXSIGNALSYNCHRONIZATIONOBJECTFROMCPU \
 -- 
-2.41.0
+2.44.0
 
 
-From 04fa132ff6e6326a7a425d61725a6bddb9568d7b Mon Sep 17 00:00:00 2001
+From 41a13b65445cc2aa9964fa753026a135f80c9a81 Mon Sep 17 00:00:00 2001
 From: Iouri Tarassov <iourit@linux.microsoft.com>
 Date: Fri, 14 Jan 2022 17:57:41 -0800
-Subject: [PATCH 26/47] drivers: hv: dxgkrnl: Ioctls to manage scheduling
+Subject: [PATCH 26/50] drivers: hv: dxgkrnl: Ioctls to manage scheduling
  priority
 
 Implement iocts to manage compute device scheduling priority:
@@ -20163,13 +20163,13 @@ index 46b9f6d30..a9bafab97 100644
  	_IOWR(0x47, 0x31, struct d3dkmt_signalsynchronizationobjectfromcpu)
  #define LX_DXSIGNALSYNCHRONIZATIONOBJECTFROMGPU \
 -- 
-2.41.0
+2.44.0
 
 
-From 058932baac45c3449bd44e42f2f052d9b6ed4199 Mon Sep 17 00:00:00 2001
+From 7a349c144b373dc2df2a1fc503d645179a2f217f Mon Sep 17 00:00:00 2001
 From: Iouri Tarassov <iourit@linux.microsoft.com>
 Date: Fri, 14 Jan 2022 17:33:52 -0800
-Subject: [PATCH 27/47] drivers: hv: dxgkrnl: Manage residency of allocations
+Subject: [PATCH 27/50] drivers: hv: dxgkrnl: Manage residency of allocations
 
 Implement ioctls to manage residency of compute device allocations:
   - LX_DXMAKERESIDENT,
@@ -20609,13 +20609,13 @@ index a9bafab97..944f9d1e7 100644
  	_IOWR(0x47, 0x1f, struct d3dkmt_flushheaptransitions)
  #define LX_DXGETCONTEXTINPROCESSSCHEDULINGPRIORITY \
 -- 
-2.41.0
+2.44.0
 
 
-From 9e2bb2d1145ba4931a7ee6556fac305aedc04222 Mon Sep 17 00:00:00 2001
+From 3e8f65caa0e4643d82fb1166df67dfe116b27d7a Mon Sep 17 00:00:00 2001
 From: Iouri Tarassov <iourit@linux.microsoft.com>
 Date: Fri, 14 Jan 2022 17:13:04 -0800
-Subject: [PATCH 28/47] drivers: hv: dxgkrnl: Manage compute device virtual
+Subject: [PATCH 28/50] drivers: hv: dxgkrnl: Manage compute device virtual
  addresses
 
 Implement ioctls to manage compute device virtual addresses (VA):
@@ -21312,13 +21312,13 @@ index 944f9d1e7..1f60f5120 100644
  	_IOWR(0x47, 0x3a, struct d3dkmt_waitforsynchronizationobjectfromcpu)
  #define LX_DXWAITFORSYNCHRONIZATIONOBJECTFROMGPU \
 -- 
-2.41.0
+2.44.0
 
 
-From 46f9548c11d6e1f4270e9569c2d50aebd49b3782 Mon Sep 17 00:00:00 2001
+From c6f982358904c7b8864fa9e9528798c420cbb4e6 Mon Sep 17 00:00:00 2001
 From: Iouri Tarassov <iourit@linux.microsoft.com>
 Date: Fri, 8 Oct 2021 14:17:39 -0700
-Subject: [PATCH 29/47] drivers: hv: dxgkrnl: Add support to map guest pages by
+Subject: [PATCH 29/50] drivers: hv: dxgkrnl: Add support to map guest pages by
  host
 
 Implement support for mapping guest memory pages by the host.
@@ -21625,13 +21625,13 @@ index cb1e0635b..4a1309d80 100644
  }
 +
 -- 
-2.41.0
+2.44.0
 
 
-From 4f015aeabc1e2275f788eda1fdfaabdfc1c098d9 Mon Sep 17 00:00:00 2001
+From 514ba17020f59d58238bb3a256cef9c88fb98236 Mon Sep 17 00:00:00 2001
 From: Iouri Tarassov <iourit@linux.microsoft.com>
 Date: Mon, 21 Mar 2022 20:32:44 -0700
-Subject: [PATCH 30/47] drivers: hv: dxgkrnl: Removed struct vmbus_gpadl, which
+Subject: [PATCH 30/50] drivers: hv: dxgkrnl: Removed struct vmbus_gpadl, which
  was defined in the main linux branch
 
 Signed-off-by: Iouri Tarassov <iourit@linux.microsoft.com>
@@ -21653,13 +21653,13 @@ index 6f763e326..236febbc6 100644
  		DXG_TRACE("Teardown gpadl %d", alloc->gpadl);
  		vmbus_teardown_gpadl(dxgglobal_get_vmbus(), alloc->gpadl);
 -- 
-2.41.0
+2.44.0
 
 
-From de3e9126f4503c4eb78b35ef8e7127545e987fc7 Mon Sep 17 00:00:00 2001
+From 56030b5a1915eb2eb2c26d5b3d153609eb3bea3a Mon Sep 17 00:00:00 2001
 From: Iouri Tarassov <iourit@linux.microsoft.com>
 Date: Tue, 22 Mar 2022 10:32:54 -0700
-Subject: [PATCH 31/47] drivers: hv: dxgkrnl: Remove dxgk_init_ioctls
+Subject: [PATCH 31/50] drivers: hv: dxgkrnl: Remove dxgk_init_ioctls
 
 The array of ioctls is initialized statically to remove the unnecessary
 function.
@@ -21752,13 +21752,13 @@ index f6700e974..8732a6604 100644
  		 LX_DXSUBMITWAITFORSYNCOBJECTSTOHWQUEUE},
  /* 0x37 */	{dxgkio_unlock2, LX_DXUNLOCK2},
 -- 
-2.41.0
+2.44.0
 
 
-From 00c4a8d5903b88561c505b1f5408aa03d59c1a71 Mon Sep 17 00:00:00 2001
+From 7943244fd7097ec7334edb37af0d3d3794b7c205 Mon Sep 17 00:00:00 2001
 From: Iouri Tarassov <iourit@linux.microsoft.com>
 Date: Tue, 22 Mar 2022 11:02:49 -0700
-Subject: [PATCH 32/47] drivers: hv: dxgkrnl: Creation of dxgsyncfile objects
+Subject: [PATCH 32/50] drivers: hv: dxgkrnl: Creation of dxgsyncfile objects
 
 Implement the ioctl to create a dxgsyncfile object
 (LX_DXCREATESYNCFILE). This object is a wrapper around a monitored
@@ -22235,13 +22235,13 @@ index 1f60f5120..c7f168425 100644
  
  #endif /* _D3DKMTHK_H */
 -- 
-2.41.0
+2.44.0
 
 
-From 506b58619cf3d64742171c56ce6893122a866c70 Mon Sep 17 00:00:00 2001
+From 6dba13bfce8ff6e3a7ece3ec1c5600d5a3f7354a Mon Sep 17 00:00:00 2001
 From: Iouri Tarassov <iourit@linux.microsoft.com>
 Date: Thu, 24 Mar 2022 15:03:41 -0700
-Subject: [PATCH 33/47] drivers: hv: dxgkrnl: Use tracing instead of dev_dbg
+Subject: [PATCH 33/50] drivers: hv: dxgkrnl: Use tracing instead of dev_dbg
 
 Signed-off-by: Iouri Tarassov <iourit@linux.microsoft.com>
 ---
@@ -22439,13 +22439,13 @@ index 4a1309d80..4bf6fe80d 100644
  u16 *wcsncpy(u16 *dest, const u16 *src, size_t n)
  {
 -- 
-2.41.0
+2.44.0
 
 
-From fbf0b816c12362cfc3479e9bb6acc1cab7856c47 Mon Sep 17 00:00:00 2001
+From 8c753191b32597356eb1e2f3bdf2f9a50d732251 Mon Sep 17 00:00:00 2001
 From: Iouri Tarassov <iourit@linux.microsoft.com>
 Date: Mon, 2 May 2022 11:46:48 -0700
-Subject: [PATCH 34/47] drivers: hv: dxgkrnl: Implement D3DKMTWaitSyncFile
+Subject: [PATCH 34/50] drivers: hv: dxgkrnl: Implement D3DKMTWaitSyncFile
 
 Signed-off-by: Iouri Tarassov <iourit@linux.microsoft.com>
 ---
@@ -23096,13 +23096,13 @@ index c7f168425..1eaa3f038 100644
  
  #endif /* _D3DKMTHK_H */
 -- 
-2.41.0
+2.44.0
 
 
-From b129ccaeb2ed98644cac2cff786b334531ef00af Mon Sep 17 00:00:00 2001
+From 8ca52f53da0c78534d16054518756dec25934a1f Mon Sep 17 00:00:00 2001
 From: Iouri Tarassov <iourit@linux.microsoft.com>
 Date: Fri, 6 May 2022 19:19:09 -0700
-Subject: [PATCH 35/47] drivers: hv: dxgkrnl: Improve tracing and return values
+Subject: [PATCH 35/50] drivers: hv: dxgkrnl: Improve tracing and return values
  from copy from user
 
 Signed-off-by: Iouri Tarassov <iourit@linux.microsoft.com>
@@ -25095,13 +25095,13 @@ index 622904d5c..3dc9e76f4 100644
  }
  
 -- 
-2.41.0
+2.44.0
 
 
-From 1c6c9ae376f4db05df128850f9621b0b699eafd0 Mon Sep 17 00:00:00 2001
+From df7ea89bd921847ea2c3e4905971fe8ec93d3524 Mon Sep 17 00:00:00 2001
 From: Iouri Tarassov <iourit@linux.microsoft.com>
 Date: Mon, 13 Jun 2022 14:18:10 -0700
-Subject: [PATCH 36/47] drivers: hv: dxgkrnl: Fix synchronization locks
+Subject: [PATCH 36/50] drivers: hv: dxgkrnl: Fix synchronization locks
 
 Signed-off-by: Iouri Tarassov <iourit@linux.microsoft.com>
 ---
@@ -25485,13 +25485,13 @@ index ee2ebfdd1..9fcab4ae2 100644
   * device_mutex (dxgglobal mutex)
   */
 -- 
-2.41.0
+2.44.0
 
 
-From 32bec6d48d32a82604f58ec42dc787ceb3baf696 Mon Sep 17 00:00:00 2001
+From 54194c4ee61f8f8a0710b9765e7e451f531c29c8 Mon Sep 17 00:00:00 2001
 From: Iouri Tarassov <iourit@linux.microsoft.com>
 Date: Tue, 28 Jun 2022 17:26:11 -0700
-Subject: [PATCH 37/47] drivers: hv: dxgkrnl: Close shared file objects in case
+Subject: [PATCH 37/50] drivers: hv: dxgkrnl: Close shared file objects in case
  of a failure
 
 Signed-off-by: Iouri Tarassov <iourit@linux.microsoft.com>
@@ -25565,13 +25565,13 @@ index 7c72790f9..69324510c 100644
  			put_unused_fd(object_fd);
  	}
 -- 
-2.41.0
+2.44.0
 
 
-From cddee598eb048c4ae551a11bf838d923572a8164 Mon Sep 17 00:00:00 2001
+From 411a9171ae715efe3817a05a1802f9367c04df33 Mon Sep 17 00:00:00 2001
 From: Iouri Tarassov <iourit@linux.microsoft.com>
 Date: Wed, 29 Jun 2022 10:04:23 -0700
-Subject: [PATCH 38/47] drivers: hv: dxgkrnl: Added missed NULL check for
+Subject: [PATCH 38/50] drivers: hv: dxgkrnl: Added missed NULL check for
  resource object
 
 Signed-off-by: Iouri Tarassov <iourit@linux.microsoft.com>
@@ -25616,13 +25616,13 @@ index 69324510c..983505839 100644
  		dxgdevice_release_lock_shared(device);
  		kref_put(&device->device_kref, dxgdevice_release);
 -- 
-2.41.0
+2.44.0
 
 
-From 41cba6efea638c6ac1477bbb496290e0295175c4 Mon Sep 17 00:00:00 2001
+From f60dc0c47f77122495fc7a655f60682f99a1bdb2 Mon Sep 17 00:00:00 2001
 From: Iouri Tarassov <iourit@linux.microsoft.com>
 Date: Thu, 22 Dec 2022 14:54:28 -0800
-Subject: [PATCH 39/47] drivers: hv: dxgkrnl: Added support for compute only
+Subject: [PATCH 39/50] drivers: hv: dxgkrnl: Added support for compute only
  adapters
 
 Signed-off-by: Iouri Tarassov <iourit@linux.microsoft.com>
@@ -25720,13 +25720,13 @@ index 983505839..f735b18fc 100644
  			struct d3dkmt_adapterinfo *inf = &info[adapter_count];
  
 -- 
-2.41.0
+2.44.0
 
 
-From c4c3cba943b38d390a4959e5712ac00cd84221e6 Mon Sep 17 00:00:00 2001
+From 3d1f83614a47a9cdf60fba10a3d3d926320ef64c Mon Sep 17 00:00:00 2001
 From: Iouri Tarassov <iourit@linux.microsoft.com>
 Date: Wed, 15 Feb 2023 16:56:35 -0800
-Subject: [PATCH 40/47] drivers: hv: dxgkrnl: Added implementation for
+Subject: [PATCH 40/50] drivers: hv: dxgkrnl: Added implementation for
  D3DKMTInvalidateCache
 
 D3DKMTInvalidateCache is called by user mode drivers when the device
@@ -25933,13 +25933,13 @@ index 1eaa3f038..84fa07a46 100644
  	_IOWR(0x47, 0x25, struct d3dkmt_lock2)
  #define LX_DXMARKDEVICEASERROR		\
 -- 
-2.41.0
+2.44.0
 
 
-From 519bcd63b320ca3e282cac1de2b03a9fc7a45570 Mon Sep 17 00:00:00 2001
+From c3d7afe776157eb589bb2af505dfd8aee94f1260 Mon Sep 17 00:00:00 2001
 From: Iouri Tarassov <iourit@linux.microsoft.com>
 Date: Wed, 15 Feb 2023 17:13:48 -0800
-Subject: [PATCH 41/47] drivers: hv: dxgkrnl: Handle process ID in
+Subject: [PATCH 41/50] drivers: hv: dxgkrnl: Handle process ID in
  D3DKMTQueryStatistics
 
 When D3DKMTQueryStatistics specifies a non-zero process ID, it needs to be
@@ -26705,13 +26705,13 @@ index 56b838a87..466bef6c1 100644
  		ret = copy_to_user(adapter_count_out,
  				   &dxgglobal->num_adapters, sizeof(u32));
 -- 
-2.41.0
+2.44.0
 
 
-From eb55bba329bb60cc692c246e2a700bb448f7f1fd Mon Sep 17 00:00:00 2001
+From 817c14f7225bc4253755c6a8897aa43bffdb20e7 Mon Sep 17 00:00:00 2001
 From: Iouri Tarassov <iourit@linux.microsoft.com>
 Date: Mon, 10 Apr 2023 09:27:37 -0700
-Subject: [PATCH 42/47] drivers: hv: dxgkrnl: Implement the D3DKMTEnumProcesses
+Subject: [PATCH 42/50] drivers: hv: dxgkrnl: Implement the D3DKMTEnumProcesses
  API
 
 D3DKMTEnumProcesses is used to enumerate PIDs for all processes,
@@ -26893,13 +26893,13 @@ index 84fa07a46..f9f817060 100644
  
  #endif /* _D3DKMTHK_H */
 -- 
-2.41.0
+2.44.0
 
 
-From 42f17f7ada5e79595c9cf919fbd1d3dd82a006fe Mon Sep 17 00:00:00 2001
+From 7b9f0bba61502a4879296763251a48b873b8571b Mon Sep 17 00:00:00 2001
 From: Iouri Tarassov <iourit@linux.microsoft.com>
 Date: Mon, 10 Apr 2023 09:30:11 -0700
-Subject: [PATCH 43/47] drivers: hv: dxgkrnl: Implement D3DDKMTIsFeatureEnabled
+Subject: [PATCH 43/50] drivers: hv: dxgkrnl: Implement D3DDKMTIsFeatureEnabled
  API
 
 D3DKMTIsFeatureEnabled is used to query if a particular feature is
@@ -27184,13 +27184,13 @@ index f9f817060..5b345ddaf 100644
  
  #endif /* _D3DKMTHK_H */
 -- 
-2.41.0
+2.44.0
 
 
-From 658bd2c3c985f87e4f8d586d23747ddd690167ef Mon Sep 17 00:00:00 2001
+From 2fc7de22b34ac7eaa6c6848e9771ca7001433ed8 Mon Sep 17 00:00:00 2001
 From: Iouri Tarassov <iourit@linux.microsoft.com>
 Date: Tue, 11 Apr 2023 16:44:36 -0700
-Subject: [PATCH 44/47] drivers: hv: dxgkrnl: Implement known escapes
+Subject: [PATCH 44/50] drivers: hv: dxgkrnl: Implement known escapes
 
 Implement an escape to build test command buffer.
 Implement other known escapes.
@@ -27574,13 +27574,13 @@ index 5b345ddaf..db40e8ff4 100644
  	_D3DKMT_ESCAPE_DRIVERPRIVATE	= 0,
  	_D3DKMT_ESCAPE_VIDMM		= 1,
 -- 
-2.41.0
+2.44.0
 
 
-From d3b3a1e72b7b4de4c05210174518e69cae14ef85 Mon Sep 17 00:00:00 2001
+From 3beb1306c8aabc10798330065f60ff052ace562f Mon Sep 17 00:00:00 2001
 From: Iouri Tarassov <iourit@linux.microsoft.com>
 Date: Wed, 12 Apr 2023 10:35:39 -0700
-Subject: [PATCH 45/47] drivers: hv: dxgkrnl: Fixed coding style issues
+Subject: [PATCH 45/50] drivers: hv: dxgkrnl: Fixed coding style issues
 
 Signed-off-by: Iouri Tarassov <iourit@linux.microsoft.com>
 ---
@@ -27725,13 +27725,13 @@ index f8ca79d09..5ac6dd1f0 100644
  			DXGKRNL_ASSERT(0);
  		}
 -- 
-2.41.0
+2.44.0
 
 
-From 7d266bbfe1a9136f7136eaf5bce76569187d67ae Mon Sep 17 00:00:00 2001
+From 6b92c3f1050ba56a92c393dab273203c56eb142f Mon Sep 17 00:00:00 2001
 From: Iouri Tarassov <iourit@linux.microsoft.com>
 Date: Mon, 17 Apr 2023 10:57:23 -0700
-Subject: [PATCH 46/47] drivers: hv: dxgkrnl: Fixed the implementation of
+Subject: [PATCH 46/50] drivers: hv: dxgkrnl: Fixed the implementation of
  D3DKMTQueryClockCalibration
 
 The result of a VM bus call was not copied to the user output structure.
@@ -27809,13 +27809,13 @@ index 5ac6dd1f0..d91af2e17 100644
  cleanup:
  
 -- 
-2.41.0
+2.44.0
 
 
-From c4f4c66add460e833db3cc39fc85307d175bb4f4 Mon Sep 17 00:00:00 2001
+From 26d29d8377a78f1b0014f6c9ba6df9ed5763f885 Mon Sep 17 00:00:00 2001
 From: Iouri Tarassov <iourit@linux.microsoft.com>
 Date: Mon, 15 May 2023 11:15:17 -0700
-Subject: [PATCH 47/47] drivers: hv: dxgkrnl: Retry sending a VM bus packet
+Subject: [PATCH 47/50] drivers: hv: dxgkrnl: Retry sending a VM bus packet
  when there is no place in the ring buffer
 
 When D3DKMT requests are sent too quickly, the VM bus ring buffer could be
@@ -27863,5 +27863,298 @@ index afc6b9588..9320bede3 100644
  		DXG_ERR("vmbus_sendpacket failed: %x", ret);
  		spin_lock_irq(&channel->packet_list_mutex);
 -- 
-2.41.0
+2.44.0
+
+
+From e8c50f197b62b147dbc3e3ee083dd1fbb66eaeaf Mon Sep 17 00:00:00 2001
+From: Iouri Tarassov <iourit@linux.microsoft.com>
+Date: Fri, 26 May 2023 14:03:11 -0700
+Subject: [PATCH 48/50] drivers: hv: dxgkrnl: Add support for locking a shared
+ allocation by not the owner
+
+WDDM has a restriction that an allocation of a shared resource can be
+locked for CPU access only by the resource creator (the owner). This
+restriction is removed for system memory only allocations. This change
+adds support for this feature.
+
+Signed-off-by: Iouri Tarassov <iourit@linux.microsoft.com>
+---
+ drivers/hv/dxgkrnl/dxgadapter.c |  4 ++--
+ drivers/hv/dxgkrnl/dxgkrnl.h    | 13 ++++++++++++-
+ drivers/hv/dxgkrnl/ioctl.c      | 25 +++++++++++++++++--------
+ 3 files changed, 31 insertions(+), 11 deletions(-)
+
+diff --git a/drivers/hv/dxgkrnl/dxgadapter.c b/drivers/hv/dxgkrnl/dxgadapter.c
+index d4db4a129..54bf0c386 100644
+--- a/drivers/hv/dxgkrnl/dxgadapter.c
++++ b/drivers/hv/dxgkrnl/dxgadapter.c
+@@ -559,8 +559,8 @@ void dxgsharedresource_destroy(struct kref *refcount)
+ 		vfree(resource->runtime_private_data);
+ 	if (resource->resource_private_data)
+ 		vfree(resource->resource_private_data);
+-	if (resource->alloc_private_data_sizes)
+-		vfree(resource->alloc_private_data_sizes);
++	if (resource->alloc_info)
++		vfree(resource->alloc_info);
+ 	if (resource->alloc_private_data)
+ 		vfree(resource->alloc_private_data);
+ 	kfree(resource);
+diff --git a/drivers/hv/dxgkrnl/dxgkrnl.h b/drivers/hv/dxgkrnl/dxgkrnl.h
+index 2a28c9ea3..71eac6b1f 100644
+--- a/drivers/hv/dxgkrnl/dxgkrnl.h
++++ b/drivers/hv/dxgkrnl/dxgkrnl.h
+@@ -613,6 +613,17 @@ struct dxghwqueue *dxghwqueue_create(struct dxgcontext *ctx);
+ void dxghwqueue_destroy(struct dxgprocess *pr, struct dxghwqueue *hq);
+ void dxghwqueue_release(struct kref *refcount);
+ 
++/*
++ * When a shared resource is created this structure provides information
++ * about every allocation in the resource. It is used when someone opens the
++ * resource and locks its allocation.
++ */
++struct dxgsharedallocdata {
++	u32	private_data_size;	/* Size of private data */
++	u32	num_pages;	/* Allocation size in pages */
++	bool	cached;		/* True is the alloc memory is cached */
++};
++
+ /*
+  * A shared resource object is created to track the list of dxgresource objects,
+  * which are opened for the same underlying shared resource.
+@@ -658,7 +669,7 @@ struct dxgsharedresource {
+ 		};
+ 		long		flags;
+ 	};
+-	u32			*alloc_private_data_sizes;
++	struct dxgsharedallocdata *alloc_info;
+ 	u8			*alloc_private_data;
+ 	u8			*runtime_private_data;
+ 	u8			*resource_private_data;
+diff --git a/drivers/hv/dxgkrnl/ioctl.c b/drivers/hv/dxgkrnl/ioctl.c
+index d91af2e17..f8f116a7f 100644
+--- a/drivers/hv/dxgkrnl/ioctl.c
++++ b/drivers/hv/dxgkrnl/ioctl.c
+@@ -369,6 +369,7 @@ static int dxgsharedresource_seal(struct dxgsharedresource *shared_resource)
+ 	u32 data_size;
+ 	struct dxgresource *resource;
+ 	struct dxgallocation *alloc;
++	struct dxgsharedallocdata *alloc_info;
+ 
+ 	DXG_TRACE("Sealing resource: %p", shared_resource);
+ 
+@@ -409,9 +410,10 @@ static int dxgsharedresource_seal(struct dxgsharedresource *shared_resource)
+ 			ret = -EINVAL;
+ 			goto cleanup1;
+ 		}
+-		shared_resource->alloc_private_data_sizes =
+-			vzalloc(sizeof(u32)*shared_resource->allocation_count);
+-		if (shared_resource->alloc_private_data_sizes == NULL) {
++		shared_resource->alloc_info =
++			vzalloc(sizeof(struct dxgsharedallocdata) *
++				shared_resource->allocation_count);
++		if (shared_resource->alloc_info == NULL) {
+ 			ret = -EINVAL;
+ 			goto cleanup1;
+ 		}
+@@ -429,8 +431,10 @@ static int dxgsharedresource_seal(struct dxgsharedresource *shared_resource)
+ 					ret = -EINVAL;
+ 					goto cleanup1;
+ 				}
+-				shared_resource->alloc_private_data_sizes[i] =
+-				    alloc_data_size;
++				alloc_info = &shared_resource->alloc_info[i];
++				alloc_info->private_data_size = alloc_data_size;
++				alloc_info->num_pages = alloc->num_pages;
++				alloc_info->cached = alloc->cached;
+ 				memcpy(private_data,
+ 				       alloc->priv_drv_data->data,
+ 				       alloc_data_size);
+@@ -5031,6 +5035,7 @@ assign_resource_handles(struct dxgprocess *process,
+ 	u8 *cur_priv_data;
+ 	u32 total_priv_data_size = 0;
+ 	struct d3dddi_openallocationinfo2 open_alloc_info = { };
++	struct dxgsharedallocdata *alloc_info;
+ 
+ 	hmgrtable_lock(&process->handle_table, DXGLOCK_EXCL);
+ 	ret = hmgrtable_assign_handle(&process->handle_table, resource,
+@@ -5050,11 +5055,15 @@ assign_resource_handles(struct dxgprocess *process,
+ 		allocs[i]->alloc_handle = handles[i];
+ 		allocs[i]->handle_valid = 1;
+ 		open_alloc_info.allocation = handles[i];
+-		if (shared_resource->alloc_private_data_sizes)
++		if (shared_resource->alloc_info) {
++			alloc_info = &shared_resource->alloc_info[i];
+ 			open_alloc_info.priv_drv_data_size =
+-			    shared_resource->alloc_private_data_sizes[i];
+-		else
++			    alloc_info->private_data_size;
++			allocs[i]->num_pages = alloc_info->num_pages;
++			allocs[i]->cached  = alloc_info->cached;
++		} else {
+ 			open_alloc_info.priv_drv_data_size = 0;
++		}
+ 
+ 		total_priv_data_size += open_alloc_info.priv_drv_data_size;
+ 		open_alloc_info.priv_drv_data = cur_priv_data;
+-- 
+2.44.0
+
+
+From 2219ede39f1405cce32b9ac922ae2cd6497328a1 Mon Sep 17 00:00:00 2001
+From: Iouri Tarassov <iourit@linux.microsoft.com>
+Date: Thu, 7 Mar 2024 09:34:05 -0800
+Subject: [PATCH 49/50] drivers: hv: dxgkrnl: Implement D3DKMTEnumProcesses to
+ match the Windows implementation
+
+The behavior of D3DKMTEnumProcesses on Windows is that when buffer_count is 0 or
+input buffer is NULL, the number of active processes is returned. The Linux implemenation
+is updated to match this.
+
+Signed-off-by: Iouri Tarassov <iourit@linux.microsoft.com>
+[kms: backported from 6.6 to 5.15. No code changes needed]
+Signed-off-by: Kelsey Steele <kelseysteele@microsoft.com>
+---
+ drivers/hv/dxgkrnl/dxgmodule.c |  2 +-
+ drivers/hv/dxgkrnl/ioctl.c     | 29 ++++++++++++++++++-----------
+ 2 files changed, 19 insertions(+), 12 deletions(-)
+
+diff --git a/drivers/hv/dxgkrnl/dxgmodule.c b/drivers/hv/dxgkrnl/dxgmodule.c
+index 0fafb6167..b9fa943a3 100644
+--- a/drivers/hv/dxgkrnl/dxgmodule.c
++++ b/drivers/hv/dxgkrnl/dxgmodule.c
+@@ -971,4 +971,4 @@ module_exit(dxg_drv_exit);
+ 
+ MODULE_LICENSE("GPL");
+ MODULE_DESCRIPTION("Microsoft Dxgkrnl virtual compute device Driver");
+-MODULE_VERSION("2.0.2");
++MODULE_VERSION("2.0.3");
+diff --git a/drivers/hv/dxgkrnl/ioctl.c b/drivers/hv/dxgkrnl/ioctl.c
+index f8f116a7f..42f3de31a 100644
+--- a/drivers/hv/dxgkrnl/ioctl.c
++++ b/drivers/hv/dxgkrnl/ioctl.c
+@@ -5373,7 +5373,7 @@ dxgkio_enum_processes(struct dxgprocess *process, void *__user inargs)
+ 	struct dxgprocess_adapter *pentry;
+ 	int nump = 0;	/* Current number of processes*/
+ 	struct ntstatus status;
+-	int ret;
++	int ret, ret1;
+ 
+ 	ret = copy_from_user(&args, inargs, sizeof(args));
+ 	if (ret) {
+@@ -5382,12 +5382,6 @@ dxgkio_enum_processes(struct dxgprocess *process, void *__user inargs)
+ 		goto cleanup;
+ 	}
+ 
+-	if (args.buffer_count == 0) {
+-		DXG_ERR("Invalid buffer count");
+-		ret = -EINVAL;
+-		goto cleanup;
+-	}
+-
+ 	dxgglobal_acquire_adapter_list_lock(DXGLOCK_SHARED);
+ 	dxgglobal_acquire_process_adapter_lock();
+ 
+@@ -5405,6 +5399,19 @@ dxgkio_enum_processes(struct dxgprocess *process, void *__user inargs)
+ 		goto cleanup_locks;
+ 	}
+ 
++	list_for_each_entry(pentry, &adapter->adapter_process_list_head,
++			    adapter_process_list_entry) {
++		if (pentry->process->nspid == task_active_pid_ns(current))
++			nump++;
++	}
++
++	if (nump > args.buffer_count || args.buffer == NULL) {
++		status.v = STATUS_BUFFER_TOO_SMALL;
++		ret = ntstatus2int(status);
++		goto cleanup_locks;
++	}
++
++	nump = 0;
+ 	list_for_each_entry(pentry, &adapter->adapter_process_list_head,
+ 			    adapter_process_list_entry) {
+ 		if (pentry->process->nspid != task_active_pid_ns(current))
+@@ -5429,10 +5436,10 @@ dxgkio_enum_processes(struct dxgprocess *process, void *__user inargs)
+ 	dxgglobal_release_process_adapter_lock();
+ 	dxgglobal_release_adapter_list_lock(DXGLOCK_SHARED);
+ 
+-	if (ret == 0) {
+-		ret = copy_to_user(&input->buffer_count, &nump, sizeof(u32));
+-		if (ret)
+-			DXG_ERR("failed to copy buffer count to user");
++	ret1 = copy_to_user(&input->buffer_count, &nump, sizeof(u32));
++	if (ret1) {
++		DXG_ERR("failed to copy buffer count to user");
++		ret = -EFAULT;
+ 	}
+ 
+ cleanup:
+-- 
+2.44.0
+
+
+From b12445891c254e843cd1cc01265ea047bf7ee300 Mon Sep 17 00:00:00 2001
+From: Iouri Tarassov <iourit@linux.microsoft.com>
+Date: Thu, 7 Mar 2024 15:09:03 -0800
+Subject: [PATCH 50/50] drivers: hv: dxgkrnl: Use pin_user_pages instead of
+ get_user_pages for DMA accessible memory
+
+Pages, which are obtained by calling get_user_pages(), can be evicted from memory.
+pin_user_pages() should be used for memory, which is accessed by DMA.
+
+Signed-off-by: Iouri Tarassov <iourit@linux.microsoft.com>
+[kms: backported from 6.6 to 5.15. No code changes needed]
+Signed-off-by: Kelsey Steele <kelseysteele@microsoft.com>
+---
+ drivers/hv/dxgkrnl/dxgadapter.c |  2 +-
+ drivers/hv/dxgkrnl/dxgvmbus.c   | 12 ++++++++----
+ 2 files changed, 9 insertions(+), 5 deletions(-)
+
+diff --git a/drivers/hv/dxgkrnl/dxgadapter.c b/drivers/hv/dxgkrnl/dxgadapter.c
+index 54bf0c386..8eb65e764 100644
+--- a/drivers/hv/dxgkrnl/dxgadapter.c
++++ b/drivers/hv/dxgkrnl/dxgadapter.c
+@@ -882,7 +882,7 @@ struct dxgallocation *dxgallocation_create(struct dxgprocess *process)
+ void dxgallocation_stop(struct dxgallocation *alloc)
+ {
+ 	if (alloc->pages) {
+-		release_pages(alloc->pages, alloc->num_pages);
++		unpin_user_pages(alloc->pages, alloc->num_pages);
+ 		vfree(alloc->pages);
+ 		alloc->pages = NULL;
+ 	}
+diff --git a/drivers/hv/dxgkrnl/dxgvmbus.c b/drivers/hv/dxgkrnl/dxgvmbus.c
+index 9320bede3..f5f7b2f26 100644
+--- a/drivers/hv/dxgkrnl/dxgvmbus.c
++++ b/drivers/hv/dxgkrnl/dxgvmbus.c
+@@ -1457,6 +1457,7 @@ int create_existing_sysmem(struct dxgdevice *device,
+ 	u64 *pfn;
+ 	u32 pages_to_send;
+ 	u32 i;
++	u32 gup_flags = FOLL_LONGTERM;
+ 	struct dxgglobal *dxgglobal = dxggbl();
+ 
+ 	/*
+@@ -1475,12 +1476,15 @@ int create_existing_sysmem(struct dxgdevice *device,
+ 		ret = -ENOMEM;
+ 		goto cleanup;
+ 	}
+-	ret1 = get_user_pages_fast((unsigned long)sysmem, npages, !read_only,
+-				  dxgalloc->pages);
++	if (!read_only)
++		gup_flags |= FOLL_WRITE;
++	ret1 = pin_user_pages_fast((unsigned long)sysmem, npages, gup_flags,
++				   dxgalloc->pages);
+ 	if (ret1 != npages) {
+ 		DXG_ERR("get_user_pages_fast failed: %d", ret1);
+-		if (ret1 > 0 && ret1 < npages)
+-			release_pages(dxgalloc->pages, ret1);
++		if (ret1 > 0 && ret1 < npages) {
++			unpin_user_pages(dxgalloc->pages, ret1);
++		}
+ 		vfree(dxgalloc->pages);
+ 		dxgalloc->pages = NULL;
+ 		ret = -ENOMEM;
+-- 
+2.44.0
 
