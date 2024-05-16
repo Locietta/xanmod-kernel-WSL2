@@ -15,4 +15,5 @@ fi
 #
 cp ../wsl2_defconfig ./arch/x86/configs/wsl2_defconfig
 make LLVM=1 LLVM_IAS=1 wsl2_defconfig
+make LLVM=1 LLVM_IAS=1 oldconfig
 
