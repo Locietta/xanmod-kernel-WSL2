@@ -10,6 +10,9 @@ on:
   schedule:
     - cron: '0 6,14,22 * * *'
 
+env:
+  IS_LTS: YES
+  
 jobs:
   build:
     runs-on: ubuntu-latest
