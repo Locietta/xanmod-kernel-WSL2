@@ -8,7 +8,7 @@ on:
   workflow_dispatch:
     # manual trigger
   schedule:
-    - cron: '0 6,14,22 * * *'
+    - cron: '0 0 1 * *'
 
 env:
   IS_LTS: YES
