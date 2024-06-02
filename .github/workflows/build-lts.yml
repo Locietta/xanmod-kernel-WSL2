@@ -42,7 +42,7 @@ jobs:
     - name: Install dependencies
       id: dep
       run: |
-        pacman -Syyu --noconfirm pahole xmlto inetutils bc cpio jq llvm-git llvm-libs-git clang-git lld-git
+        pacman -Syu --noconfirm pahole xmlto inetutils bc cpio jq llvm-git llvm-libs-git clang-git lld-git
 
     - name: Trust this directory
       run: git config --global --add safe.directory '*' # v2.35.3 or later
