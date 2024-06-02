@@ -51,6 +51,7 @@ jobs:
       uses: hendrikmuhs/ccache-action@v1.2
       with:
         max-size: 2048M
+        key: ${{ github.job }}-${{ matrix.arch }}
        
     - name: Prepare source code
       shell: bash
