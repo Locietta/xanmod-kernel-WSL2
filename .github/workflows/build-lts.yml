@@ -53,7 +53,7 @@ jobs:
         export CURL_UA="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36 Edg/120.0.0.0"
         export VERSION_BRANCH=$(curl -s https://xanmod.org/ -A $CURL_UA | grep -A1 LTS | grep -E '[0-9]+\.[0-9]+' -o | head -n1)
         git clone https://github.com/xanmod/linux.git -b $VERSION_BRANCH --depth 1 linux
-        cd linux && ../config-lts.sh
+        cd linux && ../config.sh
         scripts/config -d GENERIC_CPU3 # avoid override warning for duplicate arch flags 
         scripts/config -e ${{ matrix.arch }}
 
