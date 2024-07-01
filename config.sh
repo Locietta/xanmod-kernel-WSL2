@@ -3,19 +3,21 @@
 PATCH_DIR="../patches"
 
 # Loop through all patch files and apply them
+# If the patch filename contains "skip_lts", patch will be ignored
+# TODO(taalojarvi): Expand conditional check to cover skipping patches according to buildtype.
 for patch_file in "$PATCH_DIR/"*.patch; do
-  echo -e "Applying patch: $patch_file"
-  git apply "$patch_file"
-
+  if [[ ! "$patch_file" =~ _skip_lts ]]; then
+  	echo -e "Applying patch: $patch_file"
+  	git apply "$patch_file"
+  else
+  	echo -e "Skipping patch: $patch_file"
+  fi
   # Check for patch conflict (exit code 1)
   if [ $? -eq 1 ]; then
-    echo -e "Patch conflict encountered: $patch_file"
-    if [ "$IS_LTS" = "NO" ]; then
-    	exit 1
-    else
-    	echo -e "git patch encountered errors, but choosing to continue as we are an LTS build"
-    fi  
-  fi
+    echo -e "Patch conflict encountered in $patch_file"
+    echo -e "Halting build!"
+    exit 1
+  fi  
 done
 
 
