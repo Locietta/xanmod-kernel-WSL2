@@ -42,7 +42,10 @@ jobs:
     - name: Install dependencies
       id: dep
       run: |
-        pacman -Syu --noconfirm pahole xmlto inetutils bc cpio jq llvm llvm-libs clang lld ccache
+        pacman -Syu --noconfirm pahole xmlto inetutils bc cpio jq ccache go
+        GOBIN=/usr/bin go install go.chromium.org/luci/cipd/client/cmd/...@latest
+        cipd install fuchsia/third_party/clang/linux-amd64 latest -root /usr/local/fuchsia-clang
+        echo "PATH=/usr/local/fuchsia-clang/bin:$PATH" >> $GITHUB_ENV
 
     - name: Trust this directory
       run: git config --global --add safe.directory '*' # v2.35.3 or later
@@ -58,7 +61,7 @@ jobs:
         scripts/config -e ${{ matrix.arch }}
 
         # Load version info into env
-        echo "CLANG_VERSION=$(pacman -Qs clang | grep local/clang | sed "s#.*local/clang \(.*\)#\1#")" | tee -a $GITHUB_ENV
+        echo "CLANG_VERSION=$(clang --version | head -n1)" | tee -a $GITHUB_ENV
         
         export CURRENT_VERSION=$(make kernelrelease)
         # must query with a token, or will fail with api rate limit on public runners
