@@ -42,7 +42,7 @@ jobs:
     - name: Install dependencies
       id: dep
       run: |
-        pacman -Syu --noconfirm pahole xmlto inetutils bc cpio jq llvm-git llvm-libs-git clang-git lld-git ccache
+        pacman -Syu --noconfirm pahole xmlto inetutils bc cpio jq llvm llvm-libs clang lld ccache
 
     - name: Trust this directory
       run: git config --global --add safe.directory '*' # v2.35.3 or later
@@ -57,14 +57,14 @@ jobs:
       shell: bash
       run: |
         export CURL_UA="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36 Edg/120.0.0.0"
-        export VERSION_BRANCH=$(curl -s https://xanmod.org/ -A $CURL_UA | grep -A1 MAIN | grep -E '[0-9]+\.[0-9]+' -o | head -n1)
+        export VERSION_BRANCH=$(curl -s https://xanmod.org/ -A $CURL_UA | awk '/MAIN/{getline; getline; print}' | grep -oP '[0-9]+\.[0-9]+')
         git clone https://github.com/xanmod/linux.git -b $VERSION_BRANCH --depth 1 linux
         cd linux && ../config.sh
         scripts/config -d GENERIC_CPU3 # avoid override warning for duplicate arch flags 
         scripts/config -e ${{ matrix.arch }}
 
         # Load version info into env
-        echo "CLANG_VERSION=$(pacman -Qs clang | grep local/clang-git | sed "s#.*local/clang-git \(.*\) (\(.*\))#\1#")" | tee -a $GITHUB_ENV
+        echo "CLANG_VERSION=$(pacman -Qs clang | grep local/clang | sed "s#.*local/clang \(.*\)#\1#")" | tee -a $GITHUB_ENV
         
         export CURRENT_VERSION=$(make kernelrelease)
         # must query with a token, or will fail with api rate limit on public runners

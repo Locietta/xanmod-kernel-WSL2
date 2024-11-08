@@ -1,22 +1,24 @@
-From 150004f62e929f760dfeb1f36c7545685505e979 Mon Sep 17 00:00:00 2001
+From 8a3d371e9f3e2691bce546e21fd90416e3b4ff04 Mon Sep 17 00:00:00 2001
 From: Iouri Tarassov <iourit@linux.microsoft.com>
 Date: Tue, 15 Feb 2022 18:11:52 -0800
-Subject: [PATCH 01/50] drivers: hv: dxgkrnl: Add virtual compute device VMBus
+Subject: [PATCH 01/54] drivers: hv: dxgkrnl: Add virtual compute device VMBus
  channel guids
 
 Add VMBus channel guids, which are used by hyper-v virtual compute
 device driver.
 
 Signed-off-by: Iouri Tarassov <iourit@linux.microsoft.com>
+[kms: forward port to 6.6 from 6.1. No code changes made.]
+Signed-off-by: Kelsey Steele <kelseysteele@microsoft.com>
 ---
  include/linux/hyperv.h | 16 ++++++++++++++++
  1 file changed, 16 insertions(+)
 
 diff --git a/include/linux/hyperv.h b/include/linux/hyperv.h
-index ddc8713ce..773a418c7 100644
+index 2b00faf98017..caf62f602cf8 100644
 --- a/include/linux/hyperv.h
 +++ b/include/linux/hyperv.h
-@@ -1421,6 +1421,22 @@ void vmbus_free_mmio(resource_size_t start, resource_size_t size);
+@@ -1451,6 +1451,22 @@ void vmbus_free_mmio(resource_size_t start, resource_size_t size);
  	.guid = GUID_INIT(0xda0a7802, 0xe377, 0x4aac, 0x8e, 0x77, \
  			  0x05, 0x58, 0xeb, 0x10, 0x73, 0xf8)
  
@@ -40,13 +42,13 @@ index ddc8713ce..773a418c7 100644
   * Synthetic FC GUID
   * {2f9bcc4a-0069-4af3-b76b-6fd0be528cda}
 -- 
-2.44.0
+2.47.0
 
 
-From 6479d16e3ab12aeca320dcfab84452f94406f0e2 Mon Sep 17 00:00:00 2001
+From b1779dc853e2cc6d97d08282be03ef53ff3ac041 Mon Sep 17 00:00:00 2001
 From: Iouri Tarassov <iourit@linux.microsoft.com>
 Date: Wed, 24 Mar 2021 11:10:28 -0700
-Subject: [PATCH 02/50] drivers: hv: dxgkrnl: Driver initialization and loading
+Subject: [PATCH 02/54] drivers: hv: dxgkrnl: Driver initialization and loading
 
 - Create skeleton and add basic functionality for the Hyper-V
 compute device driver (dxgkrnl).
@@ -78,6 +80,8 @@ The IO space is used to handle CPU accessible compute device
 allocations. Hyper-V allocates IO space for the global VMBus channel.
 
 Signed-off-by: Iouri Tarassov <iourit@linux.microsoft.com>
+[kms: forward port to 6.6 from 6.1. No code changes made.]
+Signed-off-by: Kelsey Steele <kelseysteele@microsoft.com>
 ---
  MAINTAINERS                    |   7 +
  drivers/hv/Kconfig             |   2 +
@@ -99,10 +103,10 @@ Signed-off-by: Iouri Tarassov <iourit@linux.microsoft.com>
  create mode 100644 include/uapi/misc/d3dkmthk.h
 
 diff --git a/MAINTAINERS b/MAINTAINERS
-index 3b79fd441..0b296ebd0 100644
+index dd5de540ec0b..67a87715c001 100644
 --- a/MAINTAINERS
 +++ b/MAINTAINERS
-@@ -8730,6 +8730,13 @@ F:	Documentation/devicetree/bindings/mtd/ti,am654-hbmc.txt
+@@ -9771,6 +9771,13 @@ F:	Documentation/devicetree/bindings/mtd/ti,am654-hbmc.yaml
  F:	drivers/mtd/hyperbus/
  F:	include/linux/mtd/hyperbus.h
  
@@ -117,10 +121,10 @@ index 3b79fd441..0b296ebd0 100644
  L:	linuxppc-dev@lists.ozlabs.org
  S:	Odd Fixes
 diff --git a/drivers/hv/Kconfig b/drivers/hv/Kconfig
-index d1123ceb3..5aa411cec 100644
+index 00242107d62e..51cce0cc9d5c 100644
 --- a/drivers/hv/Kconfig
 +++ b/drivers/hv/Kconfig
-@@ -28,4 +28,6 @@ config HYPERV_BALLOON
+@@ -54,4 +54,6 @@ config HYPERV_BALLOON
  	help
  	  Select this option to enable Hyper-V Balloon driver.
  
@@ -128,7 +132,7 @@ index d1123ceb3..5aa411cec 100644
 +
  endmenu
 diff --git a/drivers/hv/Makefile b/drivers/hv/Makefile
-index d76df5c8c..aa1cbdb5d 100644
+index d76df5c8c2a9..aa1cbdb5d0d2 100644
 --- a/drivers/hv/Makefile
 +++ b/drivers/hv/Makefile
 @@ -2,6 +2,7 @@
@@ -141,7 +145,7 @@ index d76df5c8c..aa1cbdb5d 100644
  CFLAGS_hv_balloon.o = -I$(src)
 diff --git a/drivers/hv/dxgkrnl/Kconfig b/drivers/hv/dxgkrnl/Kconfig
 new file mode 100644
-index 000000000..bcd92bbff
+index 000000000000..bcd92bbff939
 --- /dev/null
 +++ b/drivers/hv/dxgkrnl/Kconfig
 @@ -0,0 +1,26 @@
@@ -173,7 +177,7 @@ index 000000000..bcd92bbff
 +	  communicates with the host using Hyper-V VM bus communication channels.
 diff --git a/drivers/hv/dxgkrnl/Makefile b/drivers/hv/dxgkrnl/Makefile
 new file mode 100644
-index 000000000..76349064b
+index 000000000000..76349064b60a
 --- /dev/null
 +++ b/drivers/hv/dxgkrnl/Makefile
 @@ -0,0 +1,5 @@
@@ -184,7 +188,7 @@ index 000000000..76349064b
 +dxgkrnl-y		:= dxgmodule.o dxgvmbus.o
 diff --git a/drivers/hv/dxgkrnl/dxgkrnl.h b/drivers/hv/dxgkrnl/dxgkrnl.h
 new file mode 100644
-index 000000000..f7900840d
+index 000000000000..f7900840d1ed
 --- /dev/null
 +++ b/drivers/hv/dxgkrnl/dxgkrnl.h
 @@ -0,0 +1,155 @@
@@ -345,7 +349,7 @@ index 000000000..f7900840d
 +#endif
 diff --git a/drivers/hv/dxgkrnl/dxgmodule.c b/drivers/hv/dxgkrnl/dxgmodule.c
 new file mode 100644
-index 000000000..de02edc4d
+index 000000000000..de02edc4d023
 --- /dev/null
 +++ b/drivers/hv/dxgkrnl/dxgmodule.c
 @@ -0,0 +1,506 @@
@@ -857,7 +861,7 @@ index 000000000..de02edc4d
 +MODULE_DESCRIPTION("Microsoft Dxgkrnl virtual compute device Driver");
 diff --git a/drivers/hv/dxgkrnl/dxgvmbus.c b/drivers/hv/dxgkrnl/dxgvmbus.c
 new file mode 100644
-index 000000000..deb880e34
+index 000000000000..deb880e34377
 --- /dev/null
 +++ b/drivers/hv/dxgkrnl/dxgvmbus.c
 @@ -0,0 +1,92 @@
@@ -955,7 +959,7 @@ index 000000000..deb880e34
 +}
 diff --git a/drivers/hv/dxgkrnl/dxgvmbus.h b/drivers/hv/dxgkrnl/dxgvmbus.h
 new file mode 100644
-index 000000000..6cdca5e03
+index 000000000000..6cdca5e03d1f
 --- /dev/null
 +++ b/drivers/hv/dxgkrnl/dxgvmbus.h
 @@ -0,0 +1,19 @@
@@ -980,7 +984,7 @@ index 000000000..6cdca5e03
 +#endif /* _DXGVMBUS_H */
 diff --git a/include/uapi/misc/d3dkmthk.h b/include/uapi/misc/d3dkmthk.h
 new file mode 100644
-index 000000000..5d9736044
+index 000000000000..5d973604400c
 --- /dev/null
 +++ b/include/uapi/misc/d3dkmthk.h
 @@ -0,0 +1,27 @@
@@ -1012,13 +1016,13 @@ index 000000000..5d9736044
 +
 +#endif /* _D3DKMTHK_H */
 -- 
-2.44.0
+2.47.0
 
 
-From 8a1430fd26bb2f022dafca6434780d9815c6c6ad Mon Sep 17 00:00:00 2001
+From f673e43d88af4049c96bc2a4ad78adcbcec42c76 Mon Sep 17 00:00:00 2001
 From: Iouri Tarassov <iourit@linux.microsoft.com>
 Date: Tue, 15 Feb 2022 18:53:07 -0800
-Subject: [PATCH 03/50] drivers: hv: dxgkrnl: Add VMBus message support,
+Subject: [PATCH 03/54] drivers: hv: dxgkrnl: Add VMBus message support,
  initialize VMBus channels.
 
 Implement support for sending/receiving VMBus messages between
@@ -1028,6 +1032,8 @@ Initialize the VMBus channels and notify the host about IO space
 settings of the VMBus global channel.
 
 Signed-off-by: Iouri Tarassov <iourit@linux.microsoft.com>
+[kms: forward port to 6.6 from 6.1. No code changes made.]
+Signed-off-by: Kelsey Steele <kelseysteele@microsoft.com>
 ---
  drivers/hv/dxgkrnl/dxgkrnl.h   |  14 ++
  drivers/hv/dxgkrnl/dxgmodule.c |   9 +-
@@ -1041,7 +1047,7 @@ Signed-off-by: Iouri Tarassov <iourit@linux.microsoft.com>
  create mode 100644 drivers/hv/dxgkrnl/misc.h
 
 diff --git a/drivers/hv/dxgkrnl/dxgkrnl.h b/drivers/hv/dxgkrnl/dxgkrnl.h
-index f7900840d..52b9e82c5 100644
+index f7900840d1ed..52b9e82c51e6 100644
 --- a/drivers/hv/dxgkrnl/dxgkrnl.h
 +++ b/drivers/hv/dxgkrnl/dxgkrnl.h
 @@ -28,6 +28,8 @@
@@ -1080,7 +1086,7 @@ index f7900840d..52b9e82c5 100644
  
  void dxgk_validate_ioctls(void);
 diff --git a/drivers/hv/dxgkrnl/dxgmodule.c b/drivers/hv/dxgkrnl/dxgmodule.c
-index de02edc4d..e55639dc0 100644
+index de02edc4d023..e55639dc0adc 100644
 --- a/drivers/hv/dxgkrnl/dxgmodule.c
 +++ b/drivers/hv/dxgkrnl/dxgmodule.c
 @@ -260,6 +260,13 @@ int dxgglobal_init_global_channel(void)
@@ -1107,7 +1113,7 @@ index de02edc4d..e55639dc0 100644
  			pci_unregister_driver(&dxgdrv.pci_drv);
  
 diff --git a/drivers/hv/dxgkrnl/dxgvmbus.c b/drivers/hv/dxgkrnl/dxgvmbus.c
-index deb880e34..a43657398 100644
+index deb880e34377..a4365739826a 100644
 --- a/drivers/hv/dxgkrnl/dxgvmbus.c
 +++ b/drivers/hv/dxgkrnl/dxgvmbus.c
 @@ -40,6 +40,121 @@ struct dxgvmbuspacket {
@@ -1444,7 +1450,7 @@ index deb880e34..a43657398 100644
 +	return ret;
  }
 diff --git a/drivers/hv/dxgkrnl/dxgvmbus.h b/drivers/hv/dxgkrnl/dxgvmbus.h
-index 6cdca5e03..b1bdd6039 100644
+index 6cdca5e03d1f..b1bdd6039b73 100644
 --- a/drivers/hv/dxgkrnl/dxgvmbus.h
 +++ b/drivers/hv/dxgkrnl/dxgvmbus.h
 @@ -16,4 +16,71 @@
@@ -1521,7 +1527,7 @@ index 6cdca5e03..b1bdd6039 100644
  #endif /* _DXGVMBUS_H */
 diff --git a/drivers/hv/dxgkrnl/ioctl.c b/drivers/hv/dxgkrnl/ioctl.c
 new file mode 100644
-index 000000000..23ecd15b0
+index 000000000000..23ecd15b0cd7
 --- /dev/null
 +++ b/drivers/hv/dxgkrnl/ioctl.c
 @@ -0,0 +1,24 @@
@@ -1551,7 +1557,7 @@ index 000000000..23ecd15b0
 +#define pr_fmt(fmt)	"dxgk: " fmt
 diff --git a/drivers/hv/dxgkrnl/misc.h b/drivers/hv/dxgkrnl/misc.h
 new file mode 100644
-index 000000000..4c6047c32
+index 000000000000..4c6047c32a20
 --- /dev/null
 +++ b/drivers/hv/dxgkrnl/misc.h
 @@ -0,0 +1,72 @@
@@ -1628,7 +1634,7 @@ index 000000000..4c6047c32
 +
 +#endif /* _MISC_H_ */
 diff --git a/include/uapi/misc/d3dkmthk.h b/include/uapi/misc/d3dkmthk.h
-index 5d9736044..2ea04cc02 100644
+index 5d973604400c..2ea04cc02a1f 100644
 --- a/include/uapi/misc/d3dkmthk.h
 +++ b/include/uapi/misc/d3dkmthk.h
 @@ -14,6 +14,40 @@
@@ -1673,13 +1679,13 @@ index 5d9736044..2ea04cc02 100644
   * Matches the Windows LUID definition.
   * LUID is a locally unique identifier (similar to GUID, but not global),
 -- 
-2.44.0
+2.47.0
 
 
-From 7f215fb668f834c99464935af76b23af2bb74e74 Mon Sep 17 00:00:00 2001
+From 7e5cf15f6f68300ad18779f44ab7b3560cf1b248 Mon Sep 17 00:00:00 2001
 From: Iouri Tarassov <iourit@linux.microsoft.com>
 Date: Tue, 15 Feb 2022 19:00:38 -0800
-Subject: [PATCH 04/50] drivers: hv: dxgkrnl: Creation of dxgadapter object
+Subject: [PATCH 04/54] drivers: hv: dxgkrnl: Creation of dxgadapter object
 
 Handle creation and destruction of dxgadapter object, which
 represents a virtual compute device, projected to the VM by
@@ -1706,6 +1712,8 @@ When the per virtual compute device VMBus channel or the global
 channel are destroyed, the adapter object is destroyed.
 
 Signed-off-by: Iouri Tarassov <iourit@linux.microsoft.com>
+[kms: forward port to 6.6 from 6.1. No code changes made.]
+Signed-off-by: Kelsey Steele <kelseysteele@microsoft.com>
 ---
  drivers/hv/dxgkrnl/Makefile     |   2 +-
  drivers/hv/dxgkrnl/dxgadapter.c | 170 +++++++++++++++++++++++++
@@ -1720,7 +1728,7 @@ Signed-off-by: Iouri Tarassov <iourit@linux.microsoft.com>
  create mode 100644 drivers/hv/dxgkrnl/misc.c
 
 diff --git a/drivers/hv/dxgkrnl/Makefile b/drivers/hv/dxgkrnl/Makefile
-index 76349064b..2ed07d877 100644
+index 76349064b60a..2ed07d877c91 100644
 --- a/drivers/hv/dxgkrnl/Makefile
 +++ b/drivers/hv/dxgkrnl/Makefile
 @@ -2,4 +2,4 @@
@@ -1731,7 +1739,7 @@ index 76349064b..2ed07d877 100644
 +dxgkrnl-y		:= dxgmodule.o misc.o dxgadapter.o ioctl.o dxgvmbus.o
 diff --git a/drivers/hv/dxgkrnl/dxgadapter.c b/drivers/hv/dxgkrnl/dxgadapter.c
 new file mode 100644
-index 000000000..07d47699d
+index 000000000000..07d47699d255
 --- /dev/null
 +++ b/drivers/hv/dxgkrnl/dxgadapter.c
 @@ -0,0 +1,170 @@
@@ -1906,7 +1914,7 @@ index 000000000..07d47699d
 +	up_read(&adapter->core_lock);
 +}
 diff --git a/drivers/hv/dxgkrnl/dxgkrnl.h b/drivers/hv/dxgkrnl/dxgkrnl.h
-index 52b9e82c5..ba2a7c600 100644
+index 52b9e82c51e6..ba2a7c6001aa 100644
 --- a/drivers/hv/dxgkrnl/dxgkrnl.h
 +++ b/drivers/hv/dxgkrnl/dxgkrnl.h
 @@ -47,9 +47,39 @@ extern struct dxgdriver dxgdrv;
@@ -2033,7 +2041,7 @@ index 52b9e82c5..ba2a7c600 100644
  int ntstatus2int(struct ntstatus status);
  
 diff --git a/drivers/hv/dxgkrnl/dxgmodule.c b/drivers/hv/dxgkrnl/dxgmodule.c
-index e55639dc0..ef80b920f 100644
+index e55639dc0adc..ef80b920f010 100644
 --- a/drivers/hv/dxgkrnl/dxgmodule.c
 +++ b/drivers/hv/dxgkrnl/dxgmodule.c
 @@ -55,6 +55,156 @@ void dxgglobal_release_channel_lock(void)
@@ -2304,7 +2312,7 @@ index e55639dc0..ef80b920f 100644
  		mutex_unlock(&dxgglobal->device_mutex);
  
 diff --git a/drivers/hv/dxgkrnl/dxgvmbus.c b/drivers/hv/dxgkrnl/dxgvmbus.c
-index a43657398..6d4b8d9d8 100644
+index a4365739826a..6d4b8d9d8d07 100644
 --- a/drivers/hv/dxgkrnl/dxgvmbus.c
 +++ b/drivers/hv/dxgkrnl/dxgvmbus.c
 @@ -77,7 +77,7 @@ struct dxgvmbusmsgres {
@@ -2597,7 +2605,7 @@ index a43657398..6d4b8d9d8 100644
 +	return ret;
 +}
 diff --git a/drivers/hv/dxgkrnl/dxgvmbus.h b/drivers/hv/dxgkrnl/dxgvmbus.h
-index b1bdd6039..584cdd3db 100644
+index b1bdd6039b73..584cdd3db6c0 100644
 --- a/drivers/hv/dxgkrnl/dxgvmbus.h
 +++ b/drivers/hv/dxgkrnl/dxgvmbus.h
 @@ -47,6 +47,83 @@ enum dxgkvmb_commandtype_global {
@@ -2749,7 +2757,7 @@ index b1bdd6039..584cdd3db 100644
  #endif /* _DXGVMBUS_H */
 diff --git a/drivers/hv/dxgkrnl/misc.c b/drivers/hv/dxgkrnl/misc.c
 new file mode 100644
-index 000000000..cb1e0635b
+index 000000000000..cb1e0635bebc
 --- /dev/null
 +++ b/drivers/hv/dxgkrnl/misc.c
 @@ -0,0 +1,37 @@
@@ -2791,7 +2799,7 @@ index 000000000..cb1e0635b
 +	return dest;
 +}
 diff --git a/drivers/hv/dxgkrnl/misc.h b/drivers/hv/dxgkrnl/misc.h
-index 4c6047c32..d292e9a9b 100644
+index 4c6047c32a20..d292e9a9bb7f 100644
 --- a/drivers/hv/dxgkrnl/misc.h
 +++ b/drivers/hv/dxgkrnl/misc.h
 @@ -14,18 +14,34 @@
@@ -2834,13 +2842,13 @@ index 4c6047c32..d292e9a9b 100644
   * Some of the Windows return codes, which needs to be translated to Linux
   * IOCTL return codes. Positive values are success codes and need to be
 -- 
-2.44.0
+2.47.0
 
 
-From b601870207e9a929902b4919ab43a6b056ac3ec7 Mon Sep 17 00:00:00 2001
+From 92886ddd0d02af10fed4e3dce6dead656bd7bfd2 Mon Sep 17 00:00:00 2001
 From: Iouri Tarassov <iourit@linux.microsoft.com>
 Date: Tue, 15 Feb 2022 19:12:48 -0800
-Subject: [PATCH 05/50] drivers: hv: dxgkrnl: Opening of /dev/dxg device and
+Subject: [PATCH 05/54] drivers: hv: dxgkrnl: Opening of /dev/dxg device and
  dxgprocess creation
 
 - Implement opening of the device (/dev/dxg) file object and creation of
@@ -2868,6 +2876,8 @@ the corresponding VM object are the same. A host handle is allocated
 first and its value is assigned to the guest object.
 
 Signed-off-by: Iouri Tarassov <iourit@linux.microsoft.com>
+[kms: forward port to 6.6 from 6.1. No code changes made.]
+Signed-off-by: Kelsey Steele <kelseysteele@microsoft.com>
 ---
  drivers/hv/dxgkrnl/Makefile     |   2 +-
  drivers/hv/dxgkrnl/dxgadapter.c |  72 ++++
@@ -2887,7 +2897,7 @@ Signed-off-by: Iouri Tarassov <iourit@linux.microsoft.com>
  create mode 100644 drivers/hv/dxgkrnl/hmgr.h
 
 diff --git a/drivers/hv/dxgkrnl/Makefile b/drivers/hv/dxgkrnl/Makefile
-index 2ed07d877..9d821e834 100644
+index 2ed07d877c91..9d821e83448a 100644
 --- a/drivers/hv/dxgkrnl/Makefile
 +++ b/drivers/hv/dxgkrnl/Makefile
 @@ -2,4 +2,4 @@
@@ -2897,7 +2907,7 @@ index 2ed07d877..9d821e834 100644
 -dxgkrnl-y		:= dxgmodule.o misc.o dxgadapter.o ioctl.o dxgvmbus.o
 +dxgkrnl-y		:= dxgmodule.o hmgr.o misc.o dxgadapter.o ioctl.o dxgvmbus.o dxgprocess.o
 diff --git a/drivers/hv/dxgkrnl/dxgadapter.c b/drivers/hv/dxgkrnl/dxgadapter.c
-index 07d47699d..fa0d6beca 100644
+index 07d47699d255..fa0d6beca157 100644
 --- a/drivers/hv/dxgkrnl/dxgadapter.c
 +++ b/drivers/hv/dxgkrnl/dxgadapter.c
 @@ -100,6 +100,7 @@ void dxgadapter_start(struct dxgadapter *adapter)
@@ -2998,7 +3008,7 @@ index 07d47699d..fa0d6beca 100644
 +		dxgprocess_adapter_destroy(adapter_info);
 +}
 diff --git a/drivers/hv/dxgkrnl/dxgkrnl.h b/drivers/hv/dxgkrnl/dxgkrnl.h
-index ba2a7c600..b089d126f 100644
+index ba2a7c6001aa..b089d126f801 100644
 --- a/drivers/hv/dxgkrnl/dxgkrnl.h
 +++ b/drivers/hv/dxgkrnl/dxgkrnl.h
 @@ -29,8 +29,10 @@
@@ -3157,7 +3167,7 @@ index ba2a7c600..b089d126f 100644
  			  void *command,
  			  u32 cmd_size);
 diff --git a/drivers/hv/dxgkrnl/dxgmodule.c b/drivers/hv/dxgkrnl/dxgmodule.c
-index ef80b920f..17c22001c 100644
+index ef80b920f010..17c22001ca6c 100644
 --- a/drivers/hv/dxgkrnl/dxgmodule.c
 +++ b/drivers/hv/dxgkrnl/dxgmodule.c
 @@ -123,6 +123,20 @@ static struct dxgadapter *find_adapter(struct winluid *luid)
@@ -3290,7 +3300,7 @@ index ef80b920f..17c22001c 100644
  	INIT_LIST_HEAD(&dxgglobal->adapter_list_head);
 diff --git a/drivers/hv/dxgkrnl/dxgprocess.c b/drivers/hv/dxgkrnl/dxgprocess.c
 new file mode 100644
-index 000000000..ab9a01e3c
+index 000000000000..ab9a01e3c8c8
 --- /dev/null
 +++ b/drivers/hv/dxgkrnl/dxgprocess.c
 @@ -0,0 +1,262 @@
@@ -3557,7 +3567,7 @@ index 000000000..ab9a01e3c
 +	hmgrtable_unlock(&process->handle_table, DXGLOCK_EXCL);
 +}
 diff --git a/drivers/hv/dxgkrnl/dxgvmbus.c b/drivers/hv/dxgkrnl/dxgvmbus.c
-index 6d4b8d9d8..0abf45d0d 100644
+index 6d4b8d9d8d07..0abf45d0d3f7 100644
 --- a/drivers/hv/dxgkrnl/dxgvmbus.c
 +++ b/drivers/hv/dxgkrnl/dxgvmbus.c
 @@ -497,6 +497,87 @@ int dxgvmb_send_set_iospace_region(u64 start, u64 len)
@@ -3736,7 +3746,7 @@ index 6d4b8d9d8..0abf45d0d 100644
 +	return ret;
 +}
 diff --git a/drivers/hv/dxgkrnl/dxgvmbus.h b/drivers/hv/dxgkrnl/dxgvmbus.h
-index 584cdd3db..a805a396e 100644
+index 584cdd3db6c0..a805a396e083 100644
 --- a/drivers/hv/dxgkrnl/dxgvmbus.h
 +++ b/drivers/hv/dxgkrnl/dxgvmbus.h
 @@ -14,7 +14,11 @@
@@ -3797,7 +3807,7 @@ index 584cdd3db..a805a396e 100644
  #endif /* _DXGVMBUS_H */
 diff --git a/drivers/hv/dxgkrnl/hmgr.c b/drivers/hv/dxgkrnl/hmgr.c
 new file mode 100644
-index 000000000..526b50f46
+index 000000000000..526b50f46d96
 --- /dev/null
 +++ b/drivers/hv/dxgkrnl/hmgr.c
 @@ -0,0 +1,563 @@
@@ -4366,7 +4376,7 @@ index 000000000..526b50f46
 +}
 diff --git a/drivers/hv/dxgkrnl/hmgr.h b/drivers/hv/dxgkrnl/hmgr.h
 new file mode 100644
-index 000000000..23eec3011
+index 000000000000..23eec301137f
 --- /dev/null
 +++ b/drivers/hv/dxgkrnl/hmgr.h
 @@ -0,0 +1,112 @@
@@ -4483,7 +4493,7 @@ index 000000000..23eec3011
 +
 +#endif
 diff --git a/drivers/hv/dxgkrnl/ioctl.c b/drivers/hv/dxgkrnl/ioctl.c
-index 23ecd15b0..60e38d104 100644
+index 23ecd15b0cd7..60e38d104517 100644
 --- a/drivers/hv/dxgkrnl/ioctl.c
 +++ b/drivers/hv/dxgkrnl/ioctl.c
 @@ -22,3 +22,63 @@
@@ -4551,7 +4561,7 @@ index 23ecd15b0..60e38d104 100644
 +	return dxgk_ioctl(f, p1, p2);
 +}
 diff --git a/drivers/hv/dxgkrnl/misc.h b/drivers/hv/dxgkrnl/misc.h
-index d292e9a9b..dc849a8ed 100644
+index d292e9a9bb7f..dc849a8ed3f2 100644
 --- a/drivers/hv/dxgkrnl/misc.h
 +++ b/drivers/hv/dxgkrnl/misc.h
 @@ -27,10 +27,11 @@ extern const struct d3dkmthandle zerohandle;
@@ -4571,7 +4581,7 @@ index d292e9a9b..dc849a8ed 100644
   * device_mutex (dxgglobal mutex)
   */
 diff --git a/include/uapi/misc/d3dkmthk.h b/include/uapi/misc/d3dkmthk.h
-index 2ea04cc02..c675d5827 100644
+index 2ea04cc02a1f..c675d5827ed5 100644
 --- a/include/uapi/misc/d3dkmthk.h
 +++ b/include/uapi/misc/d3dkmthk.h
 @@ -58,4 +58,107 @@ struct winluid {
@@ -4683,13 +4693,13 @@ index 2ea04cc02..c675d5827 100644
 +
  #endif /* _D3DKMTHK_H */
 -- 
-2.44.0
+2.47.0
 
 
-From 3de62d2af5e88e12c37e398a277ebb949ff6848a Mon Sep 17 00:00:00 2001
+From 4996e973c70e9441dae6baa941af9ece52359227 Mon Sep 17 00:00:00 2001
 From: Iouri Tarassov <iourit@linux.microsoft.com>
 Date: Mon, 21 Mar 2022 19:18:50 -0700
-Subject: [PATCH 06/50] drivers: hv: dxgkrnl: Enumerate and open dxgadapter
+Subject: [PATCH 06/54] drivers: hv: dxgkrnl: Enumerate and open dxgadapter
  objects
 
 Implement ioctls to enumerate dxgadapter objects:
@@ -4719,13 +4729,15 @@ This is needed for cleanup because either a process or an adapter
 could be destroyed first.
 
 Signed-off-by: Iouri Tarassov <iourit@linux.microsoft.com>
+[kms: forward port to 6.6 from 6.1. No code changes made.]
+Signed-off-by: Kelsey Steele <kelseysteele@microsoft.com>
 ---
  drivers/hv/dxgkrnl/dxgmodule.c |   3 +
  drivers/hv/dxgkrnl/ioctl.c     | 482 ++++++++++++++++++++++++++++++++-
  2 files changed, 484 insertions(+), 1 deletion(-)
 
 diff --git a/drivers/hv/dxgkrnl/dxgmodule.c b/drivers/hv/dxgkrnl/dxgmodule.c
-index 17c22001c..fbe1c58ec 100644
+index 17c22001ca6c..fbe1c58ecb46 100644
 --- a/drivers/hv/dxgkrnl/dxgmodule.c
 +++ b/drivers/hv/dxgkrnl/dxgmodule.c
 @@ -721,6 +721,9 @@ static struct dxgglobal *dxgglobal_create(void)
@@ -4739,7 +4751,7 @@ index 17c22001c..fbe1c58ec 100644
  }
  
 diff --git a/drivers/hv/dxgkrnl/ioctl.c b/drivers/hv/dxgkrnl/ioctl.c
-index 60e38d104..b08ea9430 100644
+index 60e38d104517..b08ea9430093 100644
 --- a/drivers/hv/dxgkrnl/ioctl.c
 +++ b/drivers/hv/dxgkrnl/ioctl.c
 @@ -29,8 +29,472 @@ struct ioctl_desc {
@@ -5237,13 +5249,13 @@ index 60e38d104..b08ea9430 100644
 +}
 +#endif
 -- 
-2.44.0
+2.47.0
 
 
-From 4be1e6befe211adb556a3adf28175cf530d51276 Mon Sep 17 00:00:00 2001
+From 2095c984cb39b5c02940cb8d9f710f7e2bb31797 Mon Sep 17 00:00:00 2001
 From: Iouri Tarassov <iourit@linux.microsoft.com>
 Date: Tue, 1 Feb 2022 17:23:58 -0800
-Subject: [PATCH 07/50] drivers: hv: dxgkrnl: Creation of dxgdevice objects
+Subject: [PATCH 07/54] drivers: hv: dxgkrnl: Creation of dxgdevice objects
 
 Implement ioctls for creation and destruction of dxgdevice
 objects:
@@ -5255,6 +5267,8 @@ compute device objects (allocations, sync objects, contexts,
 etc.). It belongs to a dxgadapter object.
 
 Signed-off-by: Iouri Tarassov <iourit@linux.microsoft.com>
+[kms: forward port to 6.6 from 6.1. No code changes made.]
+Signed-off-by: Kelsey Steele <kelseysteele@microsoft.com>
 ---
  drivers/hv/dxgkrnl/dxgadapter.c | 187 ++++++++++++++++++++++++++++++++
  drivers/hv/dxgkrnl/dxgkrnl.h    |  58 ++++++++++
@@ -5267,7 +5281,7 @@ Signed-off-by: Iouri Tarassov <iourit@linux.microsoft.com>
  8 files changed, 604 insertions(+), 6 deletions(-)
 
 diff --git a/drivers/hv/dxgkrnl/dxgadapter.c b/drivers/hv/dxgkrnl/dxgadapter.c
-index fa0d6beca..a9a341716 100644
+index fa0d6beca157..a9a341716eba 100644
 --- a/drivers/hv/dxgkrnl/dxgadapter.c
 +++ b/drivers/hv/dxgkrnl/dxgadapter.c
 @@ -194,6 +194,122 @@ void dxgadapter_release_lock_shared(struct dxgadapter *adapter)
@@ -5487,7 +5501,7 @@ index fa0d6beca..a9a341716 100644
 +	mutex_unlock(&device->adapter_info->device_list_mutex);
 +}
 diff --git a/drivers/hv/dxgkrnl/dxgkrnl.h b/drivers/hv/dxgkrnl/dxgkrnl.h
-index b089d126f..45ac1f25c 100644
+index b089d126f801..45ac1f25cc5e 100644
 --- a/drivers/hv/dxgkrnl/dxgkrnl.h
 +++ b/drivers/hv/dxgkrnl/dxgkrnl.h
 @@ -34,6 +34,7 @@
@@ -5605,7 +5619,7 @@ index b089d126f..45ac1f25c 100644
  				   struct dxgadapter *adapter,
  				   struct d3dkmt_queryadapterinfo *args);
 diff --git a/drivers/hv/dxgkrnl/dxgprocess.c b/drivers/hv/dxgkrnl/dxgprocess.c
-index ab9a01e3c..8373f681e 100644
+index ab9a01e3c8c8..8373f681e822 100644
 --- a/drivers/hv/dxgkrnl/dxgprocess.c
 +++ b/drivers/hv/dxgkrnl/dxgprocess.c
 @@ -241,6 +241,49 @@ struct dxgadapter *dxgprocess_adapter_by_handle(struct dxgprocess *process,
@@ -5659,7 +5673,7 @@ index ab9a01e3c..8373f681e 100644
  {
  	hmgrtable_lock(&process->handle_table, DXGLOCK_SHARED);
 diff --git a/drivers/hv/dxgkrnl/dxgvmbus.c b/drivers/hv/dxgkrnl/dxgvmbus.c
-index 0abf45d0d..73804d11e 100644
+index 0abf45d0d3f7..73804d11ec49 100644
 --- a/drivers/hv/dxgkrnl/dxgvmbus.c
 +++ b/drivers/hv/dxgkrnl/dxgvmbus.c
 @@ -673,6 +673,86 @@ int dxgvmb_send_get_internal_adapter_info(struct dxgadapter *adapter)
@@ -5750,7 +5764,7 @@ index 0abf45d0d..73804d11e 100644
  				   struct dxgadapter *adapter,
  				   struct d3dkmt_queryadapterinfo *args)
 diff --git a/drivers/hv/dxgkrnl/dxgvmbus.h b/drivers/hv/dxgkrnl/dxgvmbus.h
-index a805a396e..4ccf45765 100644
+index a805a396e083..4ccf45765954 100644
 --- a/drivers/hv/dxgkrnl/dxgvmbus.h
 +++ b/drivers/hv/dxgkrnl/dxgvmbus.h
 @@ -247,4 +247,26 @@ struct dxgkvmb_command_queryadapterinfo_return {
@@ -5781,7 +5795,7 @@ index a805a396e..4ccf45765 100644
 +
  #endif /* _DXGVMBUS_H */
 diff --git a/drivers/hv/dxgkrnl/ioctl.c b/drivers/hv/dxgkrnl/ioctl.c
-index b08ea9430..405e8b929 100644
+index b08ea9430093..405e8b92913e 100644
 --- a/drivers/hv/dxgkrnl/ioctl.c
 +++ b/drivers/hv/dxgkrnl/ioctl.c
 @@ -424,10 +424,136 @@ dxgkio_query_adapter_info(struct dxgprocess *process, void *__user inargs)
@@ -5932,7 +5946,7 @@ index b08ea9430..405e8b929 100644
  /* 0x1b */	{},
  /* 0x1c */	{},
 diff --git a/drivers/hv/dxgkrnl/misc.h b/drivers/hv/dxgkrnl/misc.h
-index dc849a8ed..e0bd33b36 100644
+index dc849a8ed3f2..e0bd33b365b0 100644
 --- a/drivers/hv/dxgkrnl/misc.h
 +++ b/drivers/hv/dxgkrnl/misc.h
 @@ -27,10 +27,10 @@ extern const struct d3dkmthandle zerohandle;
@@ -5951,7 +5965,7 @@ index dc849a8ed..e0bd33b36 100644
   * adapter_list_lock
   * device_mutex (dxgglobal mutex)
 diff --git a/include/uapi/misc/d3dkmthk.h b/include/uapi/misc/d3dkmthk.h
-index c675d5827..7414f0f5c 100644
+index c675d5827ed5..7414f0f5ce8e 100644
 --- a/include/uapi/misc/d3dkmthk.h
 +++ b/include/uapi/misc/d3dkmthk.h
 @@ -86,6 +86,74 @@ struct d3dkmt_openadapterfromluid {
@@ -6064,13 +6078,13 @@ index c675d5827..7414f0f5c 100644
  	_IOWR(0x47, 0x3e, struct d3dkmt_enumadapters3)
  
 -- 
-2.44.0
+2.47.0
 
 
-From 6328bf1abd3058849fc6f9a0afc29f794e9c5e53 Mon Sep 17 00:00:00 2001
+From b5e7645f913c29a13cd5d12dc53a4eda414755c4 Mon Sep 17 00:00:00 2001
 From: Iouri Tarassov <iourit@linux.microsoft.com>
 Date: Tue, 1 Feb 2022 17:03:47 -0800
-Subject: [PATCH 08/50] drivers: hv: dxgkrnl: Creation of dxgcontext objects
+Subject: [PATCH 08/54] drivers: hv: dxgkrnl: Creation of dxgcontext objects
 
 Implement ioctls for creation/destruction of dxgcontext
 objects:
@@ -6083,6 +6097,8 @@ submitted for execution to a dxgcontext. dxgcontexts objects
 belong to a dxgdevice object.
 
 Signed-off-by: Iouri Tarassov <iourit@linux.microsoft.com>
+[kms: forward port to 6.6 from 6.1. No code changes made.]
+Signed-off-by: Kelsey Steele <kelseysteele@microsoft.com>
 ---
  drivers/hv/dxgkrnl/dxgadapter.c | 103 ++++++++++++++++++++
  drivers/hv/dxgkrnl/dxgkrnl.h    |  38 ++++++++
@@ -6095,7 +6111,7 @@ Signed-off-by: Iouri Tarassov <iourit@linux.microsoft.com>
  8 files changed, 477 insertions(+), 3 deletions(-)
 
 diff --git a/drivers/hv/dxgkrnl/dxgadapter.c b/drivers/hv/dxgkrnl/dxgadapter.c
-index a9a341716..cd103e092 100644
+index a9a341716eba..cd103e092ac2 100644
 --- a/drivers/hv/dxgkrnl/dxgadapter.c
 +++ b/drivers/hv/dxgkrnl/dxgadapter.c
 @@ -206,7 +206,9 @@ struct dxgdevice *dxgdevice_create(struct dxgadapter *adapter,
@@ -6231,7 +6247,7 @@ index a9a341716..cd103e092 100644
  						     struct dxgadapter *adapter)
  {
 diff --git a/drivers/hv/dxgkrnl/dxgkrnl.h b/drivers/hv/dxgkrnl/dxgkrnl.h
-index 45ac1f25c..a3d8d3c9f 100644
+index 45ac1f25cc5e..a3d8d3c9f37d 100644
 --- a/drivers/hv/dxgkrnl/dxgkrnl.h
 +++ b/drivers/hv/dxgkrnl/dxgkrnl.h
 @@ -35,6 +35,7 @@
@@ -6309,7 +6325,7 @@ index 45ac1f25c..a3d8d3c9f 100644
  				   struct dxgadapter *adapter,
  				   struct d3dkmt_queryadapterinfo *args);
 diff --git a/drivers/hv/dxgkrnl/dxgprocess.c b/drivers/hv/dxgkrnl/dxgprocess.c
-index 8373f681e..ca307beb9 100644
+index 8373f681e822..ca307beb9a9a 100644
 --- a/drivers/hv/dxgkrnl/dxgprocess.c
 +++ b/drivers/hv/dxgkrnl/dxgprocess.c
 @@ -257,6 +257,10 @@ struct dxgdevice *dxgprocess_device_by_object_handle(struct dxgprocess *process,
@@ -6324,7 +6340,7 @@ index 8373f681e..ca307beb9 100644
  			DXG_ERR("invalid handle type: %d", t);
  			break;
 diff --git a/drivers/hv/dxgkrnl/dxgvmbus.c b/drivers/hv/dxgkrnl/dxgvmbus.c
-index 73804d11e..e66aac7c1 100644
+index 73804d11ec49..e66aac7c13cb 100644
 --- a/drivers/hv/dxgkrnl/dxgvmbus.c
 +++ b/drivers/hv/dxgkrnl/dxgvmbus.c
 @@ -731,7 +731,7 @@ int dxgvmb_send_flush_device(struct dxgdevice *device,
@@ -6443,7 +6459,7 @@ index 73804d11e..e66aac7c1 100644
  cleanup:
  	free_message(&msg, process);
 diff --git a/drivers/hv/dxgkrnl/dxgvmbus.h b/drivers/hv/dxgkrnl/dxgvmbus.h
-index 4ccf45765..ebcb7b0f6 100644
+index 4ccf45765954..ebcb7b0f62c1 100644
 --- a/drivers/hv/dxgkrnl/dxgvmbus.h
 +++ b/drivers/hv/dxgkrnl/dxgvmbus.h
 @@ -269,4 +269,22 @@ struct dxgkvmb_command_flushdevice {
@@ -6470,7 +6486,7 @@ index 4ccf45765..ebcb7b0f6 100644
 +
  #endif /* _DXGVMBUS_H */
 diff --git a/drivers/hv/dxgkrnl/ioctl.c b/drivers/hv/dxgkrnl/ioctl.c
-index 405e8b929..5d10ebd2c 100644
+index 405e8b92913e..5d10ebd2ce6a 100644
 --- a/drivers/hv/dxgkrnl/ioctl.c
 +++ b/drivers/hv/dxgkrnl/ioctl.c
 @@ -550,13 +550,177 @@ dxgkio_destroy_device(struct dxgprocess *process, void *__user inargs)
@@ -6654,7 +6670,7 @@ index 405e8b929..5d10ebd2c 100644
  /* 0x07 */	{},
  /* 0x08 */	{},
 diff --git a/drivers/hv/dxgkrnl/misc.h b/drivers/hv/dxgkrnl/misc.h
-index e0bd33b36..3a9637f0b 100644
+index e0bd33b365b0..3a9637f0b5e2 100644
 --- a/drivers/hv/dxgkrnl/misc.h
 +++ b/drivers/hv/dxgkrnl/misc.h
 @@ -29,6 +29,7 @@ extern const struct d3dkmthandle zerohandle;
@@ -6666,7 +6682,7 @@ index e0bd33b36..3a9637f0b 100644
   * device_lock (dxgdevice lock)
   * process_adapter_mutex
 diff --git a/include/uapi/misc/d3dkmthk.h b/include/uapi/misc/d3dkmthk.h
-index 7414f0f5c..4ba0070b0 100644
+index 7414f0f5ce8e..4ba0070b061f 100644
 --- a/include/uapi/misc/d3dkmthk.h
 +++ b/include/uapi/misc/d3dkmthk.h
 @@ -154,6 +154,49 @@ struct d3dkmt_destroydevice {
@@ -6731,13 +6747,13 @@ index 7414f0f5c..4ba0070b0 100644
  	_IOWR(0x47, 0x09, struct d3dkmt_queryadapterinfo)
  #define LX_DXENUMADAPTERS2		\
 -- 
-2.44.0
+2.47.0
 
 
-From 568aba870a41260b6434cdd1a853b6c22d643513 Mon Sep 17 00:00:00 2001
+From 6ed7d6e3f11aeee710851ef0eec2e2258dd1afcd Mon Sep 17 00:00:00 2001
 From: Iouri Tarassov <iourit@linux.microsoft.com>
 Date: Tue, 1 Feb 2022 15:37:52 -0800
-Subject: [PATCH 09/50] drivers: hv: dxgkrnl: Creation of compute device
+Subject: [PATCH 09/54] drivers: hv: dxgkrnl: Creation of compute device
  allocations and resources
 
 Implemented ioctls to create and destroy virtual compute device
@@ -6765,6 +6781,8 @@ the compute device) or evicted. When an allocation is evicted,
 its content is stored in the backing store in system memory.
 
 Signed-off-by: Iouri Tarassov <iourit@linux.microsoft.com>
+[kms: forward port to 6.6 from 6.1. No code changes made.]
+Signed-off-by: Kelsey Steele <kelseysteele@microsoft.com>
 ---
  drivers/hv/dxgkrnl/dxgadapter.c | 282 ++++++++++++++
  drivers/hv/dxgkrnl/dxgkrnl.h    | 113 ++++++
@@ -6777,7 +6795,7 @@ Signed-off-by: Iouri Tarassov <iourit@linux.microsoft.com>
  8 files changed, 2004 insertions(+), 2 deletions(-)
 
 diff --git a/drivers/hv/dxgkrnl/dxgadapter.c b/drivers/hv/dxgkrnl/dxgadapter.c
-index cd103e092..402caa81a 100644
+index cd103e092ac2..402caa81a5db 100644
 --- a/drivers/hv/dxgkrnl/dxgadapter.c
 +++ b/drivers/hv/dxgkrnl/dxgadapter.c
 @@ -207,8 +207,11 @@ struct dxgdevice *dxgdevice_create(struct dxgadapter *adapter,
@@ -7107,7 +7125,7 @@ index cd103e092..402caa81a 100644
  						     struct dxgadapter *adapter)
  {
 diff --git a/drivers/hv/dxgkrnl/dxgkrnl.h b/drivers/hv/dxgkrnl/dxgkrnl.h
-index a3d8d3c9f..fa053fb6a 100644
+index a3d8d3c9f37d..fa053fb6ac9c 100644
 --- a/drivers/hv/dxgkrnl/dxgkrnl.h
 +++ b/drivers/hv/dxgkrnl/dxgkrnl.h
 @@ -36,6 +36,8 @@ struct dxgprocess;
@@ -7272,7 +7290,7 @@ index a3d8d3c9f..fa053fb6a 100644
  			  void *command,
  			  u32 cmd_size);
 diff --git a/drivers/hv/dxgkrnl/dxgmodule.c b/drivers/hv/dxgkrnl/dxgmodule.c
-index fbe1c58ec..053ce6f3e 100644
+index fbe1c58ecb46..053ce6f3e083 100644
 --- a/drivers/hv/dxgkrnl/dxgmodule.c
 +++ b/drivers/hv/dxgkrnl/dxgmodule.c
 @@ -162,6 +162,7 @@ int dxgglobal_create_adapter(struct pci_dev *dev, guid_t *guid,
@@ -7284,7 +7302,7 @@ index fbe1c58ec..053ce6f3e 100644
  	guid_to_luid(guid, &adapter->luid);
  
 diff --git a/drivers/hv/dxgkrnl/dxgvmbus.c b/drivers/hv/dxgkrnl/dxgvmbus.c
-index e66aac7c1..14b51a3c6 100644
+index e66aac7c13cb..14b51a3c6afc 100644
 --- a/drivers/hv/dxgkrnl/dxgvmbus.c
 +++ b/drivers/hv/dxgkrnl/dxgvmbus.c
 @@ -111,6 +111,41 @@ static int init_message(struct dxgvmbusmsg *msg, struct dxgadapter *adapter,
@@ -7951,7 +7969,7 @@ index e66aac7c1..14b51a3c6 100644
  				   struct dxgadapter *adapter,
  				   struct d3dkmt_queryadapterinfo *args)
 diff --git a/drivers/hv/dxgkrnl/dxgvmbus.h b/drivers/hv/dxgkrnl/dxgvmbus.h
-index ebcb7b0f6..4b7466d1b 100644
+index ebcb7b0f62c1..4b7466d1b9f2 100644
 --- a/drivers/hv/dxgkrnl/dxgvmbus.h
 +++ b/drivers/hv/dxgkrnl/dxgvmbus.h
 @@ -173,6 +173,14 @@ struct dxgkvmb_command_setiospaceregion {
@@ -8092,7 +8110,7 @@ index ebcb7b0f6..4b7466d1b 100644
  	struct dxgkvmb_command_vgpu_to_host hdr;
  	struct d3dkmthandle		context;
 diff --git a/drivers/hv/dxgkrnl/ioctl.c b/drivers/hv/dxgkrnl/ioctl.c
-index 5d10ebd2c..0eaa577d7 100644
+index 5d10ebd2ce6a..0eaa577d7ed4 100644
 --- a/drivers/hv/dxgkrnl/ioctl.c
 +++ b/drivers/hv/dxgkrnl/ioctl.c
 @@ -714,6 +714,633 @@ dxgkio_destroy_context(struct dxgprocess *process, void *__user inargs)
@@ -8748,7 +8766,7 @@ index 5d10ebd2c..0eaa577d7 100644
  /* 0x15 */	{dxgkio_close_adapter, LX_DXCLOSEADAPTER},
  /* 0x16 */	{},
 diff --git a/drivers/hv/dxgkrnl/misc.h b/drivers/hv/dxgkrnl/misc.h
-index 3a9637f0b..a51b29a6a 100644
+index 3a9637f0b5e2..a51b29a6a68f 100644
 --- a/drivers/hv/dxgkrnl/misc.h
 +++ b/drivers/hv/dxgkrnl/misc.h
 @@ -30,6 +30,9 @@ extern const struct d3dkmthandle zerohandle;
@@ -8762,7 +8780,7 @@ index 3a9637f0b..a51b29a6a 100644
   * device_lock (dxgdevice lock)
   * process_adapter_mutex
 diff --git a/include/uapi/misc/d3dkmthk.h b/include/uapi/misc/d3dkmthk.h
-index 4ba0070b0..cf670b9c4 100644
+index 4ba0070b061f..cf670b9c4dc2 100644
 --- a/include/uapi/misc/d3dkmthk.h
 +++ b/include/uapi/misc/d3dkmthk.h
 @@ -58,6 +58,7 @@ struct winluid {
@@ -8993,13 +9011,13 @@ index 4ba0070b0..cf670b9c4 100644
  	_IOWR(0x47, 0x14, struct d3dkmt_enumadapters2)
  #define LX_DXCLOSEADAPTER		\
 -- 
-2.44.0
+2.47.0
 
 
-From 19e557abca16cd9ec4d0cb1aae240cf5a17e9316 Mon Sep 17 00:00:00 2001
+From cc18f43a8a1bd979215f37faf427f58582efd7a9 Mon Sep 17 00:00:00 2001
 From: Iouri Tarassov <iourit@linux.microsoft.com>
 Date: Tue, 1 Feb 2022 14:38:32 -0800
-Subject: [PATCH 10/50] drivers: hv: dxgkrnl: Creation of compute device sync
+Subject: [PATCH 10/54] drivers: hv: dxgkrnl: Creation of compute device sync
  objects
 
 Implement ioctls to create and destroy compute devicesync objects:
@@ -9028,6 +9046,8 @@ This is done as follow:
   to point to the IO space address
 
 Signed-off-by: Iouri Tarassov <iourit@linux.microsoft.com>
+[kms: forward port to 6.6 from 6.1. No code changes made.]
+Signed-off-by: Kelsey Steele <kelseysteele@microsoft.com>
 ---
  drivers/hv/dxgkrnl/dxgadapter.c | 184 ++++++++++++++++++++++++++++
  drivers/hv/dxgkrnl/dxgkrnl.h    |  80 +++++++++++++
@@ -9040,7 +9060,7 @@ Signed-off-by: Iouri Tarassov <iourit@linux.microsoft.com>
  8 files changed, 729 insertions(+), 2 deletions(-)
 
 diff --git a/drivers/hv/dxgkrnl/dxgadapter.c b/drivers/hv/dxgkrnl/dxgadapter.c
-index 402caa81a..d2f2b9652 100644
+index 402caa81a5db..d2f2b96527e6 100644
 --- a/drivers/hv/dxgkrnl/dxgadapter.c
 +++ b/drivers/hv/dxgkrnl/dxgadapter.c
 @@ -160,6 +160,24 @@ void dxgadapter_remove_process(struct dxgprocess_adapter *process_info)
@@ -9274,7 +9294,7 @@ index 402caa81a..d2f2b9652 100644
 +	kfree(syncobj);
 +}
 diff --git a/drivers/hv/dxgkrnl/dxgkrnl.h b/drivers/hv/dxgkrnl/dxgkrnl.h
-index fa053fb6a..1b9410c91 100644
+index fa053fb6ac9c..1b9410c9152b 100644
 --- a/drivers/hv/dxgkrnl/dxgkrnl.h
 +++ b/drivers/hv/dxgkrnl/dxgkrnl.h
 @@ -38,6 +38,7 @@ struct dxgdevice;
@@ -9421,7 +9441,7 @@ index fa053fb6a..1b9410c91 100644
  				   struct dxgadapter *adapter,
  				   struct d3dkmt_queryadapterinfo *args);
 diff --git a/drivers/hv/dxgkrnl/dxgmodule.c b/drivers/hv/dxgkrnl/dxgmodule.c
-index 053ce6f3e..9bc8931c5 100644
+index 053ce6f3e083..9bc8931c5043 100644
 --- a/drivers/hv/dxgkrnl/dxgmodule.c
 +++ b/drivers/hv/dxgkrnl/dxgmodule.c
 @@ -162,6 +162,7 @@ int dxgglobal_create_adapter(struct pci_dev *dev, guid_t *guid,
@@ -9433,7 +9453,7 @@ index 053ce6f3e..9bc8931c5 100644
  	adapter->pci_dev = dev;
  	guid_to_luid(guid, &adapter->luid);
 diff --git a/drivers/hv/dxgkrnl/dxgprocess.c b/drivers/hv/dxgkrnl/dxgprocess.c
-index ca307beb9..a41985ef4 100644
+index ca307beb9a9a..a41985ef438d 100644
 --- a/drivers/hv/dxgkrnl/dxgprocess.c
 +++ b/drivers/hv/dxgkrnl/dxgprocess.c
 @@ -59,6 +59,7 @@ void dxgprocess_destroy(struct dxgprocess *process)
@@ -9467,7 +9487,7 @@ index ca307beb9..a41985ef4 100644
  	hmgrtable_destroy(&process->local_handle_table);
  }
 diff --git a/drivers/hv/dxgkrnl/dxgvmbus.c b/drivers/hv/dxgkrnl/dxgvmbus.c
-index 14b51a3c6..d323afc85 100644
+index 14b51a3c6afc..d323afc85249 100644
 --- a/drivers/hv/dxgkrnl/dxgvmbus.c
 +++ b/drivers/hv/dxgkrnl/dxgvmbus.c
 @@ -495,6 +495,88 @@ dxgvmb_send_sync_msg_ntstatus(struct dxgvmbuschannel *channel,
@@ -9705,7 +9725,7 @@ index 14b51a3c6..d323afc85 100644
  				   struct dxgadapter *adapter,
  				   struct d3dkmt_queryadapterinfo *args)
 diff --git a/drivers/hv/dxgkrnl/dxgvmbus.h b/drivers/hv/dxgkrnl/dxgvmbus.h
-index 4b7466d1b..bbf5f31cd 100644
+index 4b7466d1b9f2..bbf5f31cdf81 100644
 --- a/drivers/hv/dxgkrnl/dxgvmbus.h
 +++ b/drivers/hv/dxgkrnl/dxgvmbus.h
 @@ -410,4 +410,24 @@ struct dxgkvmb_command_destroycontext {
@@ -9734,7 +9754,7 @@ index 4b7466d1b..bbf5f31cd 100644
 +
  #endif /* _DXGVMBUS_H */
 diff --git a/drivers/hv/dxgkrnl/ioctl.c b/drivers/hv/dxgkrnl/ioctl.c
-index 0eaa577d7..4bba1e209 100644
+index 0eaa577d7ed4..4bba1e209f33 100644
 --- a/drivers/hv/dxgkrnl/ioctl.c
 +++ b/drivers/hv/dxgkrnl/ioctl.c
 @@ -1341,6 +1341,132 @@ dxgkio_destroy_allocation(struct dxgprocess *process, void *__user inargs)
@@ -9889,7 +9909,7 @@ index 0eaa577d7..4bba1e209 100644
  /* 0x1f */	{},
  /* 0x20 */	{},
 diff --git a/include/uapi/misc/d3dkmthk.h b/include/uapi/misc/d3dkmthk.h
-index cf670b9c4..4e1069f41 100644
+index cf670b9c4dc2..4e1069f41d76 100644
 --- a/include/uapi/misc/d3dkmthk.h
 +++ b/include/uapi/misc/d3dkmthk.h
 @@ -256,6 +256,97 @@ enum d3dkmdt_standardallocationtype {
@@ -10009,13 +10029,13 @@ index cf670b9c4..4e1069f41 100644
  	_IOWR(0x47, 0x3e, struct d3dkmt_enumadapters3)
  
 -- 
-2.44.0
+2.47.0
 
 
-From dabaf51f635b9113bd37e22bedf4cbd0bd238a6a Mon Sep 17 00:00:00 2001
+From 7703fcbed764f8c99d2a4166fc3264db65aa1ddf Mon Sep 17 00:00:00 2001
 From: Iouri Tarassov <iourit@linux.microsoft.com>
 Date: Tue, 1 Feb 2022 13:59:23 -0800
-Subject: [PATCH 11/50] drivers: hv: dxgkrnl: Operations using sync objects
+Subject: [PATCH 11/54] drivers: hv: dxgkrnl: Operations using sync objects
 
 Implement ioctls to submit operations with compute device
 sync objects:
@@ -10048,6 +10068,8 @@ To improve performance, submitting operations to the host is done
 asynchronously when the host supports it.
 
 Signed-off-by: Iouri Tarassov <iourit@linux.microsoft.com>
+[kms: forward port to 6.6 from 6.1. No code changes made.]
+Signed-off-by: Kelsey Steele <kelseysteele@microsoft.com>
 ---
  drivers/hv/dxgkrnl/dxgadapter.c |  38 +-
  drivers/hv/dxgkrnl/dxgkrnl.h    |  62 +++
@@ -10060,7 +10082,7 @@ Signed-off-by: Iouri Tarassov <iourit@linux.microsoft.com>
  8 files changed, 1311 insertions(+), 21 deletions(-)
 
 diff --git a/drivers/hv/dxgkrnl/dxgadapter.c b/drivers/hv/dxgkrnl/dxgadapter.c
-index d2f2b9652..04d827a15 100644
+index d2f2b96527e6..04d827a15c54 100644
 --- a/drivers/hv/dxgkrnl/dxgadapter.c
 +++ b/drivers/hv/dxgkrnl/dxgadapter.c
 @@ -249,7 +249,7 @@ void dxgdevice_stop(struct dxgdevice *device)
@@ -10167,7 +10189,7 @@ index d2f2b9652..04d827a15 100644
  	kfree(syncobj);
  }
 diff --git a/drivers/hv/dxgkrnl/dxgkrnl.h b/drivers/hv/dxgkrnl/dxgkrnl.h
-index 1b9410c91..8431523f4 100644
+index 1b9410c9152b..8431523f42de 100644
 --- a/drivers/hv/dxgkrnl/dxgkrnl.h
 +++ b/drivers/hv/dxgkrnl/dxgkrnl.h
 @@ -101,6 +101,29 @@ int dxgvmbuschannel_init(struct dxgvmbuschannel *ch, struct hv_device *hdev);
@@ -10282,7 +10304,7 @@ index 1b9410c91..8431523f4 100644
  
  #ifdef DEBUG
 diff --git a/drivers/hv/dxgkrnl/dxgmodule.c b/drivers/hv/dxgkrnl/dxgmodule.c
-index 9bc8931c5..5a5ca8791 100644
+index 9bc8931c5043..5a5ca8791d27 100644
 --- a/drivers/hv/dxgkrnl/dxgmodule.c
 +++ b/drivers/hv/dxgkrnl/dxgmodule.c
 @@ -123,6 +123,102 @@ static struct dxgadapter *find_adapter(struct winluid *luid)
@@ -10407,7 +10429,7 @@ index 9bc8931c5..5a5ca8791 100644
  }
  
 diff --git a/drivers/hv/dxgkrnl/dxgvmbus.c b/drivers/hv/dxgkrnl/dxgvmbus.c
-index d323afc85..6b2dea24a 100644
+index d323afc85249..6b2dea24a509 100644
 --- a/drivers/hv/dxgkrnl/dxgvmbus.c
 +++ b/drivers/hv/dxgkrnl/dxgvmbus.c
 @@ -281,6 +281,22 @@ static void command_vm_to_host_init1(struct dxgkvmb_command_vm_to_host *command,
@@ -10658,7 +10680,7 @@ index d323afc85..6b2dea24a 100644
  				   struct dxgadapter *adapter,
  				   struct d3dkmt_queryadapterinfo *args)
 diff --git a/drivers/hv/dxgkrnl/dxgvmbus.h b/drivers/hv/dxgkrnl/dxgvmbus.h
-index bbf5f31cd..89fecbcef 100644
+index bbf5f31cdf81..89fecbcefbc8 100644
 --- a/drivers/hv/dxgkrnl/dxgvmbus.h
 +++ b/drivers/hv/dxgkrnl/dxgvmbus.h
 @@ -165,6 +165,13 @@ struct dxgkvmb_command_host_to_vm {
@@ -10722,7 +10744,7 @@ index bbf5f31cd..89fecbcef 100644
 +
  #endif /* _DXGVMBUS_H */
 diff --git a/drivers/hv/dxgkrnl/ioctl.c b/drivers/hv/dxgkrnl/ioctl.c
-index 4bba1e209..0025e1ee2 100644
+index 4bba1e209f33..0025e1ee2d4d 100644
 --- a/drivers/hv/dxgkrnl/ioctl.c
 +++ b/drivers/hv/dxgkrnl/ioctl.c
 @@ -759,7 +759,7 @@ get_standard_alloc_priv_data(struct dxgdevice *device,
@@ -11493,7 +11515,7 @@ index 4bba1e209..0025e1ee2 100644
  /* 0x3d */	{},
  /* 0x3e */	{dxgkio_enum_adapters3, LX_DXENUMADAPTERS3},
 diff --git a/drivers/hv/dxgkrnl/misc.h b/drivers/hv/dxgkrnl/misc.h
-index a51b29a6a..ee2ebfdd1 100644
+index a51b29a6a68f..ee2ebfdd1c13 100644
 --- a/drivers/hv/dxgkrnl/misc.h
 +++ b/drivers/hv/dxgkrnl/misc.h
 @@ -25,6 +25,8 @@ extern const struct d3dkmthandle zerohandle;
@@ -11506,7 +11528,7 @@ index a51b29a6a..ee2ebfdd1 100644
   * fd_mutex
   * plistmutex (process list mutex)
 diff --git a/include/uapi/misc/d3dkmthk.h b/include/uapi/misc/d3dkmthk.h
-index 4e1069f41..39055b0c1 100644
+index 4e1069f41d76..39055b0c1069 100644
 --- a/include/uapi/misc/d3dkmthk.h
 +++ b/include/uapi/misc/d3dkmthk.h
 @@ -60,6 +60,9 @@ struct winluid {
@@ -11697,13 +11719,13 @@ index 4e1069f41..39055b0c1 100644
  	_IOWR(0x47, 0x3e, struct d3dkmt_enumadapters3)
  
 -- 
-2.44.0
+2.47.0
 
 
-From 9ed342ca0f45a0b80663dead0798b992f6857923 Mon Sep 17 00:00:00 2001
+From bc02e34a9ac59a261716dd358e8728113ce9c669 Mon Sep 17 00:00:00 2001
 From: Iouri Tarassov <iourit@linux.microsoft.com>
 Date: Mon, 31 Jan 2022 17:52:31 -0800
-Subject: [PATCH 12/50] drivers: hv: dxgkrnl: Sharing of dxgresource objects
+Subject: [PATCH 12/54] drivers: hv: dxgkrnl: Sharing of dxgresource objects
 
 Implement creation of shared resources and ioctls for sharing
 dxgresource objects between processes in the virtual machine.
@@ -11731,6 +11753,8 @@ used to actually open the object using the LX_DXOPENRESOURCEFROMNTHANDLE
 ioctl.
 
 Signed-off-by: Iouri Tarassov <iourit@linux.microsoft.com>
+[kms: forward port to 6.6 from 6.1. No code changes made.]
+Signed-off-by: Kelsey Steele <kelseysteele@microsoft.com>
 ---
  drivers/hv/dxgkrnl/dxgadapter.c |  81 ++++
  drivers/hv/dxgkrnl/dxgkrnl.h    |  77 ++++
@@ -11742,7 +11766,7 @@ Signed-off-by: Iouri Tarassov <iourit@linux.microsoft.com>
  7 files changed, 1200 insertions(+), 4 deletions(-)
 
 diff --git a/drivers/hv/dxgkrnl/dxgadapter.c b/drivers/hv/dxgkrnl/dxgadapter.c
-index 04d827a15..26fce9aba 100644
+index 04d827a15c54..26fce9aba4f3 100644
 --- a/drivers/hv/dxgkrnl/dxgadapter.c
 +++ b/drivers/hv/dxgkrnl/dxgadapter.c
 @@ -160,6 +160,17 @@ void dxgadapter_remove_process(struct dxgprocess_adapter *process_info)
@@ -11855,7 +11879,7 @@ index 04d827a15..26fce9aba 100644
  	kref_put(&resource->resource_kref, dxgresource_release);
  }
 diff --git a/drivers/hv/dxgkrnl/dxgkrnl.h b/drivers/hv/dxgkrnl/dxgkrnl.h
-index 8431523f4..0336e1843 100644
+index 8431523f42de..0336e1843223 100644
 --- a/drivers/hv/dxgkrnl/dxgkrnl.h
 +++ b/drivers/hv/dxgkrnl/dxgkrnl.h
 @@ -38,6 +38,7 @@ struct dxgdevice;
@@ -11978,7 +12002,7 @@ index 8431523f4..0336e1843 100644
  				  enum d3dkmdt_standardallocationtype t,
  				  struct d3dkmdt_gdisurfacedata *data,
 diff --git a/drivers/hv/dxgkrnl/dxgmodule.c b/drivers/hv/dxgkrnl/dxgmodule.c
-index 5a5ca8791..69e221613 100644
+index 5a5ca8791d27..69e221613af9 100644
 --- a/drivers/hv/dxgkrnl/dxgmodule.c
 +++ b/drivers/hv/dxgkrnl/dxgmodule.c
 @@ -258,6 +258,7 @@ int dxgglobal_create_adapter(struct pci_dev *dev, guid_t *guid,
@@ -11990,7 +12014,7 @@ index 5a5ca8791..69e221613 100644
  	init_rwsem(&adapter->shared_resource_list_lock);
  	adapter->pci_dev = dev;
 diff --git a/drivers/hv/dxgkrnl/dxgvmbus.c b/drivers/hv/dxgkrnl/dxgvmbus.c
-index 6b2dea24a..b3a4377c8 100644
+index 6b2dea24a509..b3a4377c8b0b 100644
 --- a/drivers/hv/dxgkrnl/dxgvmbus.c
 +++ b/drivers/hv/dxgkrnl/dxgvmbus.c
 @@ -712,6 +712,79 @@ int dxgvmb_send_destroy_process(struct d3dkmthandle process)
@@ -12135,7 +12159,7 @@ index 6b2dea24a..b3a4377c8 100644
  				  enum d3dkmdt_standardallocationtype alloctype,
  				  struct d3dkmdt_gdisurfacedata *alloc_data,
 diff --git a/drivers/hv/dxgkrnl/dxgvmbus.h b/drivers/hv/dxgkrnl/dxgvmbus.h
-index 89fecbcef..73d7adac6 100644
+index 89fecbcefbc8..73d7adac60a1 100644
 --- a/drivers/hv/dxgkrnl/dxgvmbus.h
 +++ b/drivers/hv/dxgkrnl/dxgvmbus.h
 @@ -172,6 +172,21 @@ struct dxgkvmb_command_signalguestevent {
@@ -12183,7 +12207,7 @@ index 89fecbcef..73d7adac6 100644
  	struct dxgkvmb_command_vgpu_to_host hdr;
  	enum d3dkmdt_standardallocationtype alloc_type;
 diff --git a/drivers/hv/dxgkrnl/ioctl.c b/drivers/hv/dxgkrnl/ioctl.c
-index 0025e1ee2..abb64f6c3 100644
+index 0025e1ee2d4d..abb64f6c3a59 100644
 --- a/drivers/hv/dxgkrnl/ioctl.c
 +++ b/drivers/hv/dxgkrnl/ioctl.c
 @@ -36,8 +36,35 @@ static char *errorstr(int ret)
@@ -13047,7 +13071,7 @@ index 0025e1ee2..abb64f6c3 100644
  /* 0x44 */	{},
  /* 0x45 */	{},
 diff --git a/include/uapi/misc/d3dkmthk.h b/include/uapi/misc/d3dkmthk.h
-index 39055b0c1..f74564cf7 100644
+index 39055b0c1069..f74564cf7ee9 100644
 --- a/include/uapi/misc/d3dkmthk.h
 +++ b/include/uapi/misc/d3dkmthk.h
 @@ -682,6 +682,94 @@ enum d3dkmt_deviceexecution_state {
@@ -13160,13 +13184,13 @@ index 39055b0c1..f74564cf7 100644
  
  #endif /* _D3DKMTHK_H */
 -- 
-2.44.0
+2.47.0
 
 
-From 4ae3485931bd22338276e24069e0cfac7a6e337f Mon Sep 17 00:00:00 2001
+From 3dde47c8e1f3ab525ba7520a5f8c39b871bc9a6c Mon Sep 17 00:00:00 2001
 From: Iouri Tarassov <iourit@linux.microsoft.com>
 Date: Mon, 31 Jan 2022 16:41:28 -0800
-Subject: [PATCH 13/50] drivers: hv: dxgkrnl: Sharing of sync objects
+Subject: [PATCH 13/54] drivers: hv: dxgkrnl: Sharing of sync objects
 
 Implement creation of a shared sync objects and the ioctl for sharing
 dxgsyncobject objects between processes in the virtual machine.
@@ -13183,6 +13207,8 @@ LX_DXOPENSYNCOBJECTFROMNTHANDLE2 ioctl, which returns a d3dkmthandle
 value.
 
 Signed-off-by: Iouri Tarassov <iourit@linux.microsoft.com>
+[kms: forward port to 6.6 from 6.1. No code changes made.]
+Signed-off-by: Kelsey Steele <kelseysteele@microsoft.com>
 ---
  drivers/hv/dxgkrnl/dxgadapter.c | 181 ++++++++++-
  drivers/hv/dxgkrnl/dxgkrnl.h    |  96 ++++++
@@ -13195,7 +13221,7 @@ Signed-off-by: Iouri Tarassov <iourit@linux.microsoft.com>
  8 files changed, 1181 insertions(+), 6 deletions(-)
 
 diff --git a/drivers/hv/dxgkrnl/dxgadapter.c b/drivers/hv/dxgkrnl/dxgadapter.c
-index 26fce9aba..f59173f13 100644
+index 26fce9aba4f3..f59173f13559 100644
 --- a/drivers/hv/dxgkrnl/dxgadapter.c
 +++ b/drivers/hv/dxgkrnl/dxgadapter.c
 @@ -171,6 +171,26 @@ void dxgadapter_remove_shared_resource(struct dxgadapter *adapter,
@@ -13430,7 +13456,7 @@ index 26fce9aba..f59173f13 100644
 +	kfree(hwqueue);
 +}
 diff --git a/drivers/hv/dxgkrnl/dxgkrnl.h b/drivers/hv/dxgkrnl/dxgkrnl.h
-index 0336e1843..0330352b9 100644
+index 0336e1843223..0330352b9c06 100644
 --- a/drivers/hv/dxgkrnl/dxgkrnl.h
 +++ b/drivers/hv/dxgkrnl/dxgkrnl.h
 @@ -40,6 +40,8 @@ struct dxgallocation;
@@ -13598,7 +13624,7 @@ index 0336e1843..0330352b9 100644
  					struct d3dkmthandle object,
  					struct d3dkmthandle *shared_handle);
 diff --git a/drivers/hv/dxgkrnl/dxgmodule.c b/drivers/hv/dxgkrnl/dxgmodule.c
-index 69e221613..8cbe10955 100644
+index 69e221613af9..8cbe1095599f 100644
 --- a/drivers/hv/dxgkrnl/dxgmodule.c
 +++ b/drivers/hv/dxgkrnl/dxgmodule.c
 @@ -259,6 +259,7 @@ int dxgglobal_create_adapter(struct pci_dev *dev, guid_t *guid,
@@ -13610,7 +13636,7 @@ index 69e221613..8cbe10955 100644
  	init_rwsem(&adapter->shared_resource_list_lock);
  	adapter->pci_dev = dev;
 diff --git a/drivers/hv/dxgkrnl/dxgprocess.c b/drivers/hv/dxgkrnl/dxgprocess.c
-index a41985ef4..4021084eb 100644
+index a41985ef438d..4021084ebd78 100644
 --- a/drivers/hv/dxgkrnl/dxgprocess.c
 +++ b/drivers/hv/dxgkrnl/dxgprocess.c
 @@ -277,6 +277,10 @@ struct dxgdevice *dxgprocess_device_by_object_handle(struct dxgprocess *process,
@@ -13625,7 +13651,7 @@ index a41985ef4..4021084eb 100644
  			DXG_ERR("invalid handle type: %d", t);
  			break;
 diff --git a/drivers/hv/dxgkrnl/dxgvmbus.c b/drivers/hv/dxgkrnl/dxgvmbus.c
-index b3a4377c8..e83600945 100644
+index b3a4377c8b0b..e83600945de1 100644
 --- a/drivers/hv/dxgkrnl/dxgvmbus.c
 +++ b/drivers/hv/dxgkrnl/dxgvmbus.c
 @@ -712,6 +712,69 @@ int dxgvmb_send_destroy_process(struct d3dkmthandle process)
@@ -13864,7 +13890,7 @@ index b3a4377c8..e83600945 100644
  				   struct dxgadapter *adapter,
  				   struct d3dkmt_queryadapterinfo *args)
 diff --git a/drivers/hv/dxgkrnl/dxgvmbus.h b/drivers/hv/dxgkrnl/dxgvmbus.h
-index 73d7adac6..2e2fd1ae5 100644
+index 73d7adac60a1..2e2fd1ae5ec2 100644
 --- a/drivers/hv/dxgkrnl/dxgvmbus.h
 +++ b/drivers/hv/dxgkrnl/dxgvmbus.h
 @@ -172,6 +172,21 @@ struct dxgkvmb_command_signalguestevent {
@@ -13915,7 +13941,7 @@ index 73d7adac6..2e2fd1ae5 100644
 +
  #endif /* _DXGVMBUS_H */
 diff --git a/drivers/hv/dxgkrnl/ioctl.c b/drivers/hv/dxgkrnl/ioctl.c
-index abb64f6c3..3cfc1c40e 100644
+index abb64f6c3a59..3cfc1c40e0bb 100644
 --- a/drivers/hv/dxgkrnl/ioctl.c
 +++ b/drivers/hv/dxgkrnl/ioctl.c
 @@ -36,6 +36,33 @@ static char *errorstr(int ret)
@@ -14589,7 +14615,7 @@ index abb64f6c3..3cfc1c40e 100644
  		 LX_DXQUERYRESOURCEINFOFROMNTHANDLE},
  /* 0x42 */	{dxgkio_open_resource_nt, LX_DXOPENRESOURCEFROMNTHANDLE},
 diff --git a/include/uapi/misc/d3dkmthk.h b/include/uapi/misc/d3dkmthk.h
-index f74564cf7..a78252901 100644
+index f74564cf7ee9..a78252901c8d 100644
 --- a/include/uapi/misc/d3dkmthk.h
 +++ b/include/uapi/misc/d3dkmthk.h
 @@ -201,6 +201,16 @@ struct d3dkmt_createcontextvirtual {
@@ -14714,13 +14740,13 @@ index f74564cf7..a78252901 100644
  	_IOWR(0x47, 0x3a, struct d3dkmt_waitforsynchronizationobjectfromcpu)
  #define LX_DXWAITFORSYNCHRONIZATIONOBJECTFROMGPU \
 -- 
-2.44.0
+2.47.0
 
 
-From 6f6de48af1662e1695e93752b945c80c4bd88e8b Mon Sep 17 00:00:00 2001
+From ab9e38da3c96537a10a0a1f62071e0df8195b671 Mon Sep 17 00:00:00 2001
 From: Iouri Tarassov <iourit@linux.microsoft.com>
 Date: Thu, 20 Jan 2022 15:15:18 -0800
-Subject: [PATCH 14/50] drivers: hv: dxgkrnl: Creation of paging queue objects.
+Subject: [PATCH 14/54] drivers: hv: dxgkrnl: Creation of paging queue objects.
 
 Implement ioctls for creation/destruction of the paging queue objects:
   - LX_DXCREATEPAGINGQUEUE,
@@ -14736,6 +14762,8 @@ Each paging queue has an associated monitored fence sync object, which
 is used to detect when a paging operation is completed.
 
 Signed-off-by: Iouri Tarassov <iourit@linux.microsoft.com>
+[kms: forward port to 6.6 from 6.1. No code changes made.]
+Signed-off-by: Kelsey Steele <kelseysteele@microsoft.com>
 ---
  drivers/hv/dxgkrnl/dxgadapter.c |  89 +++++++++++++++
  drivers/hv/dxgkrnl/dxgkrnl.h    |  24 ++++
@@ -14747,7 +14775,7 @@ Signed-off-by: Iouri Tarassov <iourit@linux.microsoft.com>
  7 files changed, 418 insertions(+), 6 deletions(-)
 
 diff --git a/drivers/hv/dxgkrnl/dxgadapter.c b/drivers/hv/dxgkrnl/dxgadapter.c
-index f59173f13..410f08768 100644
+index f59173f13559..410f08768bad 100644
 --- a/drivers/hv/dxgkrnl/dxgadapter.c
 +++ b/drivers/hv/dxgkrnl/dxgadapter.c
 @@ -278,6 +278,7 @@ struct dxgdevice *dxgdevice_create(struct dxgadapter *adapter,
@@ -14875,7 +14903,7 @@ index f59173f13..410f08768 100644
  						     struct dxgadapter *adapter)
  {
 diff --git a/drivers/hv/dxgkrnl/dxgkrnl.h b/drivers/hv/dxgkrnl/dxgkrnl.h
-index 0330352b9..440d1f9b8 100644
+index 0330352b9c06..440d1f9b8882 100644
 --- a/drivers/hv/dxgkrnl/dxgkrnl.h
 +++ b/drivers/hv/dxgkrnl/dxgkrnl.h
 @@ -104,6 +104,16 @@ int dxgvmbuschannel_init(struct dxgvmbuschannel *ch, struct hv_device *hdev);
@@ -14931,7 +14959,7 @@ index 0330352b9..440d1f9b8 100644
  				  struct d3dkmt_createallocation *args,
  				  struct d3dkmt_createallocation *__user inargs,
 diff --git a/drivers/hv/dxgkrnl/dxgprocess.c b/drivers/hv/dxgkrnl/dxgprocess.c
-index 4021084eb..5de3f8ccb 100644
+index 4021084ebd78..5de3f8ccb448 100644
 --- a/drivers/hv/dxgkrnl/dxgprocess.c
 +++ b/drivers/hv/dxgkrnl/dxgprocess.c
 @@ -277,6 +277,10 @@ struct dxgdevice *dxgprocess_device_by_object_handle(struct dxgprocess *process,
@@ -14946,7 +14974,7 @@ index 4021084eb..5de3f8ccb 100644
  			device_handle =
  			    ((struct dxghwqueue *)obj)->device_handle;
 diff --git a/drivers/hv/dxgkrnl/dxgvmbus.c b/drivers/hv/dxgkrnl/dxgvmbus.c
-index e83600945..c9c00b288 100644
+index e83600945de1..c9c00b288ae0 100644
 --- a/drivers/hv/dxgkrnl/dxgvmbus.c
 +++ b/drivers/hv/dxgkrnl/dxgvmbus.c
 @@ -1155,6 +1155,80 @@ int dxgvmb_send_destroy_context(struct dxgadapter *adapter,
@@ -15031,7 +15059,7 @@ index e83600945..c9c00b288 100644
  copy_private_data(struct d3dkmt_createallocation *args,
  		  struct dxgkvmb_command_createallocation *command,
 diff --git a/drivers/hv/dxgkrnl/dxgvmbus.h b/drivers/hv/dxgkrnl/dxgvmbus.h
-index 2e2fd1ae5..aba075d37 100644
+index 2e2fd1ae5ec2..aba075d374c9 100644
 --- a/drivers/hv/dxgkrnl/dxgvmbus.h
 +++ b/drivers/hv/dxgkrnl/dxgvmbus.h
 @@ -462,6 +462,23 @@ struct dxgkvmb_command_destroycontext {
@@ -15059,7 +15087,7 @@ index 2e2fd1ae5..aba075d37 100644
  	struct dxgkvmb_command_vgpu_to_host hdr;
  	struct d3dkmt_createsynchronizationobject2 args;
 diff --git a/drivers/hv/dxgkrnl/ioctl.c b/drivers/hv/dxgkrnl/ioctl.c
-index 3cfc1c40e..a2d236f5e 100644
+index 3cfc1c40e0bb..a2d236f5eff5 100644
 --- a/drivers/hv/dxgkrnl/ioctl.c
 +++ b/drivers/hv/dxgkrnl/ioctl.c
 @@ -329,7 +329,7 @@ static int dxgsharedresource_seal(struct dxgsharedresource *shared_resource)
@@ -15301,7 +15329,7 @@ index 3cfc1c40e..a2d236f5e 100644
  /* 0x1e */	{},
  /* 0x1f */	{},
 diff --git a/include/uapi/misc/d3dkmthk.h b/include/uapi/misc/d3dkmthk.h
-index a78252901..6ec70852d 100644
+index a78252901c8d..6ec70852de6e 100644
 --- a/include/uapi/misc/d3dkmthk.h
 +++ b/include/uapi/misc/d3dkmthk.h
 @@ -211,6 +211,29 @@ struct d3dddi_createhwqueueflags {
@@ -15353,13 +15381,13 @@ index a78252901..6ec70852d 100644
  	_IOWR(0x47, 0x19, struct d3dkmt_destroydevice)
  #define LX_DXDESTROYSYNCHRONIZATIONOBJECT \
 -- 
-2.44.0
+2.47.0
 
 
-From a1b62bc5572bc36d48c9f2b495747b7989dfa01b Mon Sep 17 00:00:00 2001
+From 484f062e21f288260d38770ecd8b0cdf08bff5eb Mon Sep 17 00:00:00 2001
 From: Iouri Tarassov <iourit@linux.microsoft.com>
 Date: Wed, 19 Jan 2022 18:02:09 -0800
-Subject: [PATCH 15/50] drivers: hv: dxgkrnl: Submit execution commands to the
+Subject: [PATCH 15/54] drivers: hv: dxgkrnl: Submit execution commands to the
  compute device
 
 Implements ioctls for submission of compute device buffers for execution:
@@ -15375,6 +15403,8 @@ To improve performance both ioctls use asynchronous VM bus messages
 to communicate with the host as these are high frequency operations.
 
 Signed-off-by: Iouri Tarassov <iourit@linux.microsoft.com>
+[kms: forward port to 6.6 from 6.1. No code changes made.]
+Signed-off-by: Kelsey Steele <kelseysteele@microsoft.com>
 ---
  drivers/hv/dxgkrnl/dxgkrnl.h  |   6 ++
  drivers/hv/dxgkrnl/dxgvmbus.c | 113 ++++++++++++++++++++++++++++++
@@ -15384,7 +15414,7 @@ Signed-off-by: Iouri Tarassov <iourit@linux.microsoft.com>
  5 files changed, 316 insertions(+), 2 deletions(-)
 
 diff --git a/drivers/hv/dxgkrnl/dxgkrnl.h b/drivers/hv/dxgkrnl/dxgkrnl.h
-index 440d1f9b8..ab97bc53b 100644
+index 440d1f9b8882..ab97bc53b124 100644
 --- a/drivers/hv/dxgkrnl/dxgkrnl.h
 +++ b/drivers/hv/dxgkrnl/dxgkrnl.h
 @@ -796,6 +796,9 @@ int dxgvmb_send_create_allocation(struct dxgprocess *pr, struct dxgdevice *dev,
@@ -15408,7 +15438,7 @@ index 440d1f9b8..ab97bc53b 100644
  				    struct dxgvmbuschannel *channel,
  				    struct d3dkmt_opensyncobjectfromnthandle2
 diff --git a/drivers/hv/dxgkrnl/dxgvmbus.c b/drivers/hv/dxgkrnl/dxgvmbus.c
-index c9c00b288..7cb04fec2 100644
+index c9c00b288ae0..7cb04fec217e 100644
 --- a/drivers/hv/dxgkrnl/dxgvmbus.c
 +++ b/drivers/hv/dxgkrnl/dxgvmbus.c
 @@ -1901,6 +1901,61 @@ int dxgvmb_send_get_stdalloc_data(struct dxgdevice *device,
@@ -15536,7 +15566,7 @@ index c9c00b288..7cb04fec2 100644
 +	return ret;
 +}
 diff --git a/drivers/hv/dxgkrnl/dxgvmbus.h b/drivers/hv/dxgkrnl/dxgvmbus.h
-index aba075d37..acfdbde09 100644
+index aba075d374c9..acfdbde09e82 100644
 --- a/drivers/hv/dxgkrnl/dxgvmbus.h
 +++ b/drivers/hv/dxgkrnl/dxgvmbus.h
 @@ -314,6 +314,20 @@ struct dxgkvmb_command_flushdevice {
@@ -15561,7 +15591,7 @@ index aba075d37..acfdbde09 100644
  	u32				flags;
  	u32				priv_drv_data_size;
 diff --git a/drivers/hv/dxgkrnl/ioctl.c b/drivers/hv/dxgkrnl/ioctl.c
-index a2d236f5e..9128694c8 100644
+index a2d236f5eff5..9128694c8e78 100644
 --- a/drivers/hv/dxgkrnl/ioctl.c
 +++ b/drivers/hv/dxgkrnl/ioctl.c
 @@ -1902,6 +1902,129 @@ dxgkio_destroy_allocation(struct dxgprocess *process, void *__user inargs)
@@ -15713,7 +15743,7 @@ index a2d236f5e..9128694c8 100644
  		  LX_DXSUBMITSIGNALSYNCOBJECTSTOHWQUEUE},
  /* 0x36 */	{dxgkio_submit_wait_to_hwqueue,
 diff --git a/include/uapi/misc/d3dkmthk.h b/include/uapi/misc/d3dkmthk.h
-index 6ec70852d..9238115d1 100644
+index 6ec70852de6e..9238115d165d 100644
 --- a/include/uapi/misc/d3dkmthk.h
 +++ b/include/uapi/misc/d3dkmthk.h
 @@ -58,6 +58,8 @@ struct winluid {
@@ -15803,13 +15833,13 @@ index 6ec70852d..9238115d1 100644
  	_IOWR(0x47, 0x35, struct d3dkmt_submitsignalsyncobjectstohwqueue)
  #define LX_DXSUBMITWAITFORSYNCOBJECTSTOHWQUEUE \
 -- 
-2.44.0
+2.47.0
 
 
-From f319dc6b1baedf4d74e79a5f84ad559053a6a79a Mon Sep 17 00:00:00 2001
+From 9cd67d20c9adbb02d54e352ef20ff9f42cc91f38 Mon Sep 17 00:00:00 2001
 From: Iouri Tarassov <iourit@linux.microsoft.com>
 Date: Sat, 7 Aug 2021 18:11:34 -0700
-Subject: [PATCH 16/50] drivers: hv: dxgkrnl: Share objects with the host
+Subject: [PATCH 16/54] drivers: hv: dxgkrnl: Share objects with the host
 
 Implement the LX_DXSHAREOBJECTWITHHOST ioctl.
 This ioctl is used to create a Windows NT handle on the host
@@ -15823,6 +15853,8 @@ object.
 Fix incorrect handling of error results from copy_from_user().
 
 Signed-off-by: Iouri Tarassov <iourit@linux.microsoft.com>
+[kms: forward port to 6.6 from 6.1. No code changes made.]
+Signed-off-by: Kelsey Steele <kelseysteele@microsoft.com>
 ---
  drivers/hv/dxgkrnl/dxgkrnl.h  |  2 ++
  drivers/hv/dxgkrnl/dxgvmbus.c | 60 ++++++++++++++++++++++++++++++++---
@@ -15832,7 +15864,7 @@ Signed-off-by: Iouri Tarassov <iourit@linux.microsoft.com>
  5 files changed, 120 insertions(+), 7 deletions(-)
 
 diff --git a/drivers/hv/dxgkrnl/dxgkrnl.h b/drivers/hv/dxgkrnl/dxgkrnl.h
-index ab97bc53b..a39d11d76 100644
+index ab97bc53b124..a39d11d76e41 100644
 --- a/drivers/hv/dxgkrnl/dxgkrnl.h
 +++ b/drivers/hv/dxgkrnl/dxgkrnl.h
 @@ -872,6 +872,8 @@ int dxgvmb_send_get_stdalloc_data(struct dxgdevice *device,
@@ -15845,7 +15877,7 @@ index ab97bc53b..a39d11d76 100644
  void signal_host_cpu_event(struct dxghostevent *eventhdr);
  int ntstatus2int(struct ntstatus status);
 diff --git a/drivers/hv/dxgkrnl/dxgvmbus.c b/drivers/hv/dxgkrnl/dxgvmbus.c
-index 7cb04fec2..67a16de62 100644
+index 7cb04fec217e..67a16de622e0 100644
 --- a/drivers/hv/dxgkrnl/dxgvmbus.c
 +++ b/drivers/hv/dxgkrnl/dxgvmbus.c
 @@ -881,6 +881,50 @@ int dxgvmb_send_destroy_sync_object(struct dxgprocess *process,
@@ -15949,7 +15981,7 @@ index 7cb04fec2..67a16de62 100644
  
  cleanup:
 diff --git a/drivers/hv/dxgkrnl/dxgvmbus.h b/drivers/hv/dxgkrnl/dxgvmbus.h
-index acfdbde09..c1f693917 100644
+index acfdbde09e82..c1f693917d99 100644
 --- a/drivers/hv/dxgkrnl/dxgvmbus.h
 +++ b/drivers/hv/dxgkrnl/dxgvmbus.h
 @@ -574,4 +574,22 @@ struct dxgkvmb_command_destroyhwqueue {
@@ -15976,7 +16008,7 @@ index acfdbde09..c1f693917 100644
 +
  #endif /* _DXGVMBUS_H */
 diff --git a/drivers/hv/dxgkrnl/ioctl.c b/drivers/hv/dxgkrnl/ioctl.c
-index 9128694c8..ac052836c 100644
+index 9128694c8e78..ac052836ce27 100644
 --- a/drivers/hv/dxgkrnl/ioctl.c
 +++ b/drivers/hv/dxgkrnl/ioctl.c
 @@ -2460,6 +2460,7 @@ dxgkio_open_sync_object_nt(struct dxgprocess *process, void *__user inargs)
@@ -16047,7 +16079,7 @@ index 9128694c8..ac052836c 100644
  };
  
 diff --git a/include/uapi/misc/d3dkmthk.h b/include/uapi/misc/d3dkmthk.h
-index 9238115d1..895861505 100644
+index 9238115d165d..895861505e6e 100644
 --- a/include/uapi/misc/d3dkmthk.h
 +++ b/include/uapi/misc/d3dkmthk.h
 @@ -952,6 +952,13 @@ struct d3dkmt_enumadapters3 {
@@ -16073,13 +16105,13 @@ index 9238115d1..895861505 100644
  
  #endif /* _D3DKMTHK_H */
 -- 
-2.44.0
+2.47.0
 
 
-From b93616d825f018f5d800954be45eb19b2056904f Mon Sep 17 00:00:00 2001
+From 660ac2652c180ed55029e66c55e5057b7f56c2d7 Mon Sep 17 00:00:00 2001
 From: Iouri Tarassov <iourit@linux.microsoft.com>
 Date: Wed, 19 Jan 2022 16:53:47 -0800
-Subject: [PATCH 17/50] drivers: hv: dxgkrnl: Query the dxgdevice state
+Subject: [PATCH 17/54] drivers: hv: dxgkrnl: Query the dxgdevice state
 
 Implement the ioctl to query the dxgdevice state - LX_DXGETDEVICESTATE.
 The IOCTL is used to query the state of the given dxgdevice object (active,
@@ -16101,6 +16133,8 @@ bus message to the host for every call:
   Otherwise, the cached value is returned to the caller.
 
 Signed-off-by: Iouri Tarassov <iourit@linux.microsoft.com>
+[kms: forward port to 6.6 from 6.1. No code changes made.]
+Signed-off-by: Kelsey Steele <kelseysteele@microsoft.com>
 ---
  drivers/hv/dxgkrnl/dxgkrnl.h   |  11 ++++
  drivers/hv/dxgkrnl/dxgmodule.c |   1 -
@@ -16111,7 +16145,7 @@ Signed-off-by: Iouri Tarassov <iourit@linux.microsoft.com>
  6 files changed, 261 insertions(+), 12 deletions(-)
 
 diff --git a/drivers/hv/dxgkrnl/dxgkrnl.h b/drivers/hv/dxgkrnl/dxgkrnl.h
-index a39d11d76..b131c3b43 100644
+index a39d11d76e41..b131c3b43838 100644
 --- a/drivers/hv/dxgkrnl/dxgkrnl.h
 +++ b/drivers/hv/dxgkrnl/dxgkrnl.h
 @@ -268,12 +268,18 @@ void dxgsyncobject_destroy(struct dxgprocess *process,
@@ -16153,7 +16187,7 @@ index a39d11d76..b131c3b43 100644
  					struct d3dkmthandle object,
  					struct d3dkmthandle *shared_handle);
 diff --git a/drivers/hv/dxgkrnl/dxgmodule.c b/drivers/hv/dxgkrnl/dxgmodule.c
-index 8cbe10955..5c364a46b 100644
+index 8cbe1095599f..5c364a46b65f 100644
 --- a/drivers/hv/dxgkrnl/dxgmodule.c
 +++ b/drivers/hv/dxgkrnl/dxgmodule.c
 @@ -827,7 +827,6 @@ static struct dxgglobal *dxgglobal_create(void)
@@ -16165,7 +16199,7 @@ index 8cbe10955..5c364a46b 100644
  }
  
 diff --git a/drivers/hv/dxgkrnl/dxgvmbus.c b/drivers/hv/dxgkrnl/dxgvmbus.c
-index 67a16de62..ed800dc09 100644
+index 67a16de622e0..ed800dc09180 100644
 --- a/drivers/hv/dxgkrnl/dxgvmbus.c
 +++ b/drivers/hv/dxgkrnl/dxgvmbus.c
 @@ -281,6 +281,24 @@ static void command_vm_to_host_init1(struct dxgkvmb_command_vm_to_host *command,
@@ -16272,7 +16306,7 @@ index 67a16de62..ed800dc09 100644
  			      struct dxgadapter *adapter,
  			      struct d3dkmthandle device,
 diff --git a/drivers/hv/dxgkrnl/dxgvmbus.h b/drivers/hv/dxgkrnl/dxgvmbus.h
-index c1f693917..6ca1068b0 100644
+index c1f693917d99..6ca1068b0d4c 100644
 --- a/drivers/hv/dxgkrnl/dxgvmbus.h
 +++ b/drivers/hv/dxgkrnl/dxgvmbus.h
 @@ -172,6 +172,22 @@ struct dxgkvmb_command_signalguestevent {
@@ -16316,7 +16350,7 @@ index c1f693917..6ca1068b0 100644
  	struct dxgkvmb_command_vm_to_host hdr;
  	struct d3dkmthandle	device_handle;
 diff --git a/drivers/hv/dxgkrnl/ioctl.c b/drivers/hv/dxgkrnl/ioctl.c
-index ac052836c..26d410fd6 100644
+index ac052836ce27..26d410fd6e99 100644
 --- a/drivers/hv/dxgkrnl/ioctl.c
 +++ b/drivers/hv/dxgkrnl/ioctl.c
 @@ -3142,6 +3142,70 @@ dxgkio_wait_sync_object_gpu(struct dxgprocess *process, void *__user inargs)
@@ -16400,7 +16434,7 @@ index ac052836c..26d410fd6 100644
  /* 0x10 */	{dxgkio_create_sync_object, LX_DXCREATESYNCHRONIZATIONOBJECT},
  /* 0x11 */	{dxgkio_signal_sync_object, LX_DXSIGNALSYNCHRONIZATIONOBJECT},
 diff --git a/include/uapi/misc/d3dkmthk.h b/include/uapi/misc/d3dkmthk.h
-index 895861505..8a013b07e 100644
+index 895861505e6e..8a013b07e88a 100644
 --- a/include/uapi/misc/d3dkmthk.h
 +++ b/include/uapi/misc/d3dkmthk.h
 @@ -236,6 +236,95 @@ struct d3dddi_destroypagingqueue {
@@ -16526,13 +16560,13 @@ index 895861505..8a013b07e 100644
  	_IOWR(0x47, 0x0f, struct d3dkmt_submitcommand)
  #define LX_DXCREATESYNCHRONIZATIONOBJECT \
 -- 
-2.44.0
+2.47.0
 
 
-From d297951444ce4b1842b0a5f796456388939dd630 Mon Sep 17 00:00:00 2001
+From 334cdc997816e9345ad3e9a414db10586b13cc8e Mon Sep 17 00:00:00 2001
 From: Iouri Tarassov <iourit@linux.microsoft.com>
 Date: Wed, 19 Jan 2022 13:58:28 -0800
-Subject: [PATCH 18/50] drivers: hv: dxgkrnl: Map(unmap) CPU address to device
+Subject: [PATCH 18/54] drivers: hv: dxgkrnl: Map(unmap) CPU address to device
  allocation
 
 Implement ioctls to map/unmap CPU virtual addresses to compute device
@@ -16558,6 +16592,8 @@ The LX_DXUNLOCK2 ioctl unmaps a CPU virtual address from a compute
 device allocation.
 
 Signed-off-by: Iouri Tarassov <iourit@linux.microsoft.com>
+[kms: forward port to 6.6 from 6.1. No code changes made.]
+Signed-off-by: Kelsey Steele <kelseysteele@microsoft.com>
 ---
  drivers/hv/dxgkrnl/dxgadapter.c |  11 +++
  drivers/hv/dxgkrnl/dxgkrnl.h    |  14 +++
@@ -16568,7 +16604,7 @@ Signed-off-by: Iouri Tarassov <iourit@linux.microsoft.com>
  6 files changed, 339 insertions(+), 2 deletions(-)
 
 diff --git a/drivers/hv/dxgkrnl/dxgadapter.c b/drivers/hv/dxgkrnl/dxgadapter.c
-index 410f08768..23f00db76 100644
+index 410f08768bad..23f00db7637e 100644
 --- a/drivers/hv/dxgkrnl/dxgadapter.c
 +++ b/drivers/hv/dxgkrnl/dxgadapter.c
 @@ -885,6 +885,15 @@ void dxgallocation_stop(struct dxgallocation *alloc)
@@ -16597,7 +16633,7 @@ index 410f08768..23f00db76 100644
  }
  
 diff --git a/drivers/hv/dxgkrnl/dxgkrnl.h b/drivers/hv/dxgkrnl/dxgkrnl.h
-index b131c3b43..1d6b552f1 100644
+index b131c3b43838..1d6b552f1c1a 100644
 --- a/drivers/hv/dxgkrnl/dxgkrnl.h
 +++ b/drivers/hv/dxgkrnl/dxgkrnl.h
 @@ -708,6 +708,8 @@ struct dxgallocation {
@@ -16636,7 +16672,7 @@ index b131c3b43..1d6b552f1 100644
  			       struct dxgadapter *adapter,
  			       struct d3dkmt_createhwqueue *args,
 diff --git a/drivers/hv/dxgkrnl/dxgvmbus.c b/drivers/hv/dxgkrnl/dxgvmbus.c
-index ed800dc09..a80f84d90 100644
+index ed800dc09180..a80f84d9065a 100644
 --- a/drivers/hv/dxgkrnl/dxgvmbus.c
 +++ b/drivers/hv/dxgkrnl/dxgvmbus.c
 @@ -2354,6 +2354,113 @@ int dxgvmb_send_wait_sync_object_gpu(struct dxgprocess *process,
@@ -16754,7 +16790,7 @@ index ed800dc09..a80f84d90 100644
  			       struct dxgadapter *adapter,
  			       struct d3dkmt_createhwqueue *args,
 diff --git a/drivers/hv/dxgkrnl/dxgvmbus.h b/drivers/hv/dxgkrnl/dxgvmbus.h
-index 6ca1068b0..447bb1ba3 100644
+index 6ca1068b0d4c..447bb1ba391b 100644
 --- a/drivers/hv/dxgkrnl/dxgvmbus.h
 +++ b/drivers/hv/dxgkrnl/dxgvmbus.h
 @@ -570,6 +570,25 @@ struct dxgkvmb_command_waitforsyncobjectfromgpu {
@@ -16784,7 +16820,7 @@ index 6ca1068b0..447bb1ba3 100644
  struct dxgkvmb_command_createhwqueue {
  	struct dxgkvmb_command_vgpu_to_host hdr;
 diff --git a/drivers/hv/dxgkrnl/ioctl.c b/drivers/hv/dxgkrnl/ioctl.c
-index 26d410fd6..37e218443 100644
+index 26d410fd6e99..37e218443310 100644
 --- a/drivers/hv/dxgkrnl/ioctl.c
 +++ b/drivers/hv/dxgkrnl/ioctl.c
 @@ -3142,6 +3142,162 @@ dxgkio_wait_sync_object_gpu(struct dxgprocess *process, void *__user inargs)
@@ -16969,7 +17005,7 @@ index 26d410fd6..37e218443 100644
  /* 0x39 */	{},
  /* 0x3a */	{dxgkio_wait_sync_object_cpu,
 diff --git a/include/uapi/misc/d3dkmthk.h b/include/uapi/misc/d3dkmthk.h
-index 8a013b07e..b498f09e6 100644
+index 8a013b07e88a..b498f09e694d 100644
 --- a/include/uapi/misc/d3dkmthk.h
 +++ b/include/uapi/misc/d3dkmthk.h
 @@ -668,6 +668,32 @@ struct d3dkmt_submitcommandtohwqueue {
@@ -17024,13 +17060,13 @@ index 8a013b07e..b498f09e6 100644
  	_IOWR(0x47, 0x3a, struct d3dkmt_waitforsynchronizationobjectfromcpu)
  #define LX_DXWAITFORSYNCHRONIZATIONOBJECTFROMGPU \
 -- 
-2.44.0
+2.47.0
 
 
-From 820bc549e7a43a25ed41487175b19d31d87d2acd Mon Sep 17 00:00:00 2001
+From 8cdf2063b1317017d74112fad29d23c7681ee0fa Mon Sep 17 00:00:00 2001
 From: Iouri Tarassov <iourit@linux.microsoft.com>
 Date: Wed, 19 Jan 2022 11:14:22 -0800
-Subject: [PATCH 19/50] drivers: hv: dxgkrnl: Manage device allocation
+Subject: [PATCH 19/54] drivers: hv: dxgkrnl: Manage device allocation
  properties
 
 Implement ioctls to manage properties of a compute device allocation:
@@ -17054,6 +17090,8 @@ The LX_DXCHANGEVIDEOMEMORYRESERVATION ioctl changes compute device
 memory reservation of an allocation.
 
 Signed-off-by: Iouri Tarassov <iourit@linux.microsoft.com>
+[kms: forward port to 6.6 from 6.1. No code changes made.]
+Signed-off-by: Kelsey Steele <kelseysteele@microsoft.com>
 ---
  drivers/hv/dxgkrnl/dxgkrnl.h  |  21 +++
  drivers/hv/dxgkrnl/dxgvmbus.c | 300 ++++++++++++++++++++++++++++++++++
@@ -17063,7 +17101,7 @@ Signed-off-by: Iouri Tarassov <iourit@linux.microsoft.com>
  5 files changed, 708 insertions(+), 7 deletions(-)
 
 diff --git a/drivers/hv/dxgkrnl/dxgkrnl.h b/drivers/hv/dxgkrnl/dxgkrnl.h
-index 1d6b552f1..7fefe4617 100644
+index 1d6b552f1c1a..7fefe4617488 100644
 --- a/drivers/hv/dxgkrnl/dxgkrnl.h
 +++ b/drivers/hv/dxgkrnl/dxgkrnl.h
 @@ -851,6 +851,23 @@ int dxgvmb_send_lock2(struct dxgprocess *process,
@@ -17102,7 +17140,7 @@ index 1d6b552f1..7fefe4617 100644
  				 struct dxgadapter *adapter,
  				 struct d3dkmt_getdevicestate *args,
 diff --git a/drivers/hv/dxgkrnl/dxgvmbus.c b/drivers/hv/dxgkrnl/dxgvmbus.c
-index a80f84d90..dd2c97fee 100644
+index a80f84d9065a..dd2c97fee27b 100644
 --- a/drivers/hv/dxgkrnl/dxgvmbus.c
 +++ b/drivers/hv/dxgkrnl/dxgvmbus.c
 @@ -1829,6 +1829,79 @@ int dxgvmb_send_destroy_allocation(struct dxgprocess *process,
@@ -17420,7 +17458,7 @@ index a80f84d90..dd2c97fee 100644
  			       struct dxgadapter *adapter,
  			       struct d3dkmt_createhwqueue *args,
 diff --git a/drivers/hv/dxgkrnl/dxgvmbus.h b/drivers/hv/dxgkrnl/dxgvmbus.h
-index 447bb1ba3..dbb01b9ab 100644
+index 447bb1ba391b..dbb01b9ab066 100644
 --- a/drivers/hv/dxgkrnl/dxgvmbus.h
 +++ b/drivers/hv/dxgkrnl/dxgvmbus.h
 @@ -308,6 +308,29 @@ struct dxgkvmb_command_queryadapterinfo_return {
@@ -17495,7 +17533,7 @@ index 447bb1ba3..dbb01b9ab 100644
  	struct dxgkvmb_command_vgpu_to_host hdr;
  	struct d3dkmt_getdevicestate	args;
 diff --git a/drivers/hv/dxgkrnl/ioctl.c b/drivers/hv/dxgkrnl/ioctl.c
-index 37e218443..b626e2518 100644
+index 37e218443310..b626e2518ff2 100644
 --- a/drivers/hv/dxgkrnl/ioctl.c
 +++ b/drivers/hv/dxgkrnl/ioctl.c
 @@ -3214,7 +3214,7 @@ dxgkio_lock2(struct dxgprocess *process, void *__user inargs)
@@ -17759,7 +17797,7 @@ index 37e218443..b626e2518 100644
  /* 0x3e */	{dxgkio_enum_adapters3, LX_DXENUMADAPTERS3},
  /* 0x3f */	{dxgkio_share_objects, LX_DXSHAREOBJECTS},
 diff --git a/include/uapi/misc/d3dkmthk.h b/include/uapi/misc/d3dkmthk.h
-index b498f09e6..af381101f 100644
+index b498f09e694d..af381101fd90 100644
 --- a/include/uapi/misc/d3dkmthk.h
 +++ b/include/uapi/misc/d3dkmthk.h
 @@ -668,6 +668,63 @@ struct d3dkmt_submitcommandtohwqueue {
@@ -17936,13 +17974,13 @@ index b498f09e6..af381101f 100644
  	_IOWR(0x47, 0x3e, struct d3dkmt_enumadapters3)
  #define LX_DXSHAREOBJECTS		\
 -- 
-2.44.0
+2.47.0
 
 
-From 8697ce9b5f6c82c1db7a24a00c9f136f50209c2b Mon Sep 17 00:00:00 2001
+From 0050a59441fb924a7c737b94b308330a346109cb Mon Sep 17 00:00:00 2001
 From: Iouri Tarassov <iourit@linux.microsoft.com>
 Date: Tue, 18 Jan 2022 17:25:37 -0800
-Subject: [PATCH 20/50] drivers: hv: dxgkrnl: Flush heap transitions
+Subject: [PATCH 20/54] drivers: hv: dxgkrnl: Flush heap transitions
 
 Implement the ioctl to flush heap transitions
 (LX_DXFLUSHHEAPTRANSITIONS).
@@ -17951,6 +17989,8 @@ The ioctl is used to ensure that the video memory manager on the host
 flushes all internal operations.
 
 Signed-off-by: Iouri Tarassov <iourit@linux.microsoft.com>
+[kms: forward port to 6.6 from 6.1. No code changes made.]
+Signed-off-by: Kelsey Steele <kelseysteele@microsoft.com>
 ---
  drivers/hv/dxgkrnl/dxgadapter.c |  2 +-
  drivers/hv/dxgkrnl/dxgkrnl.h    |  3 ++
@@ -17961,7 +18001,7 @@ Signed-off-by: Iouri Tarassov <iourit@linux.microsoft.com>
  6 files changed, 86 insertions(+), 2 deletions(-)
 
 diff --git a/drivers/hv/dxgkrnl/dxgadapter.c b/drivers/hv/dxgkrnl/dxgadapter.c
-index 23f00db76..6f763e326 100644
+index 23f00db7637e..6f763e326a65 100644
 --- a/drivers/hv/dxgkrnl/dxgadapter.c
 +++ b/drivers/hv/dxgkrnl/dxgadapter.c
 @@ -942,7 +942,7 @@ else
@@ -17974,7 +18014,7 @@ index 23f00db76..6f763e326 100644
  }
  
 diff --git a/drivers/hv/dxgkrnl/dxgkrnl.h b/drivers/hv/dxgkrnl/dxgkrnl.h
-index 7fefe4617..ced9dd294 100644
+index 7fefe4617488..ced9dd294f5f 100644
 --- a/drivers/hv/dxgkrnl/dxgkrnl.h
 +++ b/drivers/hv/dxgkrnl/dxgkrnl.h
 @@ -882,6 +882,9 @@ int dxgvmb_send_query_adapter_info(struct dxgprocess *process,
@@ -17988,7 +18028,7 @@ index 7fefe4617..ced9dd294 100644
  				    struct dxgvmbuschannel *channel,
  				    struct d3dkmt_opensyncobjectfromnthandle2
 diff --git a/drivers/hv/dxgkrnl/dxgvmbus.c b/drivers/hv/dxgkrnl/dxgvmbus.c
-index dd2c97fee..928fad5f1 100644
+index dd2c97fee27b..928fad5f133b 100644
 --- a/drivers/hv/dxgkrnl/dxgvmbus.c
 +++ b/drivers/hv/dxgkrnl/dxgvmbus.c
 @@ -1829,6 +1829,29 @@ int dxgvmb_send_destroy_allocation(struct dxgprocess *process,
@@ -18022,7 +18062,7 @@ index dd2c97fee..928fad5f1 100644
  				      struct dxgadapter *adapter,
  				      struct d3dkmt_queryallocationresidency
 diff --git a/drivers/hv/dxgkrnl/dxgvmbus.h b/drivers/hv/dxgkrnl/dxgvmbus.h
-index dbb01b9ab..d232eb234 100644
+index dbb01b9ab066..d232eb234e2c 100644
 --- a/drivers/hv/dxgkrnl/dxgvmbus.h
 +++ b/drivers/hv/dxgkrnl/dxgvmbus.h
 @@ -367,6 +367,11 @@ struct dxgkvmb_command_submitcommandtohwqueue {
@@ -18038,7 +18078,7 @@ index dbb01b9ab..d232eb234 100644
  	u32				flags;
  	u32				priv_drv_data_size;
 diff --git a/drivers/hv/dxgkrnl/ioctl.c b/drivers/hv/dxgkrnl/ioctl.c
-index b626e2518..8b7d00e4c 100644
+index b626e2518ff2..8b7d00e4c881 100644
 --- a/drivers/hv/dxgkrnl/ioctl.c
 +++ b/drivers/hv/dxgkrnl/ioctl.c
 @@ -3500,6 +3500,53 @@ dxgkio_change_vidmem_reservation(struct dxgprocess *process, void *__user inargs
@@ -18105,7 +18145,7 @@ index b626e2518..8b7d00e4c 100644
  /* 0x21 */	{},
  /* 0x22 */	{},
 diff --git a/include/uapi/misc/d3dkmthk.h b/include/uapi/misc/d3dkmthk.h
-index af381101f..873feb951 100644
+index af381101fd90..873feb951129 100644
 --- a/include/uapi/misc/d3dkmthk.h
 +++ b/include/uapi/misc/d3dkmthk.h
 @@ -936,6 +936,10 @@ struct d3dkmt_queryadapterinfo {
@@ -18129,18 +18169,20 @@ index af381101f..873feb951 100644
  	_IOWR(0x47, 0x25, struct d3dkmt_lock2)
  #define LX_DXQUERYALLOCATIONRESIDENCY	\
 -- 
-2.44.0
+2.47.0
 
 
-From 4e16c1453e71d016315ad0094ca8f5ac8b8b687a Mon Sep 17 00:00:00 2001
+From 1cc37314b4e03cec05212821aaf42e8070d377f2 Mon Sep 17 00:00:00 2001
 From: Iouri Tarassov <iourit@linux.microsoft.com>
 Date: Tue, 8 Feb 2022 18:34:07 -0800
-Subject: [PATCH 21/50] drivers: hv: dxgkrnl: Query video memory information
+Subject: [PATCH 21/54] drivers: hv: dxgkrnl: Query video memory information
 
 Implement the ioctl to query video memory information from the host
 (LX_DXQUERYVIDEOMEMORYINFO).
 
 Signed-off-by: Iouri Tarassov <iourit@linux.microsoft.com>
+[kms: forward port to 6.6 from 6.1. No code changes made.]
+Signed-off-by: Kelsey Steele <kelseysteele@microsoft.com>
 ---
  drivers/hv/dxgkrnl/dxgkrnl.h  |  5 +++
  drivers/hv/dxgkrnl/dxgvmbus.c | 64 +++++++++++++++++++++++++++++++++++
@@ -18150,7 +18192,7 @@ Signed-off-by: Iouri Tarassov <iourit@linux.microsoft.com>
  5 files changed, 145 insertions(+), 1 deletion(-)
 
 diff --git a/drivers/hv/dxgkrnl/dxgkrnl.h b/drivers/hv/dxgkrnl/dxgkrnl.h
-index ced9dd294..b6a7288a4 100644
+index ced9dd294f5f..b6a7288a4177 100644
 --- a/drivers/hv/dxgkrnl/dxgkrnl.h
 +++ b/drivers/hv/dxgkrnl/dxgkrnl.h
 @@ -894,6 +894,11 @@ int dxgvmb_send_query_alloc_residency(struct dxgprocess *process,
@@ -18166,7 +18208,7 @@ index ced9dd294..b6a7288a4 100644
  				 struct dxgadapter *adapter,
  				 struct d3dkmt_getdevicestate *args,
 diff --git a/drivers/hv/dxgkrnl/dxgvmbus.c b/drivers/hv/dxgkrnl/dxgvmbus.c
-index 928fad5f1..48ff49456 100644
+index 928fad5f133b..48ff49456057 100644
 --- a/drivers/hv/dxgkrnl/dxgvmbus.c
 +++ b/drivers/hv/dxgkrnl/dxgvmbus.c
 @@ -1925,6 +1925,70 @@ int dxgvmb_send_query_alloc_residency(struct dxgprocess *process,
@@ -18241,7 +18283,7 @@ index 928fad5f1..48ff49456 100644
  				 struct dxgadapter *adapter,
  				 struct d3dkmt_getdevicestate *args,
 diff --git a/drivers/hv/dxgkrnl/dxgvmbus.h b/drivers/hv/dxgkrnl/dxgvmbus.h
-index d232eb234..a1549983d 100644
+index d232eb234e2c..a1549983d50f 100644
 --- a/drivers/hv/dxgkrnl/dxgvmbus.h
 +++ b/drivers/hv/dxgkrnl/dxgvmbus.h
 @@ -664,6 +664,20 @@ struct dxgkvmb_command_queryallocationresidency_return {
@@ -18266,7 +18308,7 @@ index d232eb234..a1549983d 100644
  	struct dxgkvmb_command_vgpu_to_host hdr;
  	struct d3dkmt_getdevicestate	args;
 diff --git a/drivers/hv/dxgkrnl/ioctl.c b/drivers/hv/dxgkrnl/ioctl.c
-index 8b7d00e4c..e692b127e 100644
+index 8b7d00e4c881..e692b127e219 100644
 --- a/drivers/hv/dxgkrnl/ioctl.c
 +++ b/drivers/hv/dxgkrnl/ioctl.c
 @@ -3547,6 +3547,54 @@ dxgkio_flush_heap_transitions(struct dxgprocess *process, void *__user inargs)
@@ -18334,7 +18376,7 @@ index 8b7d00e4c..e692b127e 100644
  /* 0x0c */	{},
  /* 0x0d */	{},
 diff --git a/include/uapi/misc/d3dkmthk.h b/include/uapi/misc/d3dkmthk.h
-index 873feb951..b7d8b1d91 100644
+index 873feb951129..b7d8b1d91cfc 100644
 --- a/include/uapi/misc/d3dkmthk.h
 +++ b/include/uapi/misc/d3dkmthk.h
 @@ -897,6 +897,17 @@ enum d3dkmt_memory_segment_group {
@@ -18365,13 +18407,13 @@ index 873feb951..b7d8b1d91 100644
  	_IOWR(0x47, 0x0e, struct d3dkmt_getdevicestate)
  #define LX_DXSUBMITCOMMAND		\
 -- 
-2.44.0
+2.47.0
 
 
-From 4aa27ed5d3732886ed10f3205d69bf94bb8ae757 Mon Sep 17 00:00:00 2001
+From 4efe7bc8fe02855efc3640eb15d92c58995f6806 Mon Sep 17 00:00:00 2001
 From: Iouri Tarassov <iourit@linux.microsoft.com>
 Date: Tue, 18 Jan 2022 15:50:30 -0800
-Subject: [PATCH 22/50] drivers: hv: dxgkrnl: The escape ioctl
+Subject: [PATCH 22/54] drivers: hv: dxgkrnl: The escape ioctl
 
 Implement the escape ioctl (LX_DXESCAPE).
 
@@ -18381,6 +18423,8 @@ driver (host). It allows the user mode driver to extend the virtual
 compute device API.
 
 Signed-off-by: Iouri Tarassov <iourit@linux.microsoft.com>
+[kms: forward port to 6.6 from 6.1. No code changes made.]
+Signed-off-by: Kelsey Steele <kelseysteele@microsoft.com>
 ---
  drivers/hv/dxgkrnl/dxgkrnl.h  |  3 ++
  drivers/hv/dxgkrnl/dxgvmbus.c | 75 ++++++++++++++++++++++++++++++++---
@@ -18390,7 +18434,7 @@ Signed-off-by: Iouri Tarassov <iourit@linux.microsoft.com>
  5 files changed, 167 insertions(+), 6 deletions(-)
 
 diff --git a/drivers/hv/dxgkrnl/dxgkrnl.h b/drivers/hv/dxgkrnl/dxgkrnl.h
-index b6a7288a4..dafc721ed 100644
+index b6a7288a4177..dafc721ed6cf 100644
 --- a/drivers/hv/dxgkrnl/dxgkrnl.h
 +++ b/drivers/hv/dxgkrnl/dxgkrnl.h
 @@ -894,6 +894,9 @@ int dxgvmb_send_query_alloc_residency(struct dxgprocess *process,
@@ -18404,7 +18448,7 @@ index b6a7288a4..dafc721ed 100644
  				  struct dxgadapter *adapter,
  				  struct d3dkmt_queryvideomemoryinfo *args,
 diff --git a/drivers/hv/dxgkrnl/dxgvmbus.c b/drivers/hv/dxgkrnl/dxgvmbus.c
-index 48ff49456..8bdd49bc7 100644
+index 48ff49456057..8bdd49bc7aa6 100644
 --- a/drivers/hv/dxgkrnl/dxgvmbus.c
 +++ b/drivers/hv/dxgkrnl/dxgvmbus.c
 @@ -1925,6 +1925,70 @@ int dxgvmb_send_query_alloc_residency(struct dxgprocess *process,
@@ -18527,7 +18571,7 @@ index 48ff49456..8bdd49bc7 100644
  }
 +
 diff --git a/drivers/hv/dxgkrnl/dxgvmbus.h b/drivers/hv/dxgkrnl/dxgvmbus.h
-index a1549983d..e1c2ed7b1 100644
+index a1549983d50f..e1c2ed7b1580 100644
 --- a/drivers/hv/dxgkrnl/dxgvmbus.h
 +++ b/drivers/hv/dxgkrnl/dxgvmbus.h
 @@ -664,6 +664,18 @@ struct dxgkvmb_command_queryallocationresidency_return {
@@ -18550,7 +18594,7 @@ index a1549983d..e1c2ed7b1 100644
  	struct dxgkvmb_command_vgpu_to_host hdr;
  	struct d3dkmthandle		adapter;
 diff --git a/drivers/hv/dxgkrnl/ioctl.c b/drivers/hv/dxgkrnl/ioctl.c
-index e692b127e..78de76abc 100644
+index e692b127e219..78de76abce2d 100644
 --- a/drivers/hv/dxgkrnl/ioctl.c
 +++ b/drivers/hv/dxgkrnl/ioctl.c
 @@ -3547,6 +3547,46 @@ dxgkio_flush_heap_transitions(struct dxgprocess *process, void *__user inargs)
@@ -18610,7 +18654,7 @@ index e692b127e..78de76abc 100644
  /* 0x0f */	{dxgkio_submit_command, LX_DXSUBMITCOMMAND},
  /* 0x10 */	{dxgkio_create_sync_object, LX_DXCREATESYNCHRONIZATIONOBJECT},
 diff --git a/include/uapi/misc/d3dkmthk.h b/include/uapi/misc/d3dkmthk.h
-index b7d8b1d91..749edf28b 100644
+index b7d8b1d91cfc..749edf28bd43 100644
 --- a/include/uapi/misc/d3dkmthk.h
 +++ b/include/uapi/misc/d3dkmthk.h
 @@ -236,6 +236,45 @@ struct d3dddi_destroypagingqueue {
@@ -18669,13 +18713,13 @@ index b7d8b1d91..749edf28b 100644
  	_IOWR(0x47, 0x0e, struct d3dkmt_getdevicestate)
  #define LX_DXSUBMITCOMMAND		\
 -- 
-2.44.0
+2.47.0
 
 
-From 787f87f52b36da9c947c8f2d8b044a0905849452 Mon Sep 17 00:00:00 2001
+From 1879b029f171a8ea903a21532509e8c2cf818de2 Mon Sep 17 00:00:00 2001
 From: Iouri Tarassov <iourit@linux.microsoft.com>
 Date: Wed, 9 Feb 2022 10:57:57 -0800
-Subject: [PATCH 23/50] drivers: hv: dxgkrnl: Ioctl to put device to error
+Subject: [PATCH 23/54] drivers: hv: dxgkrnl: Ioctl to put device to error
  state
 
 Implement the ioctl to put the virtual compute device to the error
@@ -18688,6 +18732,8 @@ When a compute device is put to the error state, all subsequent
 ioctl calls to the device will fail.
 
 Signed-off-by: Iouri Tarassov <iourit@linux.microsoft.com>
+[kms: forward port to 6.6 from 6.1. No code changes made.]
+Signed-off-by: Kelsey Steele <kelseysteele@microsoft.com>
 ---
  drivers/hv/dxgkrnl/dxgkrnl.h  |  3 +++
  drivers/hv/dxgkrnl/dxgvmbus.c | 25 +++++++++++++++++++++++
@@ -18697,7 +18743,7 @@ Signed-off-by: Iouri Tarassov <iourit@linux.microsoft.com>
  5 files changed, 82 insertions(+), 1 deletion(-)
 
 diff --git a/drivers/hv/dxgkrnl/dxgkrnl.h b/drivers/hv/dxgkrnl/dxgkrnl.h
-index dafc721ed..b454c7430 100644
+index dafc721ed6cf..b454c7430f06 100644
 --- a/drivers/hv/dxgkrnl/dxgkrnl.h
 +++ b/drivers/hv/dxgkrnl/dxgkrnl.h
 @@ -856,6 +856,9 @@ int dxgvmb_send_update_alloc_property(struct dxgprocess *process,
@@ -18711,7 +18757,7 @@ index dafc721ed..b454c7430 100644
  					struct dxgadapter *adapter,
  					struct d3dkmt_setallocationpriority *a);
 diff --git a/drivers/hv/dxgkrnl/dxgvmbus.c b/drivers/hv/dxgkrnl/dxgvmbus.c
-index 8bdd49bc7..f7264b12a 100644
+index 8bdd49bc7aa6..f7264b12a477 100644
 --- a/drivers/hv/dxgkrnl/dxgvmbus.c
 +++ b/drivers/hv/dxgkrnl/dxgvmbus.c
 @@ -2730,6 +2730,31 @@ int dxgvmb_send_update_alloc_property(struct dxgprocess *process,
@@ -18747,7 +18793,7 @@ index 8bdd49bc7..f7264b12a 100644
  				struct dxgadapter *adapter,
  				struct d3dkmt_setallocationpriority *args)
 diff --git a/drivers/hv/dxgkrnl/dxgvmbus.h b/drivers/hv/dxgkrnl/dxgvmbus.h
-index e1c2ed7b1..a66e11097 100644
+index e1c2ed7b1580..a66e11097bb2 100644
 --- a/drivers/hv/dxgkrnl/dxgvmbus.h
 +++ b/drivers/hv/dxgkrnl/dxgvmbus.h
 @@ -627,6 +627,11 @@ struct dxgkvmb_command_updateallocationproperty_return {
@@ -18763,7 +18809,7 @@ index e1c2ed7b1..a66e11097 100644
  struct dxgkvmb_command_changevideomemoryreservation {
  	struct dxgkvmb_command_vgpu_to_host hdr;
 diff --git a/drivers/hv/dxgkrnl/ioctl.c b/drivers/hv/dxgkrnl/ioctl.c
-index 78de76abc..ce4af610a 100644
+index 78de76abce2d..ce4af610ada7 100644
 --- a/drivers/hv/dxgkrnl/ioctl.c
 +++ b/drivers/hv/dxgkrnl/ioctl.c
 @@ -3341,6 +3341,42 @@ dxgkio_update_alloc_property(struct dxgprocess *process, void *__user inargs)
@@ -18819,7 +18865,7 @@ index 78de76abc..ce4af610a 100644
  /* 0x28 */	{},
  /* 0x29 */	{},
 diff --git a/include/uapi/misc/d3dkmthk.h b/include/uapi/misc/d3dkmthk.h
-index 749edf28b..ce5a638a8 100644
+index 749edf28bd43..ce5a638a886d 100644
 --- a/include/uapi/misc/d3dkmthk.h
 +++ b/include/uapi/misc/d3dkmthk.h
 @@ -790,6 +790,16 @@ struct d3dkmt_unlock2 {
@@ -18849,13 +18895,13 @@ index 749edf28b..ce5a638a8 100644
  	_IOWR(0x47, 0x2a, struct d3dkmt_queryallocationresidency)
  #define LX_DXSETALLOCATIONPRIORITY	\
 -- 
-2.44.0
+2.47.0
 
 
-From b387d4d5be9d8671242291bcd270311896e657a1 Mon Sep 17 00:00:00 2001
+From 9b79c92d672879e6994916e41cdb0d469b8525cb Mon Sep 17 00:00:00 2001
 From: Iouri Tarassov <iourit@linux.microsoft.com>
 Date: Wed, 9 Feb 2022 11:01:57 -0800
-Subject: [PATCH 24/50] drivers: hv: dxgkrnl: Ioctls to query statistics and
+Subject: [PATCH 24/54] drivers: hv: dxgkrnl: Ioctls to query statistics and
  clock calibration
 
 Implement ioctls to query statistics from the VGPU device
@@ -18869,6 +18915,8 @@ The LX_DXQUERYCLOCKCALIBRATION ioctl queries the compute device clock
 and is used for performance monitoring.
 
 Signed-off-by: Iouri Tarassov <iourit@linux.microsoft.com>
+[kms: forward port to 6.6 from 6.1. No code changes made.]
+Signed-off-by: Kelsey Steele <kelseysteele@microsoft.com>
 ---
  drivers/hv/dxgkrnl/dxgkrnl.h  |   8 +++
  drivers/hv/dxgkrnl/dxgvmbus.c |  77 +++++++++++++++++++++++
@@ -18878,7 +18926,7 @@ Signed-off-by: Iouri Tarassov <iourit@linux.microsoft.com>
  5 files changed, 277 insertions(+), 2 deletions(-)
 
 diff --git a/drivers/hv/dxgkrnl/dxgkrnl.h b/drivers/hv/dxgkrnl/dxgkrnl.h
-index b454c7430..a55873bdd 100644
+index b454c7430f06..a55873bdd9a6 100644
 --- a/drivers/hv/dxgkrnl/dxgkrnl.h
 +++ b/drivers/hv/dxgkrnl/dxgkrnl.h
 @@ -885,6 +885,11 @@ int dxgvmb_send_query_adapter_info(struct dxgprocess *process,
@@ -18904,7 +18952,7 @@ index b454c7430..a55873bdd 100644
  			  void *command,
  			  u32 cmd_size);
 diff --git a/drivers/hv/dxgkrnl/dxgvmbus.c b/drivers/hv/dxgkrnl/dxgvmbus.c
-index f7264b12a..9a1864bb4 100644
+index f7264b12a477..9a1864bb4e14 100644
 --- a/drivers/hv/dxgkrnl/dxgvmbus.c
 +++ b/drivers/hv/dxgkrnl/dxgvmbus.c
 @@ -1829,6 +1829,48 @@ int dxgvmb_send_destroy_allocation(struct dxgprocess *process,
@@ -18996,7 +19044,7 @@ index f7264b12a..9a1864bb4 100644
 +	return ret;
 +}
 diff --git a/drivers/hv/dxgkrnl/dxgvmbus.h b/drivers/hv/dxgkrnl/dxgvmbus.h
-index a66e11097..17768ed0e 100644
+index a66e11097bb2..17768ed0e68d 100644
 --- a/drivers/hv/dxgkrnl/dxgvmbus.h
 +++ b/drivers/hv/dxgkrnl/dxgvmbus.h
 @@ -372,6 +372,16 @@ struct dxgkvmb_command_flushheaptransitions {
@@ -19035,7 +19083,7 @@ index a66e11097..17768ed0e 100644
  	struct dxgkvmb_command_vgpu_to_host hdr;
  	enum d3dkmdt_standardallocationtype alloc_type;
 diff --git a/drivers/hv/dxgkrnl/ioctl.c b/drivers/hv/dxgkrnl/ioctl.c
-index ce4af610a..4babb21f3 100644
+index ce4af610ada7..4babb21f38a9 100644
 --- a/drivers/hv/dxgkrnl/ioctl.c
 +++ b/drivers/hv/dxgkrnl/ioctl.c
 @@ -149,6 +149,65 @@ static int dxgkio_open_adapter_from_luid(struct dxgprocess *process,
@@ -19177,7 +19225,7 @@ index ce4af610a..4babb21f3 100644
  /* 0x45 */	{},
  };
 diff --git a/include/uapi/misc/d3dkmthk.h b/include/uapi/misc/d3dkmthk.h
-index ce5a638a8..ea18242ce 100644
+index ce5a638a886d..ea18242ceb83 100644
 --- a/include/uapi/misc/d3dkmthk.h
 +++ b/include/uapi/misc/d3dkmthk.h
 @@ -996,6 +996,34 @@ struct d3dkmt_queryadapterinfo {
@@ -19271,13 +19319,13 @@ index ce5a638a8..ea18242ce 100644
  	_IOWR(0x47, 0x44, struct d3dkmt_shareobjectwithhost)
  
 -- 
-2.44.0
+2.47.0
 
 
-From 64820ab93217deeaff87283e1b4128e8a288f1df Mon Sep 17 00:00:00 2001
+From 5786371fbbfc79b3f60738bbb36ffdbbb0517d22 Mon Sep 17 00:00:00 2001
 From: Iouri Tarassov <iourit@linux.microsoft.com>
 Date: Tue, 18 Jan 2022 15:01:55 -0800
-Subject: [PATCH 25/50] drivers: hv: dxgkrnl: Offer and reclaim allocations
+Subject: [PATCH 25/54] drivers: hv: dxgkrnl: Offer and reclaim allocations
 
 Implement ioctls to offer and reclaim compute device allocations:
   - LX_DXOFFERALLOCATIONS,
@@ -19295,6 +19343,8 @@ must restore the content of the allocation before it can be used by
 the device.
 
 Signed-off-by: Iouri Tarassov <iourit@linux.microsoft.com>
+[kms: forward port to 6.6 from 6.1. No code changes made.]
+Signed-off-by: Kelsey Steele <kelseysteele@microsoft.com>
 ---
  drivers/hv/dxgkrnl/dxgkrnl.h  |   8 +++
  drivers/hv/dxgkrnl/dxgvmbus.c | 124 +++++++++++++++++++++++++++++++++-
@@ -19304,7 +19354,7 @@ Signed-off-by: Iouri Tarassov <iourit@linux.microsoft.com>
  5 files changed, 340 insertions(+), 3 deletions(-)
 
 diff --git a/drivers/hv/dxgkrnl/dxgkrnl.h b/drivers/hv/dxgkrnl/dxgkrnl.h
-index a55873bdd..494ea8fb0 100644
+index a55873bdd9a6..494ea8fb0bb3 100644
 --- a/drivers/hv/dxgkrnl/dxgkrnl.h
 +++ b/drivers/hv/dxgkrnl/dxgkrnl.h
 @@ -865,6 +865,14 @@ int dxgvmb_send_set_allocation_priority(struct dxgprocess *process,
@@ -19323,7 +19373,7 @@ index a55873bdd..494ea8fb0 100644
  					  struct dxgadapter *adapter,
  					  struct d3dkmthandle other_process,
 diff --git a/drivers/hv/dxgkrnl/dxgvmbus.c b/drivers/hv/dxgkrnl/dxgvmbus.c
-index 9a1864bb4..8448fd789 100644
+index 9a1864bb4e14..8448fd78975b 100644
 --- a/drivers/hv/dxgkrnl/dxgvmbus.c
 +++ b/drivers/hv/dxgkrnl/dxgvmbus.c
 @@ -1858,7 +1858,7 @@ int dxgvmb_send_query_clock_calibration(struct dxgprocess *process,
@@ -19465,7 +19515,7 @@ index 9a1864bb4..8448fd789 100644
  					  struct dxgadapter *adapter,
  					  struct d3dkmthandle other_process,
 diff --git a/drivers/hv/dxgkrnl/dxgvmbus.h b/drivers/hv/dxgkrnl/dxgvmbus.h
-index 17768ed0e..558c6576a 100644
+index 17768ed0e68d..558c6576a262 100644
 --- a/drivers/hv/dxgkrnl/dxgvmbus.h
 +++ b/drivers/hv/dxgkrnl/dxgvmbus.h
 @@ -653,6 +653,33 @@ struct dxgkvmb_command_markdeviceaserror {
@@ -19503,7 +19553,7 @@ index 17768ed0e..558c6576a 100644
  struct dxgkvmb_command_changevideomemoryreservation {
  	struct dxgkvmb_command_vgpu_to_host hdr;
 diff --git a/drivers/hv/dxgkrnl/ioctl.c b/drivers/hv/dxgkrnl/ioctl.c
-index 4babb21f3..fa880aa01 100644
+index 4babb21f38a9..fa880aa0196a 100644
 --- a/drivers/hv/dxgkrnl/ioctl.c
 +++ b/drivers/hv/dxgkrnl/ioctl.c
 @@ -1961,6 +1961,119 @@ dxgkio_destroy_allocation(struct dxgprocess *process, void *__user inargs)
@@ -19642,7 +19692,7 @@ index 4babb21f3..fa880aa01 100644
  /* 0x2e */	{dxgkio_set_allocation_priority, LX_DXSETALLOCATIONPRIORITY},
  /* 0x2f */	{},
 diff --git a/include/uapi/misc/d3dkmthk.h b/include/uapi/misc/d3dkmthk.h
-index ea18242ce..46b9f6d30 100644
+index ea18242ceb83..46b9f6d303bf 100644
 --- a/include/uapi/misc/d3dkmthk.h
 +++ b/include/uapi/misc/d3dkmthk.h
 @@ -61,6 +61,7 @@ struct winluid {
@@ -19736,13 +19786,13 @@ index ea18242ce..46b9f6d30 100644
  	_IOWR(0x47, 0x2e, struct d3dkmt_setallocationpriority)
  #define LX_DXSIGNALSYNCHRONIZATIONOBJECTFROMCPU \
 -- 
-2.44.0
+2.47.0
 
 
-From 41a13b65445cc2aa9964fa753026a135f80c9a81 Mon Sep 17 00:00:00 2001
+From c6e2b7479b0167695d7711d61e5aa0e385ee60ec Mon Sep 17 00:00:00 2001
 From: Iouri Tarassov <iourit@linux.microsoft.com>
 Date: Fri, 14 Jan 2022 17:57:41 -0800
-Subject: [PATCH 26/50] drivers: hv: dxgkrnl: Ioctls to manage scheduling
+Subject: [PATCH 26/54] drivers: hv: dxgkrnl: Ioctls to manage scheduling
  priority
 
 Implement iocts to manage compute device scheduling priority:
@@ -19757,6 +19807,8 @@ pick contexts for execution. There is a global priority and a
 priority within a process.
 
 Signed-off-by: Iouri Tarassov <iourit@linux.microsoft.com>
+[kms: forward port to 6.6 from 6.1. No code changes made.]
+Signed-off-by: Kelsey Steele <kelseysteele@microsoft.com>
 ---
  drivers/hv/dxgkrnl/dxgkrnl.h  |   9 ++
  drivers/hv/dxgkrnl/dxgvmbus.c |  67 ++++++++++++-
@@ -19766,7 +19818,7 @@ Signed-off-by: Iouri Tarassov <iourit@linux.microsoft.com>
  5 files changed, 294 insertions(+), 6 deletions(-)
 
 diff --git a/drivers/hv/dxgkrnl/dxgkrnl.h b/drivers/hv/dxgkrnl/dxgkrnl.h
-index 494ea8fb0..02d10bdcc 100644
+index 494ea8fb0bb3..02d10bdcc820 100644
 --- a/drivers/hv/dxgkrnl/dxgkrnl.h
 +++ b/drivers/hv/dxgkrnl/dxgkrnl.h
 @@ -865,6 +865,15 @@ int dxgvmb_send_set_allocation_priority(struct dxgprocess *process,
@@ -19786,7 +19838,7 @@ index 494ea8fb0..02d10bdcc 100644
  				  struct dxgadapter *adapter,
  				  struct d3dkmt_offerallocations *args);
 diff --git a/drivers/hv/dxgkrnl/dxgvmbus.c b/drivers/hv/dxgkrnl/dxgvmbus.c
-index 8448fd789..9a610d48b 100644
+index 8448fd78975b..9a610d48bed7 100644
 --- a/drivers/hv/dxgkrnl/dxgvmbus.c
 +++ b/drivers/hv/dxgkrnl/dxgvmbus.c
 @@ -2949,6 +2949,69 @@ int dxgvmb_send_get_allocation_priority(struct dxgprocess *process,
@@ -19878,7 +19930,7 @@ index 8448fd789..9a610d48b 100644
  }
  
 diff --git a/drivers/hv/dxgkrnl/dxgvmbus.h b/drivers/hv/dxgkrnl/dxgvmbus.h
-index 558c6576a..509482e1f 100644
+index 558c6576a262..509482e1f870 100644
 --- a/drivers/hv/dxgkrnl/dxgvmbus.h
 +++ b/drivers/hv/dxgkrnl/dxgvmbus.h
 @@ -331,6 +331,25 @@ struct dxgkvmb_command_getallocationpriority_return {
@@ -19908,7 +19960,7 @@ index 558c6576a..509482e1f 100644
  	struct dxgkvmb_command_vgpu_to_host hdr;
  	struct d3dkmt_createdeviceflags	flags;
 diff --git a/drivers/hv/dxgkrnl/ioctl.c b/drivers/hv/dxgkrnl/ioctl.c
-index fa880aa01..bc0adebe5 100644
+index fa880aa0196a..bc0adebe52ae 100644
 --- a/drivers/hv/dxgkrnl/ioctl.c
 +++ b/drivers/hv/dxgkrnl/ioctl.c
 @@ -3660,6 +3660,171 @@ dxgkio_get_allocation_priority(struct dxgprocess *process, void *__user inargs)
@@ -20110,7 +20162,7 @@ index fa880aa01..bc0adebe5 100644
  		 LX_DXSIGNALSYNCHRONIZATIONOBJECTFROMCPU},
  /* 0x32 */	{dxgkio_signal_sync_object_gpu,
 diff --git a/include/uapi/misc/d3dkmthk.h b/include/uapi/misc/d3dkmthk.h
-index 46b9f6d30..a9bafab97 100644
+index 46b9f6d303bf..a9bafab97c18 100644
 --- a/include/uapi/misc/d3dkmthk.h
 +++ b/include/uapi/misc/d3dkmthk.h
 @@ -708,6 +708,26 @@ struct d3dkmt_submitcommandtohwqueue {
@@ -20163,13 +20215,13 @@ index 46b9f6d30..a9bafab97 100644
  	_IOWR(0x47, 0x31, struct d3dkmt_signalsynchronizationobjectfromcpu)
  #define LX_DXSIGNALSYNCHRONIZATIONOBJECTFROMGPU \
 -- 
-2.44.0
+2.47.0
 
 
-From 7a349c144b373dc2df2a1fc503d645179a2f217f Mon Sep 17 00:00:00 2001
+From 06b8fe675c7dd233741265273de11dcc2f9ffe80 Mon Sep 17 00:00:00 2001
 From: Iouri Tarassov <iourit@linux.microsoft.com>
 Date: Fri, 14 Jan 2022 17:33:52 -0800
-Subject: [PATCH 27/50] drivers: hv: dxgkrnl: Manage residency of allocations
+Subject: [PATCH 27/54] drivers: hv: dxgkrnl: Manage residency of allocations
 
 Implement ioctls to manage residency of compute device allocations:
   - LX_DXMAKERESIDENT,
@@ -20193,6 +20245,8 @@ The LX_DXEVICT ioctl istructs the video memory manager to evict
 the given allocations from device accessible memory.
 
 Signed-off-by: Iouri Tarassov <iourit@linux.microsoft.com>
+[kms: forward port to 6.6 from 6.1. No code changes made.]
+Signed-off-by: Kelsey Steele <kelseysteele@microsoft.com>
 ---
  drivers/hv/dxgkrnl/dxgkrnl.h  |   4 +
  drivers/hv/dxgkrnl/dxgvmbus.c |  98 +++++++++++++++++++++++
@@ -20202,7 +20256,7 @@ Signed-off-by: Iouri Tarassov <iourit@linux.microsoft.com>
  5 files changed, 322 insertions(+), 2 deletions(-)
 
 diff --git a/drivers/hv/dxgkrnl/dxgkrnl.h b/drivers/hv/dxgkrnl/dxgkrnl.h
-index 02d10bdcc..93c3ceb23 100644
+index 02d10bdcc820..93c3ceb23865 100644
 --- a/drivers/hv/dxgkrnl/dxgkrnl.h
 +++ b/drivers/hv/dxgkrnl/dxgkrnl.h
 @@ -810,6 +810,10 @@ int dxgvmb_send_create_allocation(struct dxgprocess *pr, struct dxgdevice *dev,
@@ -20217,7 +20271,7 @@ index 02d10bdcc..93c3ceb23 100644
  			       struct dxgadapter *adapter,
  			       struct d3dkmt_submitcommand *args);
 diff --git a/drivers/hv/dxgkrnl/dxgvmbus.c b/drivers/hv/dxgkrnl/dxgvmbus.c
-index 9a610d48b..f4c4a7e7a 100644
+index 9a610d48bed7..f4c4a7e7ad8b 100644
 --- a/drivers/hv/dxgkrnl/dxgvmbus.c
 +++ b/drivers/hv/dxgkrnl/dxgvmbus.c
 @@ -2279,6 +2279,104 @@ int dxgvmb_send_get_stdalloc_data(struct dxgdevice *device,
@@ -20326,7 +20380,7 @@ index 9a610d48b..f4c4a7e7a 100644
  			       struct dxgadapter *adapter,
  			       struct d3dkmt_submitcommand *args)
 diff --git a/drivers/hv/dxgkrnl/dxgvmbus.h b/drivers/hv/dxgkrnl/dxgvmbus.h
-index 509482e1f..23f92ab9f 100644
+index 509482e1f870..23f92ab9f8ad 100644
 --- a/drivers/hv/dxgkrnl/dxgvmbus.h
 +++ b/drivers/hv/dxgkrnl/dxgvmbus.h
 @@ -372,6 +372,33 @@ struct dxgkvmb_command_flushdevice {
@@ -20364,7 +20418,7 @@ index 509482e1f..23f92ab9f 100644
  	struct dxgkvmb_command_vgpu_to_host hdr;
  	struct d3dkmt_submitcommand	args;
 diff --git a/drivers/hv/dxgkrnl/ioctl.c b/drivers/hv/dxgkrnl/ioctl.c
-index bc0adebe5..2700da51b 100644
+index bc0adebe52ae..2700da51bc01 100644
 --- a/drivers/hv/dxgkrnl/ioctl.c
 +++ b/drivers/hv/dxgkrnl/ioctl.c
 @@ -1961,6 +1961,143 @@ dxgkio_destroy_allocation(struct dxgprocess *process, void *__user inargs)
@@ -20530,7 +20584,7 @@ index bc0adebe5..2700da51b 100644
  /* 0x20 */	{},
  /* 0x21 */	{dxgkio_get_context_process_scheduling_priority,
 diff --git a/include/uapi/misc/d3dkmthk.h b/include/uapi/misc/d3dkmthk.h
-index a9bafab97..944f9d1e7 100644
+index a9bafab97c18..944f9d1e73d6 100644
 --- a/include/uapi/misc/d3dkmthk.h
 +++ b/include/uapi/misc/d3dkmthk.h
 @@ -962,6 +962,56 @@ struct d3dkmt_destroyallocation2 {
@@ -20609,13 +20663,13 @@ index a9bafab97..944f9d1e7 100644
  	_IOWR(0x47, 0x1f, struct d3dkmt_flushheaptransitions)
  #define LX_DXGETCONTEXTINPROCESSSCHEDULINGPRIORITY \
 -- 
-2.44.0
+2.47.0
 
 
-From 3e8f65caa0e4643d82fb1166df67dfe116b27d7a Mon Sep 17 00:00:00 2001
+From 88a651083fdd0ca67b7a3968341c8017d19464e7 Mon Sep 17 00:00:00 2001
 From: Iouri Tarassov <iourit@linux.microsoft.com>
 Date: Fri, 14 Jan 2022 17:13:04 -0800
-Subject: [PATCH 28/50] drivers: hv: dxgkrnl: Manage compute device virtual
+Subject: [PATCH 28/54] drivers: hv: dxgkrnl: Manage compute device virtual
  addresses
 
 Implement ioctls to manage compute device virtual addresses (VA):
@@ -20645,6 +20699,8 @@ allows the operations to be queued and synchronized with execution
 of other compute device DMA buffers..
 
 Signed-off-by: Iouri Tarassov <iourit@linux.microsoft.com>
+[kms: forward port to 6.6 from 6.1. No code changes made.]
+Signed-off-by: Kelsey Steele <kelseysteele@microsoft.com>
 ---
  drivers/hv/dxgkrnl/dxgkrnl.h  |  10 ++
  drivers/hv/dxgkrnl/dxgvmbus.c | 150 ++++++++++++++++++++++
@@ -20654,7 +20710,7 @@ Signed-off-by: Iouri Tarassov <iourit@linux.microsoft.com>
  5 files changed, 548 insertions(+), 4 deletions(-)
 
 diff --git a/drivers/hv/dxgkrnl/dxgkrnl.h b/drivers/hv/dxgkrnl/dxgkrnl.h
-index 93c3ceb23..93bc9b41a 100644
+index 93c3ceb23865..93bc9b41aa41 100644
 --- a/drivers/hv/dxgkrnl/dxgkrnl.h
 +++ b/drivers/hv/dxgkrnl/dxgkrnl.h
 @@ -817,6 +817,16 @@ int dxgvmb_send_evict(struct dxgprocess *pr, struct dxgadapter *adapter,
@@ -20675,7 +20731,7 @@ index 93c3ceb23..93bc9b41a 100644
  				   struct dxgadapter *adapter,
  				   struct d3dkmt_createsynchronizationobject2
 diff --git a/drivers/hv/dxgkrnl/dxgvmbus.c b/drivers/hv/dxgkrnl/dxgvmbus.c
-index f4c4a7e7a..425a1ab87 100644
+index f4c4a7e7ad8b..425a1ab87bd6 100644
 --- a/drivers/hv/dxgkrnl/dxgvmbus.c
 +++ b/drivers/hv/dxgkrnl/dxgvmbus.c
 @@ -2432,6 +2432,156 @@ int dxgvmb_send_submit_command(struct dxgprocess *process,
@@ -20836,7 +20892,7 @@ index f4c4a7e7a..425a1ab87 100644
  		       u64 fence_gpu_va, u8 *va)
  {
 diff --git a/drivers/hv/dxgkrnl/dxgvmbus.h b/drivers/hv/dxgkrnl/dxgvmbus.h
-index 23f92ab9f..88967ff6a 100644
+index 23f92ab9f8ad..88967ff6a505 100644
 --- a/drivers/hv/dxgkrnl/dxgvmbus.h
 +++ b/drivers/hv/dxgkrnl/dxgvmbus.h
 @@ -418,6 +418,44 @@ struct dxgkvmb_command_flushheaptransitions {
@@ -20885,7 +20941,7 @@ index 23f92ab9f..88967ff6a 100644
  	struct dxgkvmb_command_vgpu_to_host hdr;
  	struct d3dkmt_queryclockcalibration args;
 diff --git a/drivers/hv/dxgkrnl/ioctl.c b/drivers/hv/dxgkrnl/ioctl.c
-index 2700da51b..f6700e974 100644
+index 2700da51bc01..f6700e974f25 100644
 --- a/drivers/hv/dxgkrnl/ioctl.c
 +++ b/drivers/hv/dxgkrnl/ioctl.c
 @@ -2492,6 +2492,226 @@ dxgkio_submit_wait_to_hwqueue(struct dxgprocess *process, void *__user inargs)
@@ -21148,7 +21204,7 @@ index 2700da51b..f6700e974 100644
  		 LX_DXWAITFORSYNCHRONIZATIONOBJECTFROMCPU},
  /* 0x3b */	{dxgkio_wait_sync_object_gpu,
 diff --git a/include/uapi/misc/d3dkmthk.h b/include/uapi/misc/d3dkmthk.h
-index 944f9d1e7..1f60f5120 100644
+index 944f9d1e73d6..1f60f5120e1d 100644
 --- a/include/uapi/misc/d3dkmthk.h
 +++ b/include/uapi/misc/d3dkmthk.h
 @@ -1012,6 +1012,124 @@ struct d3dkmt_evict {
@@ -21312,13 +21368,13 @@ index 944f9d1e7..1f60f5120 100644
  	_IOWR(0x47, 0x3a, struct d3dkmt_waitforsynchronizationobjectfromcpu)
  #define LX_DXWAITFORSYNCHRONIZATIONOBJECTFROMGPU \
 -- 
-2.44.0
+2.47.0
 
 
-From c6f982358904c7b8864fa9e9528798c420cbb4e6 Mon Sep 17 00:00:00 2001
+From 4cac582182599fce7ca94701a0ecb9856a7e20e0 Mon Sep 17 00:00:00 2001
 From: Iouri Tarassov <iourit@linux.microsoft.com>
 Date: Fri, 8 Oct 2021 14:17:39 -0700
-Subject: [PATCH 29/50] drivers: hv: dxgkrnl: Add support to map guest pages by
+Subject: [PATCH 29/54] drivers: hv: dxgkrnl: Add support to map guest pages by
  host
 
 Implement support for mapping guest memory pages by the host.
@@ -21339,6 +21395,8 @@ instead uses the following code flow:
 - the host maps the PFNs to get access to the memory
 
 Signed-off-by: Iouri Tarassov <iourit@linux.microsoft.com>
+[kms: forward port to 6.6 from 6.1. No code changes made.]
+Signed-off-by: Kelsey Steele <kelseysteele@microsoft.com>
 ---
  drivers/hv/dxgkrnl/Makefile    |   2 +-
  drivers/hv/dxgkrnl/dxgkrnl.h   |   1 +
@@ -21349,7 +21407,7 @@ Signed-off-by: Iouri Tarassov <iourit@linux.microsoft.com>
  6 files changed, 129 insertions(+), 35 deletions(-)
 
 diff --git a/drivers/hv/dxgkrnl/Makefile b/drivers/hv/dxgkrnl/Makefile
-index 9d821e834..fc85a47a6 100644
+index 9d821e83448a..fc85a47a6ad5 100644
 --- a/drivers/hv/dxgkrnl/Makefile
 +++ b/drivers/hv/dxgkrnl/Makefile
 @@ -2,4 +2,4 @@
@@ -21359,7 +21417,7 @@ index 9d821e834..fc85a47a6 100644
 -dxgkrnl-y		:= dxgmodule.o hmgr.o misc.o dxgadapter.o ioctl.o dxgvmbus.o dxgprocess.o
 +dxgkrnl-y := dxgmodule.o hmgr.o misc.o dxgadapter.o ioctl.o dxgvmbus.o dxgprocess.o
 diff --git a/drivers/hv/dxgkrnl/dxgkrnl.h b/drivers/hv/dxgkrnl/dxgkrnl.h
-index 93bc9b41a..091dbe999 100644
+index 93bc9b41aa41..091dbe999d33 100644
 --- a/drivers/hv/dxgkrnl/dxgkrnl.h
 +++ b/drivers/hv/dxgkrnl/dxgkrnl.h
 @@ -316,6 +316,7 @@ struct dxgglobal {
@@ -21371,7 +21429,7 @@ index 93bc9b41a..091dbe999 100644
  
  static inline struct dxgglobal *dxggbl(void)
 diff --git a/drivers/hv/dxgkrnl/dxgmodule.c b/drivers/hv/dxgkrnl/dxgmodule.c
-index 5c364a46b..b1b612b90 100644
+index 5c364a46b65f..b1b612b90fc1 100644
 --- a/drivers/hv/dxgkrnl/dxgmodule.c
 +++ b/drivers/hv/dxgkrnl/dxgmodule.c
 @@ -147,7 +147,7 @@ void dxgglobal_remove_host_event(struct dxghostevent *event)
@@ -21443,7 +21501,7 @@ index 5c364a46b..b1b612b90 100644
  			dxgglobal->vmbus_ver = DXGK_VMBUS_INTERFACE_VERSION;
  	}
 diff --git a/drivers/hv/dxgkrnl/dxgvmbus.c b/drivers/hv/dxgkrnl/dxgvmbus.c
-index 425a1ab87..4d7807909 100644
+index 425a1ab87bd6..4d7807909284 100644
 --- a/drivers/hv/dxgkrnl/dxgvmbus.c
 +++ b/drivers/hv/dxgkrnl/dxgvmbus.c
 @@ -1383,15 +1383,19 @@ int create_existing_sysmem(struct dxgdevice *device,
@@ -21595,7 +21653,7 @@ index 425a1ab87..4d7807909 100644
  cleanup:
  	if (kmem)
 diff --git a/drivers/hv/dxgkrnl/dxgvmbus.h b/drivers/hv/dxgkrnl/dxgvmbus.h
-index 88967ff6a..b4a98f7c2 100644
+index 88967ff6a505..b4a98f7c2522 100644
 --- a/drivers/hv/dxgkrnl/dxgvmbus.h
 +++ b/drivers/hv/dxgkrnl/dxgvmbus.h
 @@ -234,6 +234,16 @@ struct dxgkvmb_command_setexistingsysmemstore {
@@ -21616,7 +21674,7 @@ index 88967ff6a..b4a98f7c2 100644
  	struct dxgkvmb_command_vm_to_host hdr;
  	void			*process;
 diff --git a/drivers/hv/dxgkrnl/misc.c b/drivers/hv/dxgkrnl/misc.c
-index cb1e0635b..4a1309d80 100644
+index cb1e0635bebc..4a1309d80ee5 100644
 --- a/drivers/hv/dxgkrnl/misc.c
 +++ b/drivers/hv/dxgkrnl/misc.c
 @@ -35,3 +35,4 @@ u16 *wcsncpy(u16 *dest, const u16 *src, size_t n)
@@ -21625,22 +21683,24 @@ index cb1e0635b..4a1309d80 100644
  }
 +
 -- 
-2.44.0
+2.47.0
 
 
-From 514ba17020f59d58238bb3a256cef9c88fb98236 Mon Sep 17 00:00:00 2001
+From 18c04db446bedf56af6de1a44cb14953725f84e1 Mon Sep 17 00:00:00 2001
 From: Iouri Tarassov <iourit@linux.microsoft.com>
 Date: Mon, 21 Mar 2022 20:32:44 -0700
-Subject: [PATCH 30/50] drivers: hv: dxgkrnl: Removed struct vmbus_gpadl, which
+Subject: [PATCH 30/54] drivers: hv: dxgkrnl: Removed struct vmbus_gpadl, which
  was defined in the main linux branch
 
 Signed-off-by: Iouri Tarassov <iourit@linux.microsoft.com>
+[kms: forward port to 6.6 from 6.1. No code changes made.]
+Signed-off-by: Kelsey Steele <kelseysteele@microsoft.com>
 ---
  drivers/hv/dxgkrnl/dxgadapter.c | 2 +-
  1 file changed, 1 insertion(+), 1 deletion(-)
 
 diff --git a/drivers/hv/dxgkrnl/dxgadapter.c b/drivers/hv/dxgkrnl/dxgadapter.c
-index 6f763e326..236febbc6 100644
+index 6f763e326a65..236febbc6fca 100644
 --- a/drivers/hv/dxgkrnl/dxgadapter.c
 +++ b/drivers/hv/dxgkrnl/dxgadapter.c
 @@ -932,7 +932,7 @@ void dxgallocation_destroy(struct dxgallocation *alloc)
@@ -21653,25 +21713,27 @@ index 6f763e326..236febbc6 100644
  		DXG_TRACE("Teardown gpadl %d", alloc->gpadl);
  		vmbus_teardown_gpadl(dxgglobal_get_vmbus(), alloc->gpadl);
 -- 
-2.44.0
+2.47.0
 
 
-From 56030b5a1915eb2eb2c26d5b3d153609eb3bea3a Mon Sep 17 00:00:00 2001
+From 41976faa45d0321dd0c44c273b70dacc7c3984cf Mon Sep 17 00:00:00 2001
 From: Iouri Tarassov <iourit@linux.microsoft.com>
 Date: Tue, 22 Mar 2022 10:32:54 -0700
-Subject: [PATCH 31/50] drivers: hv: dxgkrnl: Remove dxgk_init_ioctls
+Subject: [PATCH 31/54] drivers: hv: dxgkrnl: Remove dxgk_init_ioctls
 
 The array of ioctls is initialized statically to remove the unnecessary
 function.
 
 Signed-off-by: Iouri Tarassov <iourit@linux.microsoft.com>
+[kms: forward port to 6.6 from 6.1. No code changes made.]
+Signed-off-by: Kelsey Steele <kelseysteele@microsoft.com>
 ---
  drivers/hv/dxgkrnl/dxgmodule.c |  2 +-
  drivers/hv/dxgkrnl/ioctl.c     | 15 +++++++--------
  2 files changed, 8 insertions(+), 9 deletions(-)
 
 diff --git a/drivers/hv/dxgkrnl/dxgmodule.c b/drivers/hv/dxgkrnl/dxgmodule.c
-index b1b612b90..f1245a9d8 100644
+index b1b612b90fc1..f1245a9d8826 100644
 --- a/drivers/hv/dxgkrnl/dxgmodule.c
 +++ b/drivers/hv/dxgkrnl/dxgmodule.c
 @@ -300,7 +300,7 @@ static void dxgglobal_start_adapters(void)
@@ -21684,7 +21746,7 @@ index b1b612b90..f1245a9d8 100644
  static void dxgglobal_stop_adapters(void)
  {
 diff --git a/drivers/hv/dxgkrnl/ioctl.c b/drivers/hv/dxgkrnl/ioctl.c
-index f6700e974..8732a6604 100644
+index f6700e974f25..8732a66040a0 100644
 --- a/drivers/hv/dxgkrnl/ioctl.c
 +++ b/drivers/hv/dxgkrnl/ioctl.c
 @@ -26,7 +26,6 @@
@@ -21752,13 +21814,13 @@ index f6700e974..8732a6604 100644
  		 LX_DXSUBMITWAITFORSYNCOBJECTSTOHWQUEUE},
  /* 0x37 */	{dxgkio_unlock2, LX_DXUNLOCK2},
 -- 
-2.44.0
+2.47.0
 
 
-From 7943244fd7097ec7334edb37af0d3d3794b7c205 Mon Sep 17 00:00:00 2001
+From f140fbe27f1dd7514fe25613ce42720239f8d1f1 Mon Sep 17 00:00:00 2001
 From: Iouri Tarassov <iourit@linux.microsoft.com>
 Date: Tue, 22 Mar 2022 11:02:49 -0700
-Subject: [PATCH 32/50] drivers: hv: dxgkrnl: Creation of dxgsyncfile objects
+Subject: [PATCH 32/54] drivers: hv: dxgkrnl: Creation of dxgsyncfile objects
 
 Implement the ioctl to create a dxgsyncfile object
 (LX_DXCREATESYNCFILE). This object is a wrapper around a monitored
@@ -21776,6 +21838,8 @@ the host, the host sends a message to the virtual machine and the
 sync_file object is signaled.
 
 Signed-off-by: Iouri Tarassov <iourit@linux.microsoft.com>
+[kms: forward port to 6.6 from 6.1. No code changes made.]
+Signed-off-by: Kelsey Steele <kelseysteele@microsoft.com>
 ---
  drivers/hv/dxgkrnl/Kconfig       |   2 +
  drivers/hv/dxgkrnl/Makefile      |   2 +-
@@ -21791,7 +21855,7 @@ Signed-off-by: Iouri Tarassov <iourit@linux.microsoft.com>
  create mode 100644 drivers/hv/dxgkrnl/dxgsyncfile.h
 
 diff --git a/drivers/hv/dxgkrnl/Kconfig b/drivers/hv/dxgkrnl/Kconfig
-index bcd92bbff..782692610 100644
+index bcd92bbff939..782692610887 100644
 --- a/drivers/hv/dxgkrnl/Kconfig
 +++ b/drivers/hv/dxgkrnl/Kconfig
 @@ -6,6 +6,8 @@ config DXGKRNL
@@ -21804,7 +21868,7 @@ index bcd92bbff..782692610 100644
  	  This driver supports paravirtualized virtual compute devices, exposed
  	  by Microsoft Hyper-V when Linux is running inside of a virtual machine
 diff --git a/drivers/hv/dxgkrnl/Makefile b/drivers/hv/dxgkrnl/Makefile
-index fc85a47a6..89824cda6 100644
+index fc85a47a6ad5..89824cda670a 100644
 --- a/drivers/hv/dxgkrnl/Makefile
 +++ b/drivers/hv/dxgkrnl/Makefile
 @@ -2,4 +2,4 @@
@@ -21814,7 +21878,7 @@ index fc85a47a6..89824cda6 100644
 -dxgkrnl-y := dxgmodule.o hmgr.o misc.o dxgadapter.o ioctl.o dxgvmbus.o dxgprocess.o
 +dxgkrnl-y := dxgmodule.o hmgr.o misc.o dxgadapter.o ioctl.o dxgvmbus.o dxgprocess.o  dxgsyncfile.o
 diff --git a/drivers/hv/dxgkrnl/dxgkrnl.h b/drivers/hv/dxgkrnl/dxgkrnl.h
-index 091dbe999..3a69e3b34 100644
+index 091dbe999d33..3a69e3b34e1c 100644
 --- a/drivers/hv/dxgkrnl/dxgkrnl.h
 +++ b/drivers/hv/dxgkrnl/dxgkrnl.h
 @@ -120,6 +120,7 @@ struct dxgpagingqueue {
@@ -21834,7 +21898,7 @@ index 091dbe999..3a69e3b34 100644
  int dxgvmb_send_lock2(struct dxgprocess *process,
  		      struct dxgadapter *adapter,
 diff --git a/drivers/hv/dxgkrnl/dxgmodule.c b/drivers/hv/dxgkrnl/dxgmodule.c
-index f1245a9d8..af51fcd35 100644
+index f1245a9d8826..af51fcd35697 100644
 --- a/drivers/hv/dxgkrnl/dxgmodule.c
 +++ b/drivers/hv/dxgkrnl/dxgmodule.c
 @@ -16,6 +16,7 @@
@@ -21872,7 +21936,7 @@ index f1245a9d8..af51fcd35 100644
  			break;
 diff --git a/drivers/hv/dxgkrnl/dxgsyncfile.c b/drivers/hv/dxgkrnl/dxgsyncfile.c
 new file mode 100644
-index 000000000..88fd78f08
+index 000000000000..88fd78f08fbe
 --- /dev/null
 +++ b/drivers/hv/dxgkrnl/dxgsyncfile.c
 @@ -0,0 +1,215 @@
@@ -22093,7 +22157,7 @@ index 000000000..88fd78f08
 +};
 diff --git a/drivers/hv/dxgkrnl/dxgsyncfile.h b/drivers/hv/dxgkrnl/dxgsyncfile.h
 new file mode 100644
-index 000000000..207ef9b30
+index 000000000000..207ef9b30f67
 --- /dev/null
 +++ b/drivers/hv/dxgkrnl/dxgsyncfile.h
 @@ -0,0 +1,30 @@
@@ -22128,7 +22192,7 @@ index 000000000..207ef9b30
 +
 +#endif	 /* _DXGSYNCFILE_H */
 diff --git a/drivers/hv/dxgkrnl/dxgvmbus.c b/drivers/hv/dxgkrnl/dxgvmbus.c
-index 4d7807909..913ea3cab 100644
+index 4d7807909284..913ea3cabb31 100644
 --- a/drivers/hv/dxgkrnl/dxgvmbus.c
 +++ b/drivers/hv/dxgkrnl/dxgvmbus.c
 @@ -2820,6 +2820,7 @@ int dxgvmb_send_wait_sync_object_cpu(struct dxgprocess *process,
@@ -22179,7 +22243,7 @@ index 4d7807909..913ea3cab 100644
  
  	ret = dxgvmb_send_sync_msg_ntstatus(msg.channel, msg.hdr, msg.size);
 diff --git a/drivers/hv/dxgkrnl/ioctl.c b/drivers/hv/dxgkrnl/ioctl.c
-index 8732a6604..6c26aafb0 100644
+index 8732a66040a0..6c26aafb0619 100644
 --- a/drivers/hv/dxgkrnl/ioctl.c
 +++ b/drivers/hv/dxgkrnl/ioctl.c
 @@ -19,6 +19,7 @@
@@ -22209,7 +22273,7 @@ index 8732a6604..6c26aafb0 100644
  
  /*
 diff --git a/include/uapi/misc/d3dkmthk.h b/include/uapi/misc/d3dkmthk.h
-index 1f60f5120..c7f168425 100644
+index 1f60f5120e1d..c7f168425dc7 100644
 --- a/include/uapi/misc/d3dkmthk.h
 +++ b/include/uapi/misc/d3dkmthk.h
 @@ -1554,6 +1554,13 @@ struct d3dkmt_shareobjectwithhost {
@@ -22235,15 +22299,17 @@ index 1f60f5120..c7f168425 100644
  
  #endif /* _D3DKMTHK_H */
 -- 
-2.44.0
+2.47.0
 
 
-From 6dba13bfce8ff6e3a7ece3ec1c5600d5a3f7354a Mon Sep 17 00:00:00 2001
+From 86e11d11f133015227734cb5c8f00b873e1d20ee Mon Sep 17 00:00:00 2001
 From: Iouri Tarassov <iourit@linux.microsoft.com>
 Date: Thu, 24 Mar 2022 15:03:41 -0700
-Subject: [PATCH 33/50] drivers: hv: dxgkrnl: Use tracing instead of dev_dbg
+Subject: [PATCH 33/54] drivers: hv: dxgkrnl: Use tracing instead of dev_dbg
 
 Signed-off-by: Iouri Tarassov <iourit@linux.microsoft.com>
+[kms: forward port to 6.6 from 6.1. No code changes made.]
+Signed-off-by: Kelsey Steele <kelseysteele@microsoft.com>
 ---
  drivers/hv/dxgkrnl/dxgadapter.c |  4 ++--
  drivers/hv/dxgkrnl/dxgmodule.c  |  5 ++++-
@@ -22255,7 +22321,7 @@ Signed-off-by: Iouri Tarassov <iourit@linux.microsoft.com>
  7 files changed, 25 insertions(+), 22 deletions(-)
 
 diff --git a/drivers/hv/dxgkrnl/dxgadapter.c b/drivers/hv/dxgkrnl/dxgadapter.c
-index 236febbc6..3d8bec295 100644
+index 236febbc6fca..3d8bec295b87 100644
 --- a/drivers/hv/dxgkrnl/dxgadapter.c
 +++ b/drivers/hv/dxgkrnl/dxgadapter.c
 @@ -18,8 +18,8 @@
@@ -22270,7 +22336,7 @@ index 236febbc6..3d8bec295 100644
  int dxgadapter_set_vmbus(struct dxgadapter *adapter, struct hv_device *hdev)
  {
 diff --git a/drivers/hv/dxgkrnl/dxgmodule.c b/drivers/hv/dxgkrnl/dxgmodule.c
-index af51fcd35..08feae97e 100644
+index af51fcd35697..08feae97e845 100644
 --- a/drivers/hv/dxgkrnl/dxgmodule.c
 +++ b/drivers/hv/dxgkrnl/dxgmodule.c
 @@ -24,6 +24,9 @@
@@ -22293,7 +22359,7 @@ index af51fcd35..08feae97e 100644
  					sizeof(u32))
  
 diff --git a/drivers/hv/dxgkrnl/dxgprocess.c b/drivers/hv/dxgkrnl/dxgprocess.c
-index 5de3f8ccb..afef196c0 100644
+index 5de3f8ccb448..afef196c0588 100644
 --- a/drivers/hv/dxgkrnl/dxgprocess.c
 +++ b/drivers/hv/dxgkrnl/dxgprocess.c
 @@ -13,8 +13,8 @@
@@ -22317,7 +22383,7 @@ index 5de3f8ccb..afef196c0 100644
  		DXG_ERR("failed to acquire adapter reference");
  		adapter = NULL;
 diff --git a/drivers/hv/dxgkrnl/dxgvmbus.c b/drivers/hv/dxgkrnl/dxgvmbus.c
-index 913ea3cab..d53d4254b 100644
+index 913ea3cabb31..d53d4254be63 100644
 --- a/drivers/hv/dxgkrnl/dxgvmbus.c
 +++ b/drivers/hv/dxgkrnl/dxgvmbus.c
 @@ -22,8 +22,8 @@
@@ -22332,7 +22398,7 @@ index 913ea3cab..d53d4254b 100644
  #define RING_BUFSIZE (256 * 1024)
  
 diff --git a/drivers/hv/dxgkrnl/hmgr.c b/drivers/hv/dxgkrnl/hmgr.c
-index 526b50f46..24101d009 100644
+index 526b50f46d96..24101d0091ab 100644
 --- a/drivers/hv/dxgkrnl/hmgr.c
 +++ b/drivers/hv/dxgkrnl/hmgr.c
 @@ -19,8 +19,8 @@
@@ -22391,7 +22457,7 @@ index 526b50f46..24101d009 100644
  	}
  	return table->entry_table[get_index(h)].object;
 diff --git a/drivers/hv/dxgkrnl/ioctl.c b/drivers/hv/dxgkrnl/ioctl.c
-index 6c26aafb0..4db23cd55 100644
+index 6c26aafb0619..4db23cd55b24 100644
 --- a/drivers/hv/dxgkrnl/ioctl.c
 +++ b/drivers/hv/dxgkrnl/ioctl.c
 @@ -21,8 +21,8 @@
@@ -22424,7 +22490,7 @@ index 6c26aafb0..4db23cd55 100644
  			code, _IOC_TYPE(p1), _IOC_SIZE(p1), _IOC_DIR(p1));
  		return -ENOTTY;
 diff --git a/drivers/hv/dxgkrnl/misc.c b/drivers/hv/dxgkrnl/misc.c
-index 4a1309d80..4bf6fe80d 100644
+index 4a1309d80ee5..4bf6fe80d22a 100644
 --- a/drivers/hv/dxgkrnl/misc.c
 +++ b/drivers/hv/dxgkrnl/misc.c
 @@ -18,8 +18,8 @@
@@ -22439,15 +22505,17 @@ index 4a1309d80..4bf6fe80d 100644
  u16 *wcsncpy(u16 *dest, const u16 *src, size_t n)
  {
 -- 
-2.44.0
+2.47.0
 
 
-From 8c753191b32597356eb1e2f3bdf2f9a50d732251 Mon Sep 17 00:00:00 2001
+From fd711919d9e94f54f0f273fb9fa73d8a2f9655fc Mon Sep 17 00:00:00 2001
 From: Iouri Tarassov <iourit@linux.microsoft.com>
 Date: Mon, 2 May 2022 11:46:48 -0700
-Subject: [PATCH 34/50] drivers: hv: dxgkrnl: Implement D3DKMTWaitSyncFile
+Subject: [PATCH 34/54] drivers: hv: dxgkrnl: Implement D3DKMTWaitSyncFile
 
 Signed-off-by: Iouri Tarassov <iourit@linux.microsoft.com>
+[kms: forward port to 6.6 from 6.1. No code changes made.]
+Signed-off-by: Kelsey Steele <kelseysteele@microsoft.com>
 ---
  drivers/hv/dxgkrnl/dxgkrnl.h     |  11 ++
  drivers/hv/dxgkrnl/dxgmodule.c   |   7 +-
@@ -22460,7 +22528,7 @@ Signed-off-by: Iouri Tarassov <iourit@linux.microsoft.com>
  8 files changed, 396 insertions(+), 16 deletions(-)
 
 diff --git a/drivers/hv/dxgkrnl/dxgkrnl.h b/drivers/hv/dxgkrnl/dxgkrnl.h
-index 3a69e3b34..d92e1348c 100644
+index 3a69e3b34e1c..d92e1348ccfb 100644
 --- a/drivers/hv/dxgkrnl/dxgkrnl.h
 +++ b/drivers/hv/dxgkrnl/dxgkrnl.h
 @@ -254,6 +254,10 @@ void dxgsharedsyncobj_add_syncobj(struct dxgsharedsyncobject *sharedsyncobj,
@@ -22503,7 +22571,7 @@ index 3a69e3b34..d92e1348c 100644
  				      struct dxgadapter *adapter,
  				      struct d3dkmt_queryallocationresidency
 diff --git a/drivers/hv/dxgkrnl/dxgmodule.c b/drivers/hv/dxgkrnl/dxgmodule.c
-index 08feae97e..5570f3595 100644
+index 08feae97e845..5570f35954d4 100644
 --- a/drivers/hv/dxgkrnl/dxgmodule.c
 +++ b/drivers/hv/dxgkrnl/dxgmodule.c
 @@ -149,10 +149,11 @@ void dxgglobal_remove_host_event(struct dxghostevent *event)
@@ -22545,7 +22613,7 @@ index 08feae97e..5570f3595 100644
  	f->private_data = NULL;
  	return 0;
 diff --git a/drivers/hv/dxgkrnl/dxgprocess.c b/drivers/hv/dxgkrnl/dxgprocess.c
-index afef196c0..e77e3a498 100644
+index afef196c0588..e77e3a4983f8 100644
 --- a/drivers/hv/dxgkrnl/dxgprocess.c
 +++ b/drivers/hv/dxgkrnl/dxgprocess.c
 @@ -39,6 +39,7 @@ struct dxgprocess *dxgprocess_create(void)
@@ -22576,7 +22644,7 @@ index afef196c0..e77e3a498 100644
  }
  
 diff --git a/drivers/hv/dxgkrnl/dxgsyncfile.c b/drivers/hv/dxgkrnl/dxgsyncfile.c
-index 88fd78f08..9d5832c90 100644
+index 88fd78f08fbe..9d5832c90ad7 100644
 --- a/drivers/hv/dxgkrnl/dxgsyncfile.c
 +++ b/drivers/hv/dxgkrnl/dxgsyncfile.c
 @@ -9,6 +9,20 @@
@@ -22929,7 +22997,7 @@ index 88fd78f08..9d5832c90 100644
  
  static bool dxgdmafence_signaled(struct dma_fence *fence)
 diff --git a/drivers/hv/dxgkrnl/dxgsyncfile.h b/drivers/hv/dxgkrnl/dxgsyncfile.h
-index 207ef9b30..292b7f718 100644
+index 207ef9b30f67..292b7f718987 100644
 --- a/drivers/hv/dxgkrnl/dxgsyncfile.h
 +++ b/drivers/hv/dxgkrnl/dxgsyncfile.h
 @@ -17,10 +17,13 @@
@@ -22947,7 +23015,7 @@ index 207ef9b30..292b7f718 100644
  	u64			context;
  	spinlock_t		lock;
 diff --git a/drivers/hv/dxgkrnl/dxgvmbus.c b/drivers/hv/dxgkrnl/dxgvmbus.c
-index d53d4254b..36f4d4e84 100644
+index d53d4254be63..36f4d4e84d3e 100644
 --- a/drivers/hv/dxgkrnl/dxgvmbus.c
 +++ b/drivers/hv/dxgkrnl/dxgvmbus.c
 @@ -796,6 +796,55 @@ int dxgvmb_send_open_sync_object_nt(struct dxgprocess *process,
@@ -23007,7 +23075,7 @@ index d53d4254b..36f4d4e84 100644
  					struct d3dkmthandle object,
  					struct d3dkmthandle *shared_handle)
 diff --git a/drivers/hv/dxgkrnl/ioctl.c b/drivers/hv/dxgkrnl/ioctl.c
-index 4db23cd55..622904d5c 100644
+index 4db23cd55b24..622904d5c3a9 100644
 --- a/drivers/hv/dxgkrnl/ioctl.c
 +++ b/drivers/hv/dxgkrnl/ioctl.c
 @@ -36,10 +36,8 @@ static char *errorstr(int ret)
@@ -23056,7 +23124,7 @@ index 4db23cd55..622904d5c 100644
  
  /*
 diff --git a/include/uapi/misc/d3dkmthk.h b/include/uapi/misc/d3dkmthk.h
-index c7f168425..1eaa3f038 100644
+index c7f168425dc7..1eaa3f038322 100644
 --- a/include/uapi/misc/d3dkmthk.h
 +++ b/include/uapi/misc/d3dkmthk.h
 @@ -1561,6 +1561,25 @@ struct d3dkmt_createsyncfile {
@@ -23096,16 +23164,18 @@ index c7f168425..1eaa3f038 100644
  
  #endif /* _D3DKMTHK_H */
 -- 
-2.44.0
+2.47.0
 
 
-From 8ca52f53da0c78534d16054518756dec25934a1f Mon Sep 17 00:00:00 2001
+From 4a333c25982bc8623202b807d73138d0e1febd9b Mon Sep 17 00:00:00 2001
 From: Iouri Tarassov <iourit@linux.microsoft.com>
 Date: Fri, 6 May 2022 19:19:09 -0700
-Subject: [PATCH 35/50] drivers: hv: dxgkrnl: Improve tracing and return values
+Subject: [PATCH 35/54] drivers: hv: dxgkrnl: Improve tracing and return values
  from copy from user
 
 Signed-off-by: Iouri Tarassov <iourit@linux.microsoft.com>
+[kms: forward port to 6.6 from 6.1. No code changes made.]
+Signed-off-by: Kelsey Steele <kelseysteele@microsoft.com>
 ---
  drivers/hv/dxgkrnl/dxgkrnl.h     |  17 +-
  drivers/hv/dxgkrnl/dxgmodule.c   |   1 +
@@ -23115,7 +23185,7 @@ Signed-off-by: Iouri Tarassov <iourit@linux.microsoft.com>
  5 files changed, 225 insertions(+), 231 deletions(-)
 
 diff --git a/drivers/hv/dxgkrnl/dxgkrnl.h b/drivers/hv/dxgkrnl/dxgkrnl.h
-index d92e1348c..f63aa6f7a 100644
+index d92e1348ccfb..f63aa6f7a9dc 100644
 --- a/drivers/hv/dxgkrnl/dxgkrnl.h
 +++ b/drivers/hv/dxgkrnl/dxgkrnl.h
 @@ -999,18 +999,25 @@ void dxgk_validate_ioctls(void);
@@ -23150,7 +23220,7 @@ index d92e1348c..f63aa6f7a 100644
 +
  #endif
 diff --git a/drivers/hv/dxgkrnl/dxgmodule.c b/drivers/hv/dxgkrnl/dxgmodule.c
-index 5570f3595..aa27931a3 100644
+index 5570f35954d4..aa27931a3447 100644
 --- a/drivers/hv/dxgkrnl/dxgmodule.c
 +++ b/drivers/hv/dxgkrnl/dxgmodule.c
 @@ -961,3 +961,4 @@ module_exit(dxg_drv_exit);
@@ -23159,7 +23229,7 @@ index 5570f3595..aa27931a3 100644
  MODULE_DESCRIPTION("Microsoft Dxgkrnl virtual compute device Driver");
 +MODULE_VERSION("2.0.0");
 diff --git a/drivers/hv/dxgkrnl/dxgsyncfile.c b/drivers/hv/dxgkrnl/dxgsyncfile.c
-index 9d5832c90..f3b3e8dd4 100644
+index 9d5832c90ad7..f3b3e8dd4568 100644
 --- a/drivers/hv/dxgkrnl/dxgsyncfile.c
 +++ b/drivers/hv/dxgkrnl/dxgsyncfile.c
 @@ -38,13 +38,6 @@
@@ -23204,7 +23274,7 @@ index 9d5832c90..f3b3e8dd4 100644
  }
  
 diff --git a/drivers/hv/dxgkrnl/dxgvmbus.c b/drivers/hv/dxgkrnl/dxgvmbus.c
-index 36f4d4e84..566ccb6d0 100644
+index 36f4d4e84d3e..566ccb6d01c9 100644
 --- a/drivers/hv/dxgkrnl/dxgvmbus.c
 +++ b/drivers/hv/dxgkrnl/dxgvmbus.c
 @@ -1212,7 +1212,7 @@ dxgvmb_send_create_context(struct dxgadapter *adapter,
@@ -23646,7 +23716,7 @@ index 36f4d4e84..566ccb6d0 100644
  		}
  	}
 diff --git a/drivers/hv/dxgkrnl/ioctl.c b/drivers/hv/dxgkrnl/ioctl.c
-index 622904d5c..3dc9e76f4 100644
+index 622904d5c3a9..3dc9e76f4f3d 100644
 --- a/drivers/hv/dxgkrnl/ioctl.c
 +++ b/drivers/hv/dxgkrnl/ioctl.c
 @@ -29,13 +29,6 @@ struct ioctl_desc {
@@ -25095,15 +25165,17 @@ index 622904d5c..3dc9e76f4 100644
  }
  
 -- 
-2.44.0
+2.47.0
 
 
-From df7ea89bd921847ea2c3e4905971fe8ec93d3524 Mon Sep 17 00:00:00 2001
+From f8aa2df96d989bc9c71588519299c850ae23efce Mon Sep 17 00:00:00 2001
 From: Iouri Tarassov <iourit@linux.microsoft.com>
 Date: Mon, 13 Jun 2022 14:18:10 -0700
-Subject: [PATCH 36/50] drivers: hv: dxgkrnl: Fix synchronization locks
+Subject: [PATCH 36/54] drivers: hv: dxgkrnl: Fix synchronization locks
 
 Signed-off-by: Iouri Tarassov <iourit@linux.microsoft.com>
+[kms: forward port to 6.6 from 6.1. No code changes made.]
+Signed-off-by: Kelsey Steele <kelseysteele@microsoft.com>
 ---
  drivers/hv/dxgkrnl/dxgadapter.c | 19 ++++----
  drivers/hv/dxgkrnl/dxgkrnl.h    |  8 +++-
@@ -25115,7 +25187,7 @@ Signed-off-by: Iouri Tarassov <iourit@linux.microsoft.com>
  7 files changed, 101 insertions(+), 50 deletions(-)
 
 diff --git a/drivers/hv/dxgkrnl/dxgadapter.c b/drivers/hv/dxgkrnl/dxgadapter.c
-index 3d8bec295..d9d45bd4a 100644
+index 3d8bec295b87..d9d45bd4a31e 100644
 --- a/drivers/hv/dxgkrnl/dxgadapter.c
 +++ b/drivers/hv/dxgkrnl/dxgadapter.c
 @@ -136,7 +136,7 @@ void dxgadapter_release(struct kref *refcount)
@@ -25188,7 +25260,7 @@ index 3d8bec295..d9d45bd4a 100644
  	kfree(syncobj);
  }
 diff --git a/drivers/hv/dxgkrnl/dxgkrnl.h b/drivers/hv/dxgkrnl/dxgkrnl.h
-index f63aa6f7a..1b40d6e39 100644
+index f63aa6f7a9dc..1b40d6e39085 100644
 --- a/drivers/hv/dxgkrnl/dxgkrnl.h
 +++ b/drivers/hv/dxgkrnl/dxgkrnl.h
 @@ -404,7 +404,10 @@ struct dxgprocess {
@@ -25221,7 +25293,7 @@ index f63aa6f7a..1b40d6e39 100644
  
  #define DXG_ERR(fmt, ...) do {					\
 diff --git a/drivers/hv/dxgkrnl/dxgmodule.c b/drivers/hv/dxgkrnl/dxgmodule.c
-index aa27931a3..f419597f7 100644
+index aa27931a3447..f419597f711a 100644
 --- a/drivers/hv/dxgkrnl/dxgmodule.c
 +++ b/drivers/hv/dxgkrnl/dxgmodule.c
 @@ -272,6 +272,7 @@ int dxgglobal_create_adapter(struct pci_dev *dev, guid_t *guid,
@@ -25239,7 +25311,7 @@ index aa27931a3..f419597f7 100644
 -MODULE_VERSION("2.0.0");
 +MODULE_VERSION("2.0.1");
 diff --git a/drivers/hv/dxgkrnl/dxgprocess.c b/drivers/hv/dxgkrnl/dxgprocess.c
-index e77e3a498..fd51fd968 100644
+index e77e3a4983f8..fd51fd968049 100644
 --- a/drivers/hv/dxgkrnl/dxgprocess.c
 +++ b/drivers/hv/dxgkrnl/dxgprocess.c
 @@ -214,14 +214,15 @@ int dxgprocess_close_adapter(struct dxgprocess *process,
@@ -25264,7 +25336,7 @@ index e77e3a498..fd51fd968 100644
  		DXG_ERR("Adapter not found %x", handle.v);
  		ret = -EINVAL;
 diff --git a/drivers/hv/dxgkrnl/dxgvmbus.c b/drivers/hv/dxgkrnl/dxgvmbus.c
-index 566ccb6d0..8c99f1414 100644
+index 566ccb6d01c9..8c99f141482e 100644
 --- a/drivers/hv/dxgkrnl/dxgvmbus.c
 +++ b/drivers/hv/dxgkrnl/dxgvmbus.c
 @@ -1573,8 +1573,27 @@ process_allocation_handles(struct dxgprocess *process,
@@ -25410,7 +25482,7 @@ index 566ccb6d0..8c99f1414 100644
  	if (ret < 0) {
  		DXG_ERR("failed %x", ret);
 diff --git a/drivers/hv/dxgkrnl/ioctl.c b/drivers/hv/dxgkrnl/ioctl.c
-index 3dc9e76f4..7c72790f9 100644
+index 3dc9e76f4f3d..7c72790f917f 100644
 --- a/drivers/hv/dxgkrnl/ioctl.c
 +++ b/drivers/hv/dxgkrnl/ioctl.c
 @@ -636,6 +636,7 @@ dxgkio_create_device(struct dxgprocess *process, void *__user inargs)
@@ -25473,7 +25545,7 @@ index 3dc9e76f4..7c72790f9 100644
  		DXG_ERR("invalid host handle");
  		ret = -EINVAL;
 diff --git a/drivers/hv/dxgkrnl/misc.h b/drivers/hv/dxgkrnl/misc.h
-index ee2ebfdd1..9fcab4ae2 100644
+index ee2ebfdd1c13..9fcab4ae2c0c 100644
 --- a/drivers/hv/dxgkrnl/misc.h
 +++ b/drivers/hv/dxgkrnl/misc.h
 @@ -38,6 +38,7 @@ extern const struct d3dkmthandle zerohandle;
@@ -25485,22 +25557,24 @@ index ee2ebfdd1..9fcab4ae2 100644
   * device_mutex (dxgglobal mutex)
   */
 -- 
-2.44.0
+2.47.0
 
 
-From 54194c4ee61f8f8a0710b9765e7e451f531c29c8 Mon Sep 17 00:00:00 2001
+From 4c14c4bda29a699edb7f9f40860e85f885707a51 Mon Sep 17 00:00:00 2001
 From: Iouri Tarassov <iourit@linux.microsoft.com>
 Date: Tue, 28 Jun 2022 17:26:11 -0700
-Subject: [PATCH 37/50] drivers: hv: dxgkrnl: Close shared file objects in case
+Subject: [PATCH 37/54] drivers: hv: dxgkrnl: Close shared file objects in case
  of a failure
 
 Signed-off-by: Iouri Tarassov <iourit@linux.microsoft.com>
+[kms: forward port to 6.6 from 6.1. No code changes made.]
+Signed-off-by: Kelsey Steele <kelseysteele@microsoft.com>
 ---
  drivers/hv/dxgkrnl/ioctl.c | 14 ++++++++++----
  1 file changed, 10 insertions(+), 4 deletions(-)
 
 diff --git a/drivers/hv/dxgkrnl/ioctl.c b/drivers/hv/dxgkrnl/ioctl.c
-index 7c72790f9..69324510c 100644
+index 7c72790f917f..69324510c9e2 100644
 --- a/drivers/hv/dxgkrnl/ioctl.c
 +++ b/drivers/hv/dxgkrnl/ioctl.c
 @@ -4536,7 +4536,7 @@ enum dxg_sharedobject_type {
@@ -25565,22 +25639,24 @@ index 7c72790f9..69324510c 100644
  			put_unused_fd(object_fd);
  	}
 -- 
-2.44.0
+2.47.0
 
 
-From 411a9171ae715efe3817a05a1802f9367c04df33 Mon Sep 17 00:00:00 2001
+From a07e7e39352af3ce678c9a4638e2226033219038 Mon Sep 17 00:00:00 2001
 From: Iouri Tarassov <iourit@linux.microsoft.com>
 Date: Wed, 29 Jun 2022 10:04:23 -0700
-Subject: [PATCH 38/50] drivers: hv: dxgkrnl: Added missed NULL check for
+Subject: [PATCH 38/54] drivers: hv: dxgkrnl: Added missed NULL check for
  resource object
 
 Signed-off-by: Iouri Tarassov <iourit@linux.microsoft.com>
+[kms: forward port to 6.6 from 6.1. No code changes made.]
+Signed-off-by: Kelsey Steele <kelseysteele@microsoft.com>
 ---
  drivers/hv/dxgkrnl/ioctl.c | 10 ++++++----
  1 file changed, 6 insertions(+), 4 deletions(-)
 
 diff --git a/drivers/hv/dxgkrnl/ioctl.c b/drivers/hv/dxgkrnl/ioctl.c
-index 69324510c..983505839 100644
+index 69324510c9e2..98350583943e 100644
 --- a/drivers/hv/dxgkrnl/ioctl.c
 +++ b/drivers/hv/dxgkrnl/ioctl.c
 @@ -1589,7 +1589,8 @@ dxgkio_create_allocation(struct dxgprocess *process, void *__user inargs)
@@ -25616,16 +25692,106 @@ index 69324510c..983505839 100644
  		dxgdevice_release_lock_shared(device);
  		kref_put(&device->device_kref, dxgdevice_release);
 -- 
-2.44.0
+2.47.0
 
 
-From f60dc0c47f77122495fc7a655f60682f99a1bdb2 Mon Sep 17 00:00:00 2001
+From 6e8283582596a40b0e1994b7eaeb3106a8792b93 Mon Sep 17 00:00:00 2001
+From: Iouri Tarassov <iourit@linux.microsoft.com>
+Date: Thu, 26 Jan 2023 10:49:41 -0800
+Subject: [PATCH 39/54] drivers: hv: dxgkrnl: Fixed dxgkrnl to build for the
+ 6.1 kernel
+
+Definition for GPADL was changed from u32 to struct vmbus_gpadl.
+
+Signed-off-by: Iouri Tarassov <iourit@linux.microsoft.com>
+[kms: forward port to 6.6 from 6.1. No code changes made.]
+Signed-off-by: Kelsey Steele <kelseysteele@microsoft.com>
+---
+ drivers/hv/dxgkrnl/dxgadapter.c | 8 --------
+ drivers/hv/dxgkrnl/dxgkrnl.h    | 4 ----
+ drivers/hv/dxgkrnl/dxgvmbus.c   | 8 --------
+ 3 files changed, 20 deletions(-)
+
+diff --git a/drivers/hv/dxgkrnl/dxgadapter.c b/drivers/hv/dxgkrnl/dxgadapter.c
+index d9d45bd4a31e..bcd19b7267d1 100644
+--- a/drivers/hv/dxgkrnl/dxgadapter.c
++++ b/drivers/hv/dxgkrnl/dxgadapter.c
+@@ -927,19 +927,11 @@ void dxgallocation_destroy(struct dxgallocation *alloc)
+ 					       alloc->owner.device,
+ 					       &args, &alloc->alloc_handle);
+ 	}
+-#ifdef _MAIN_KERNEL_
+ 	if (alloc->gpadl.gpadl_handle) {
+ 		DXG_TRACE("Teardown gpadl %d", alloc->gpadl.gpadl_handle);
+ 		vmbus_teardown_gpadl(dxgglobal_get_vmbus(), &alloc->gpadl);
+ 		alloc->gpadl.gpadl_handle = 0;
+ 	}
+-#else
+-	if (alloc->gpadl) {
+-		DXG_TRACE("Teardown gpadl %d", alloc->gpadl);
+-		vmbus_teardown_gpadl(dxgglobal_get_vmbus(), alloc->gpadl);
+-		alloc->gpadl = 0;
+-	}
+-#endif
+ 	if (alloc->priv_drv_data)
+ 		vfree(alloc->priv_drv_data);
+ 	if (alloc->cpu_address_mapped)
+diff --git a/drivers/hv/dxgkrnl/dxgkrnl.h b/drivers/hv/dxgkrnl/dxgkrnl.h
+index 1b40d6e39085..c5ed23cb90df 100644
+--- a/drivers/hv/dxgkrnl/dxgkrnl.h
++++ b/drivers/hv/dxgkrnl/dxgkrnl.h
+@@ -728,11 +728,7 @@ struct dxgallocation {
+ 	u32				cached:1;
+ 	u32				handle_valid:1;
+ 	/* GPADL address list for existing sysmem allocations */
+-#ifdef _MAIN_KERNEL_
+ 	struct vmbus_gpadl		gpadl;
+-#else
+-	u32				gpadl;
+-#endif
+ 	/* Number of pages in the 'pages' array */
+ 	u32				num_pages;
+ 	/*
+diff --git a/drivers/hv/dxgkrnl/dxgvmbus.c b/drivers/hv/dxgkrnl/dxgvmbus.c
+index 8c99f141482e..eb3f4c5153a6 100644
+--- a/drivers/hv/dxgkrnl/dxgvmbus.c
++++ b/drivers/hv/dxgkrnl/dxgvmbus.c
+@@ -1493,22 +1493,14 @@ int create_existing_sysmem(struct dxgdevice *device,
+ 			ret = -ENOMEM;
+ 			goto cleanup;
+ 		}
+-#ifdef _MAIN_KERNEL_
+ 		DXG_TRACE("New gpadl %d", dxgalloc->gpadl.gpadl_handle);
+-#else
+-		DXG_TRACE("New gpadl %d", dxgalloc->gpadl);
+-#endif
+ 
+ 		command_vgpu_to_host_init2(&set_store_command->hdr,
+ 					DXGK_VMBCOMMAND_SETEXISTINGSYSMEMSTORE,
+ 					device->process->host_handle);
+ 		set_store_command->device = device->handle;
+ 		set_store_command->allocation = host_alloc->allocation;
+-#ifdef _MAIN_KERNEL_
+ 		set_store_command->gpadl = dxgalloc->gpadl.gpadl_handle;
+-#else
+-		set_store_command->gpadl = dxgalloc->gpadl;
+-#endif
+ 		ret = dxgvmb_send_sync_msg_ntstatus(msg.channel, msg.hdr,
+ 						    msg.size);
+ 		if (ret < 0)
+-- 
+2.47.0
+
+
+From 26f7bf2126b006a95121955e5b9d9ace013ec81c Mon Sep 17 00:00:00 2001
 From: Iouri Tarassov <iourit@linux.microsoft.com>
 Date: Thu, 22 Dec 2022 14:54:28 -0800
-Subject: [PATCH 39/50] drivers: hv: dxgkrnl: Added support for compute only
+Subject: [PATCH 40/54] drivers: hv: dxgkrnl: Added support for compute only
  adapters
 
 Signed-off-by: Iouri Tarassov <iourit@linux.microsoft.com>
+[kms: forward port to 6.6 from 6.1. No code changes made.]
+Signed-off-by: Kelsey Steele <kelseysteele@microsoft.com>
 ---
  drivers/hv/dxgkrnl/dxgkrnl.h   |  1 +
  drivers/hv/dxgkrnl/dxgmodule.c | 11 ++++++++++-
@@ -25634,7 +25800,7 @@ Signed-off-by: Iouri Tarassov <iourit@linux.microsoft.com>
  4 files changed, 16 insertions(+), 1 deletion(-)
 
 diff --git a/drivers/hv/dxgkrnl/dxgkrnl.h b/drivers/hv/dxgkrnl/dxgkrnl.h
-index 1b40d6e39..995cd9a58 100644
+index c5ed23cb90df..d20489317c0b 100644
 --- a/drivers/hv/dxgkrnl/dxgkrnl.h
 +++ b/drivers/hv/dxgkrnl/dxgkrnl.h
 @@ -478,6 +478,7 @@ struct dxgadapter {
@@ -25646,7 +25812,7 @@ index 1b40d6e39..995cd9a58 100644
  };
  
 diff --git a/drivers/hv/dxgkrnl/dxgmodule.c b/drivers/hv/dxgkrnl/dxgmodule.c
-index f419597f7..0fafb6167 100644
+index f419597f711a..0fafb6167229 100644
 --- a/drivers/hv/dxgkrnl/dxgmodule.c
 +++ b/drivers/hv/dxgkrnl/dxgmodule.c
 @@ -20,6 +20,7 @@
@@ -25686,10 +25852,10 @@ index f419597f7..0fafb6167 100644
 -MODULE_VERSION("2.0.1");
 +MODULE_VERSION("2.0.2");
 diff --git a/drivers/hv/dxgkrnl/dxgvmbus.c b/drivers/hv/dxgkrnl/dxgvmbus.c
-index 8c99f1414..4e9167904 100644
+index eb3f4c5153a6..5f17efc937c3 100644
 --- a/drivers/hv/dxgkrnl/dxgvmbus.c
 +++ b/drivers/hv/dxgkrnl/dxgvmbus.c
-@@ -3782,6 +3782,7 @@ int dxgvmb_send_query_adapter_info(struct dxgprocess *process,
+@@ -3774,6 +3774,7 @@ int dxgvmb_send_query_adapter_info(struct dxgprocess *process,
  			adapter_type->indirect_display_device = 0;
  			adapter_type->acg_supported = 0;
  			adapter_type->support_set_timings_from_vidpn = 0;
@@ -25698,7 +25864,7 @@ index 8c99f1414..4e9167904 100644
  		}
  	default:
 diff --git a/drivers/hv/dxgkrnl/ioctl.c b/drivers/hv/dxgkrnl/ioctl.c
-index 983505839..f735b18fc 100644
+index 98350583943e..f735b18fcc14 100644
 --- a/drivers/hv/dxgkrnl/ioctl.c
 +++ b/drivers/hv/dxgkrnl/ioctl.c
 @@ -254,6 +254,8 @@ dxgkp_enum_adapters(struct dxgprocess *process,
@@ -25720,13 +25886,13 @@ index 983505839..f735b18fc 100644
  			struct d3dkmt_adapterinfo *inf = &info[adapter_count];
  
 -- 
-2.44.0
+2.47.0
 
 
-From 3d1f83614a47a9cdf60fba10a3d3d926320ef64c Mon Sep 17 00:00:00 2001
+From e7b834ba0f12fa148a3b81ead93b32dd1a7babb6 Mon Sep 17 00:00:00 2001
 From: Iouri Tarassov <iourit@linux.microsoft.com>
 Date: Wed, 15 Feb 2023 16:56:35 -0800
-Subject: [PATCH 40/50] drivers: hv: dxgkrnl: Added implementation for
+Subject: [PATCH 41/54] drivers: hv: dxgkrnl: Added implementation for
  D3DKMTInvalidateCache
 
 D3DKMTInvalidateCache is called by user mode drivers when the device
@@ -25735,6 +25901,8 @@ It needs to be called after an allocation was accessed by CPU and now
 needs to be accessed by the device. And vice versa.
 
 Signed-off-by: Iouri Tarassov <iourit@linux.microsoft.com>
+[kms: forward port to 6.6 from 6.1. No code changes made.]
+Signed-off-by: Kelsey Steele <kelseysteele@microsoft.com>
 ---
  drivers/hv/dxgkrnl/dxgkrnl.h  |  3 +++
  drivers/hv/dxgkrnl/dxgvmbus.c | 27 +++++++++++++++++++
@@ -25744,10 +25912,10 @@ Signed-off-by: Iouri Tarassov <iourit@linux.microsoft.com>
  5 files changed, 97 insertions(+), 2 deletions(-)
 
 diff --git a/drivers/hv/dxgkrnl/dxgkrnl.h b/drivers/hv/dxgkrnl/dxgkrnl.h
-index 995cd9a58..f86e69e37 100644
+index d20489317c0b..e7d8919b3c01 100644
 --- a/drivers/hv/dxgkrnl/dxgkrnl.h
 +++ b/drivers/hv/dxgkrnl/dxgkrnl.h
-@@ -993,6 +993,9 @@ int dxgvmb_send_async_msg(struct dxgvmbuschannel *channel,
+@@ -989,6 +989,9 @@ int dxgvmb_send_async_msg(struct dxgvmbuschannel *channel,
  			  u32 cmd_size);
  int dxgvmb_send_share_object_with_host(struct dxgprocess *process,
  				struct d3dkmt_shareobjectwithhost *args);
@@ -25758,10 +25926,10 @@ index 995cd9a58..f86e69e37 100644
  void signal_host_cpu_event(struct dxghostevent *eventhdr);
  int ntstatus2int(struct ntstatus status);
 diff --git a/drivers/hv/dxgkrnl/dxgvmbus.c b/drivers/hv/dxgkrnl/dxgvmbus.c
-index 4e9167904..bc8a52606 100644
+index 5f17efc937c3..487804ca731a 100644
 --- a/drivers/hv/dxgkrnl/dxgvmbus.c
 +++ b/drivers/hv/dxgkrnl/dxgvmbus.c
-@@ -2029,6 +2029,33 @@ int dxgvmb_send_flush_heap_transitions(struct dxgprocess *process,
+@@ -2021,6 +2021,33 @@ int dxgvmb_send_flush_heap_transitions(struct dxgprocess *process,
  	return ret;
  }
  
@@ -25796,7 +25964,7 @@ index 4e9167904..bc8a52606 100644
  				      struct dxgadapter *adapter,
  				      struct d3dkmt_queryallocationresidency
 diff --git a/drivers/hv/dxgkrnl/dxgvmbus.h b/drivers/hv/dxgkrnl/dxgvmbus.h
-index b4a98f7c2..20c562b48 100644
+index b4a98f7c2522..20c562b485de 100644
 --- a/drivers/hv/dxgkrnl/dxgvmbus.h
 +++ b/drivers/hv/dxgkrnl/dxgvmbus.h
 @@ -125,6 +125,7 @@ enum dxgkvmb_commandtype {
@@ -25825,7 +25993,7 @@ index b4a98f7c2..20c562b48 100644
  	struct dxgkvmb_command_vgpu_to_host hdr;
  	struct d3dkmt_freegpuvirtualaddress args;
 diff --git a/drivers/hv/dxgkrnl/ioctl.c b/drivers/hv/dxgkrnl/ioctl.c
-index f735b18fc..56b838a87 100644
+index f735b18fcc14..56b838a87f09 100644
 --- a/drivers/hv/dxgkrnl/ioctl.c
 +++ b/drivers/hv/dxgkrnl/ioctl.c
 @@ -4286,6 +4286,8 @@ dxgkio_query_clock_calibration(struct dxgprocess *process, void *__user inargs)
@@ -25906,7 +26074,7 @@ index f735b18fc..56b838a87 100644
  };
  
 diff --git a/include/uapi/misc/d3dkmthk.h b/include/uapi/misc/d3dkmthk.h
-index 1eaa3f038..84fa07a46 100644
+index 1eaa3f038322..84fa07a46d3c 100644
 --- a/include/uapi/misc/d3dkmthk.h
 +++ b/include/uapi/misc/d3dkmthk.h
 @@ -1580,6 +1580,13 @@ struct d3dkmt_opensyncobjectfromsyncfile {
@@ -25933,19 +26101,21 @@ index 1eaa3f038..84fa07a46 100644
  	_IOWR(0x47, 0x25, struct d3dkmt_lock2)
  #define LX_DXMARKDEVICEASERROR		\
 -- 
-2.44.0
+2.47.0
 
 
-From c3d7afe776157eb589bb2af505dfd8aee94f1260 Mon Sep 17 00:00:00 2001
+From 1f0faa0a2dc1dc84ee8b90a2b2f8534a0731d5e4 Mon Sep 17 00:00:00 2001
 From: Iouri Tarassov <iourit@linux.microsoft.com>
 Date: Wed, 15 Feb 2023 17:13:48 -0800
-Subject: [PATCH 41/50] drivers: hv: dxgkrnl: Handle process ID in
+Subject: [PATCH 42/54] drivers: hv: dxgkrnl: Handle process ID in
  D3DKMTQueryStatistics
 
 When D3DKMTQueryStatistics specifies a non-zero process ID, it needs to be
 translated to the host process handle before sending a message to the host.
 
 Signed-off-by: Iouri Tarassov <iourit@linux.microsoft.com>
+[kms: forward port to 6.6 from 6.1. No code changes made.]
+Signed-off-by: Kelsey Steele <kelseysteele@microsoft.com>
 ---
  drivers/hv/dxgkrnl/dxgkrnl.h    |   3 +-
  drivers/hv/dxgkrnl/dxgprocess.c |   2 +
@@ -25954,7 +26124,7 @@ Signed-off-by: Iouri Tarassov <iourit@linux.microsoft.com>
  4 files changed, 111 insertions(+), 73 deletions(-)
 
 diff --git a/drivers/hv/dxgkrnl/dxgkrnl.h b/drivers/hv/dxgkrnl/dxgkrnl.h
-index f86e69e37..dbbb566e2 100644
+index e7d8919b3c01..6af1e59b0a31 100644
 --- a/drivers/hv/dxgkrnl/dxgkrnl.h
 +++ b/drivers/hv/dxgkrnl/dxgkrnl.h
 @@ -386,6 +386,7 @@ struct dxgprocess {
@@ -25965,7 +26135,7 @@ index f86e69e37..dbbb566e2 100644
  	/* how many time the process was opened */
  	struct kref		process_kref;
  	/* protects the object memory */
-@@ -985,7 +986,7 @@ int dxgvmb_send_get_stdalloc_data(struct dxgdevice *device,
+@@ -981,7 +982,7 @@ int dxgvmb_send_get_stdalloc_data(struct dxgdevice *device,
  				  void *prive_alloc_data,
  				  u32 *res_priv_data_size,
  				  void *priv_res_data);
@@ -25975,7 +26145,7 @@ index f86e69e37..dbbb566e2 100644
  				 struct d3dkmt_querystatistics *args);
  int dxgvmb_send_async_msg(struct dxgvmbuschannel *channel,
 diff --git a/drivers/hv/dxgkrnl/dxgprocess.c b/drivers/hv/dxgkrnl/dxgprocess.c
-index fd51fd968..5a4c4cb0c 100644
+index fd51fd968049..5a4c4cb0c2e8 100644
 --- a/drivers/hv/dxgkrnl/dxgprocess.c
 +++ b/drivers/hv/dxgkrnl/dxgprocess.c
 @@ -12,6 +12,7 @@
@@ -25995,7 +26165,7 @@ index fd51fd968..5a4c4cb0c 100644
  		if (ret < 0) {
  			DXG_TRACE("send_create_process failed");
 diff --git a/drivers/hv/dxgkrnl/dxgvmbus.c b/drivers/hv/dxgkrnl/dxgvmbus.c
-index bc8a52606..00f633c62 100644
+index 487804ca731a..916ed9071656 100644
 --- a/drivers/hv/dxgkrnl/dxgvmbus.c
 +++ b/drivers/hv/dxgkrnl/dxgvmbus.c
 @@ -22,6 +22,8 @@
@@ -26195,7 +26365,7 @@ index bc8a52606..00f633c62 100644
  	if (ret)
  		DXG_TRACE("err: %d", ret);
  	return ret;
-@@ -1558,7 +1559,7 @@ int create_existing_sysmem(struct dxgdevice *device,
+@@ -1550,7 +1551,7 @@ int create_existing_sysmem(struct dxgdevice *device,
  cleanup:
  	if (kmem)
  		vunmap(kmem);
@@ -26204,7 +26374,7 @@ index bc8a52606..00f633c62 100644
  	if (ret)
  		DXG_TRACE("err: %d", ret);
  	return ret;
-@@ -1791,7 +1792,7 @@ create_local_allocations(struct dxgprocess *process,
+@@ -1783,7 +1784,7 @@ create_local_allocations(struct dxgprocess *process,
  		dxgdevice_release_alloc_list_lock(device);
  	}
  
@@ -26213,7 +26383,7 @@ index bc8a52606..00f633c62 100644
  	if (ret)
  		DXG_TRACE("err: %d", ret);
  	return ret;
-@@ -1916,7 +1917,7 @@ int dxgvmb_send_create_allocation(struct dxgprocess *process,
+@@ -1908,7 +1909,7 @@ int dxgvmb_send_create_allocation(struct dxgprocess *process,
  
  	if (result)
  		vfree(result);
@@ -26222,7 +26392,7 @@ index bc8a52606..00f633c62 100644
  
  	if (ret)
  		DXG_TRACE("err: %d", ret);
-@@ -1958,7 +1959,7 @@ int dxgvmb_send_destroy_allocation(struct dxgprocess *process,
+@@ -1950,7 +1951,7 @@ int dxgvmb_send_destroy_allocation(struct dxgprocess *process,
  
  cleanup:
  
@@ -26231,7 +26401,7 @@ index bc8a52606..00f633c62 100644
  	if (ret)
  		DXG_TRACE("err: %d", ret);
  	return ret;
-@@ -2000,7 +2001,7 @@ int dxgvmb_send_query_clock_calibration(struct dxgprocess *process,
+@@ -1992,7 +1993,7 @@ int dxgvmb_send_query_clock_calibration(struct dxgprocess *process,
  	ret = ntstatus2int(result.status);
  
  cleanup:
@@ -26240,7 +26410,7 @@ index bc8a52606..00f633c62 100644
  	if (ret)
  		DXG_TRACE("err: %d", ret);
  	return ret;
-@@ -2023,7 +2024,7 @@ int dxgvmb_send_flush_heap_transitions(struct dxgprocess *process,
+@@ -2015,7 +2016,7 @@ int dxgvmb_send_flush_heap_transitions(struct dxgprocess *process,
  				   process->host_handle);
  	ret = dxgvmb_send_sync_msg_ntstatus(msg.channel, msg.hdr, msg.size);
  cleanup:
@@ -26249,7 +26419,7 @@ index bc8a52606..00f633c62 100644
  	if (ret)
  		DXG_TRACE("err: %d", ret);
  	return ret;
-@@ -2050,7 +2051,7 @@ int dxgvmb_send_invalidate_cache(struct dxgprocess *process,
+@@ -2042,7 +2043,7 @@ int dxgvmb_send_invalidate_cache(struct dxgprocess *process,
  	command->length = args->length;
  	ret = dxgvmb_send_sync_msg_ntstatus(msg.channel, msg.hdr, msg.size);
  cleanup:
@@ -26258,7 +26428,7 @@ index bc8a52606..00f633c62 100644
  	if (ret)
  		DXG_TRACE("err: %d", ret);
  	return ret;
-@@ -2086,7 +2087,7 @@ int dxgvmb_send_query_alloc_residency(struct dxgprocess *process,
+@@ -2078,7 +2079,7 @@ int dxgvmb_send_query_alloc_residency(struct dxgprocess *process,
  	}
  	result_size += result_allocation_size;
  
@@ -26267,7 +26437,7 @@ index bc8a52606..00f633c62 100644
  	if (ret)
  		goto cleanup;
  	command = (void *)msg.msg;
-@@ -2123,7 +2124,7 @@ int dxgvmb_send_query_alloc_residency(struct dxgprocess *process,
+@@ -2115,7 +2116,7 @@ int dxgvmb_send_query_alloc_residency(struct dxgprocess *process,
  	}
  
  cleanup:
@@ -26276,7 +26446,7 @@ index bc8a52606..00f633c62 100644
  	if (ret)
  		DXG_TRACE("err: %d", ret);
  	return ret;
-@@ -2187,7 +2188,7 @@ int dxgvmb_send_escape(struct dxgprocess *process,
+@@ -2179,7 +2180,7 @@ int dxgvmb_send_escape(struct dxgprocess *process,
  	}
  
  cleanup:
@@ -26285,7 +26455,7 @@ index bc8a52606..00f633c62 100644
  	if (ret)
  		DXG_TRACE("err: %d", ret);
  	return ret;
-@@ -2251,7 +2252,7 @@ int dxgvmb_send_query_vidmem_info(struct dxgprocess *process,
+@@ -2243,7 +2244,7 @@ int dxgvmb_send_query_vidmem_info(struct dxgprocess *process,
  	}
  
  cleanup:
@@ -26294,7 +26464,7 @@ index bc8a52606..00f633c62 100644
  	if (ret)
  		DXG_TRACE("err: %d", ret);
  	return ret;
-@@ -2296,7 +2297,7 @@ int dxgvmb_send_get_device_state(struct dxgprocess *process,
+@@ -2288,7 +2289,7 @@ int dxgvmb_send_get_device_state(struct dxgprocess *process,
  		args->execution_state = result.args.execution_state;
  
  cleanup:
@@ -26303,7 +26473,7 @@ index bc8a52606..00f633c62 100644
  	if (ret)
  		DXG_TRACE("err: %d", ret);
  	return ret;
-@@ -2320,8 +2321,7 @@ int dxgvmb_send_open_resource(struct dxgprocess *process,
+@@ -2312,8 +2313,7 @@ int dxgvmb_send_open_resource(struct dxgprocess *process,
  			   sizeof(*result);
  	struct dxgvmbusmsgres msg = {.hdr = NULL};
  
@@ -26313,7 +26483,7 @@ index bc8a52606..00f633c62 100644
  	if (ret)
  		goto cleanup;
  	command = msg.msg;
-@@ -2350,7 +2350,7 @@ int dxgvmb_send_open_resource(struct dxgprocess *process,
+@@ -2342,7 +2342,7 @@ int dxgvmb_send_open_resource(struct dxgprocess *process,
  		alloc_handles[i] = handles[i];
  
  cleanup:
@@ -26322,7 +26492,7 @@ index bc8a52606..00f633c62 100644
  	if (ret)
  		DXG_TRACE("err: %d", ret);
  	return ret;
-@@ -2375,7 +2375,7 @@ int dxgvmb_send_get_stdalloc_data(struct dxgdevice *device,
+@@ -2367,7 +2367,7 @@ int dxgvmb_send_get_stdalloc_data(struct dxgdevice *device,
  		result_size += *alloc_priv_driver_size;
  	if (priv_res_data)
  		result_size += *res_priv_data_size;
@@ -26331,7 +26501,7 @@ index bc8a52606..00f633c62 100644
  			       sizeof(*command), result_size);
  	if (ret)
  		goto cleanup;
-@@ -2435,7 +2435,7 @@ int dxgvmb_send_get_stdalloc_data(struct dxgdevice *device,
+@@ -2427,7 +2427,7 @@ int dxgvmb_send_get_stdalloc_data(struct dxgdevice *device,
  
  cleanup:
  
@@ -26340,7 +26510,7 @@ index bc8a52606..00f633c62 100644
  	if (ret)
  		DXG_TRACE("err: %d", ret);
  	return ret;
-@@ -2487,7 +2487,7 @@ int dxgvmb_send_make_resident(struct dxgprocess *process,
+@@ -2479,7 +2479,7 @@ int dxgvmb_send_make_resident(struct dxgprocess *process,
  
  cleanup:
  
@@ -26349,7 +26519,7 @@ index bc8a52606..00f633c62 100644
  	if (ret)
  		DXG_TRACE("err: %d", ret);
  	return ret;
-@@ -2533,7 +2533,7 @@ int dxgvmb_send_evict(struct dxgprocess *process,
+@@ -2525,7 +2525,7 @@ int dxgvmb_send_evict(struct dxgprocess *process,
  
  cleanup:
  
@@ -26358,7 +26528,7 @@ index bc8a52606..00f633c62 100644
  	if (ret)
  		DXG_TRACE("err: %d", ret);
  	return ret;
-@@ -2588,7 +2588,7 @@ int dxgvmb_send_submit_command(struct dxgprocess *process,
+@@ -2580,7 +2580,7 @@ int dxgvmb_send_submit_command(struct dxgprocess *process,
  
  cleanup:
  
@@ -26367,7 +26537,7 @@ index bc8a52606..00f633c62 100644
  	if (ret)
  		DXG_TRACE("err: %d", ret);
  	return ret;
-@@ -2625,7 +2625,7 @@ int dxgvmb_send_map_gpu_va(struct dxgprocess *process,
+@@ -2617,7 +2617,7 @@ int dxgvmb_send_map_gpu_va(struct dxgprocess *process,
  
  cleanup:
  
@@ -26376,7 +26546,7 @@ index bc8a52606..00f633c62 100644
  	if (ret)
  		DXG_TRACE("err: %d", ret);
  	return ret;
-@@ -2655,7 +2655,7 @@ int dxgvmb_send_reserve_gpu_va(struct dxgprocess *process,
+@@ -2647,7 +2647,7 @@ int dxgvmb_send_reserve_gpu_va(struct dxgprocess *process,
  	args->virtual_address = result.virtual_address;
  
  cleanup:
@@ -26385,7 +26555,7 @@ index bc8a52606..00f633c62 100644
  	if (ret)
  		DXG_TRACE("err: %d", ret);
  	return ret;
-@@ -2682,7 +2682,7 @@ int dxgvmb_send_free_gpu_va(struct dxgprocess *process,
+@@ -2674,7 +2674,7 @@ int dxgvmb_send_free_gpu_va(struct dxgprocess *process,
  	ret = dxgvmb_send_sync_msg_ntstatus(msg.channel, msg.hdr, msg.size);
  
  cleanup:
@@ -26394,7 +26564,7 @@ index bc8a52606..00f633c62 100644
  	if (ret)
  		DXG_TRACE("err: %d", ret);
  	return ret;
-@@ -2738,7 +2738,7 @@ int dxgvmb_send_update_gpu_va(struct dxgprocess *process,
+@@ -2730,7 +2730,7 @@ int dxgvmb_send_update_gpu_va(struct dxgprocess *process,
  	ret = dxgvmb_send_sync_msg_ntstatus(msg.channel, msg.hdr, msg.size);
  
  cleanup:
@@ -26403,7 +26573,7 @@ index bc8a52606..00f633c62 100644
  	if (ret)
  		DXG_TRACE("err: %d", ret);
  	return ret;
-@@ -2824,7 +2824,7 @@ dxgvmb_send_create_sync_object(struct dxgprocess *process,
+@@ -2816,7 +2816,7 @@ dxgvmb_send_create_sync_object(struct dxgprocess *process,
  	}
  
  cleanup:
@@ -26412,7 +26582,7 @@ index bc8a52606..00f633c62 100644
  	if (ret)
  		DXG_TRACE("err: %d", ret);
  	return ret;
-@@ -2918,7 +2918,7 @@ int dxgvmb_send_signal_sync_object(struct dxgprocess *process,
+@@ -2910,7 +2910,7 @@ int dxgvmb_send_signal_sync_object(struct dxgprocess *process,
  	}
  
  cleanup:
@@ -26421,7 +26591,7 @@ index bc8a52606..00f633c62 100644
  	if (ret)
  		DXG_TRACE("err: %d", ret);
  	return ret;
-@@ -2978,7 +2978,7 @@ int dxgvmb_send_wait_sync_object_cpu(struct dxgprocess *process,
+@@ -2970,7 +2970,7 @@ int dxgvmb_send_wait_sync_object_cpu(struct dxgprocess *process,
  	ret = dxgvmb_send_sync_msg_ntstatus(msg.channel, msg.hdr, msg.size);
  
  cleanup:
@@ -26430,7 +26600,7 @@ index bc8a52606..00f633c62 100644
  	if (ret)
  		DXG_TRACE("err: %d", ret);
  	return ret;
-@@ -3031,7 +3031,7 @@ int dxgvmb_send_wait_sync_object_gpu(struct dxgprocess *process,
+@@ -3023,7 +3023,7 @@ int dxgvmb_send_wait_sync_object_gpu(struct dxgprocess *process,
  	}
  
  cleanup:
@@ -26439,7 +26609,7 @@ index bc8a52606..00f633c62 100644
  	if (ret)
  		DXG_TRACE("err: %d", ret);
  	return ret;
-@@ -3111,7 +3111,7 @@ int dxgvmb_send_lock2(struct dxgprocess *process,
+@@ -3103,7 +3103,7 @@ int dxgvmb_send_lock2(struct dxgprocess *process,
  	hmgrtable_unlock(&process->handle_table, DXGLOCK_EXCL);
  
  cleanup:
@@ -26448,7 +26618,7 @@ index bc8a52606..00f633c62 100644
  	if (ret)
  		DXG_TRACE("err: %d", ret);
  	return ret;
-@@ -3138,7 +3138,7 @@ int dxgvmb_send_unlock2(struct dxgprocess *process,
+@@ -3130,7 +3130,7 @@ int dxgvmb_send_unlock2(struct dxgprocess *process,
  	ret = dxgvmb_send_sync_msg_ntstatus(msg.channel, msg.hdr, msg.size);
  
  cleanup:
@@ -26457,7 +26627,7 @@ index bc8a52606..00f633c62 100644
  	if (ret)
  		DXG_TRACE("err: %d", ret);
  	return ret;
-@@ -3183,7 +3183,7 @@ int dxgvmb_send_update_alloc_property(struct dxgprocess *process,
+@@ -3175,7 +3175,7 @@ int dxgvmb_send_update_alloc_property(struct dxgprocess *process,
  		}
  	}
  cleanup:
@@ -26466,7 +26636,7 @@ index bc8a52606..00f633c62 100644
  	if (ret)
  		DXG_TRACE("err: %d", ret);
  	return ret;
-@@ -3208,7 +3208,7 @@ int dxgvmb_send_mark_device_as_error(struct dxgprocess *process,
+@@ -3200,7 +3200,7 @@ int dxgvmb_send_mark_device_as_error(struct dxgprocess *process,
  	command->args = *args;
  	ret = dxgvmb_send_sync_msg_ntstatus(msg.channel, msg.hdr, msg.size);
  cleanup:
@@ -26475,7 +26645,7 @@ index bc8a52606..00f633c62 100644
  	if (ret)
  		DXG_TRACE("err: %d", ret);
  	return ret;
-@@ -3278,7 +3278,7 @@ int dxgvmb_send_set_allocation_priority(struct dxgprocess *process,
+@@ -3270,7 +3270,7 @@ int dxgvmb_send_set_allocation_priority(struct dxgprocess *process,
  	ret = dxgvmb_send_sync_msg_ntstatus(msg.channel, msg.hdr, msg.size);
  
  cleanup:
@@ -26484,7 +26654,7 @@ index bc8a52606..00f633c62 100644
  	if (ret)
  		DXG_TRACE("err: %d", ret);
  	return ret;
-@@ -3320,7 +3320,7 @@ int dxgvmb_send_get_allocation_priority(struct dxgprocess *process,
+@@ -3312,7 +3312,7 @@ int dxgvmb_send_get_allocation_priority(struct dxgprocess *process,
  	}
  	result_size = sizeof(*result) + priority_size;
  
@@ -26493,7 +26663,7 @@ index bc8a52606..00f633c62 100644
  	if (ret)
  		goto cleanup;
  	command = (void *)msg.msg;
-@@ -3360,7 +3360,7 @@ int dxgvmb_send_get_allocation_priority(struct dxgprocess *process,
+@@ -3352,7 +3352,7 @@ int dxgvmb_send_get_allocation_priority(struct dxgprocess *process,
  	}
  
  cleanup:
@@ -26502,7 +26672,7 @@ index bc8a52606..00f633c62 100644
  	if (ret)
  		DXG_TRACE("err: %d", ret);
  	return ret;
-@@ -3389,7 +3389,7 @@ int dxgvmb_send_set_context_sch_priority(struct dxgprocess *process,
+@@ -3381,7 +3381,7 @@ int dxgvmb_send_set_context_sch_priority(struct dxgprocess *process,
  	command->in_process = in_process;
  	ret = dxgvmb_send_sync_msg_ntstatus(msg.channel, msg.hdr, msg.size);
  cleanup:
@@ -26511,7 +26681,7 @@ index bc8a52606..00f633c62 100644
  	if (ret)
  		DXG_TRACE("err: %d", ret);
  	return ret;
-@@ -3423,7 +3423,7 @@ int dxgvmb_send_get_context_sch_priority(struct dxgprocess *process,
+@@ -3415,7 +3415,7 @@ int dxgvmb_send_get_context_sch_priority(struct dxgprocess *process,
  		*priority = result.priority;
  	}
  cleanup:
@@ -26520,7 +26690,7 @@ index bc8a52606..00f633c62 100644
  	if (ret)
  		DXG_TRACE("err: %d", ret);
  	return ret;
-@@ -3469,7 +3469,7 @@ int dxgvmb_send_offer_allocations(struct dxgprocess *process,
+@@ -3461,7 +3461,7 @@ int dxgvmb_send_offer_allocations(struct dxgprocess *process,
  	ret = dxgvmb_send_sync_msg_ntstatus(msg.channel, msg.hdr, msg.size);
  
  cleanup:
@@ -26529,7 +26699,7 @@ index bc8a52606..00f633c62 100644
  	if (ret)
  		DXG_TRACE("err: %d", ret);
  	return ret;
-@@ -3494,7 +3494,7 @@ int dxgvmb_send_reclaim_allocations(struct dxgprocess *process,
+@@ -3486,7 +3486,7 @@ int dxgvmb_send_reclaim_allocations(struct dxgprocess *process,
  		result_size += (args->allocation_count - 1) *
  				sizeof(enum d3dddi_reclaim_result);
  
@@ -26538,7 +26708,7 @@ index bc8a52606..00f633c62 100644
  	if (ret)
  		goto cleanup;
  	command = (void *)msg.msg;
-@@ -3545,7 +3545,7 @@ int dxgvmb_send_reclaim_allocations(struct dxgprocess *process,
+@@ -3537,7 +3537,7 @@ int dxgvmb_send_reclaim_allocations(struct dxgprocess *process,
  	}
  
  cleanup:
@@ -26547,7 +26717,7 @@ index bc8a52606..00f633c62 100644
  	if (ret)
  		DXG_TRACE("err: %d", ret);
  	return ret;
-@@ -3575,7 +3575,7 @@ int dxgvmb_send_change_vidmem_reservation(struct dxgprocess *process,
+@@ -3567,7 +3567,7 @@ int dxgvmb_send_change_vidmem_reservation(struct dxgprocess *process,
  
  	ret = dxgvmb_send_sync_msg_ntstatus(msg.channel, msg.hdr, msg.size);
  cleanup:
@@ -26556,7 +26726,7 @@ index bc8a52606..00f633c62 100644
  	if (ret)
  		DXG_TRACE("err: %d", ret);
  	return ret;
-@@ -3714,7 +3714,7 @@ int dxgvmb_send_create_hwqueue(struct dxgprocess *process,
+@@ -3706,7 +3706,7 @@ int dxgvmb_send_create_hwqueue(struct dxgprocess *process,
  			dxgvmb_send_destroy_hwqueue(process, adapter,
  						    command->hwqueue);
  	}
@@ -26565,7 +26735,7 @@ index bc8a52606..00f633c62 100644
  	return ret;
  }
  
-@@ -3739,7 +3739,7 @@ int dxgvmb_send_destroy_hwqueue(struct dxgprocess *process,
+@@ -3731,7 +3731,7 @@ int dxgvmb_send_destroy_hwqueue(struct dxgprocess *process,
  	ret = dxgvmb_send_sync_msg_ntstatus(msg.channel, msg.hdr, msg.size);
  
  cleanup:
@@ -26574,7 +26744,7 @@ index bc8a52606..00f633c62 100644
  	if (ret)
  		DXG_TRACE("err: %d", ret);
  	return ret;
-@@ -3823,7 +3823,7 @@ int dxgvmb_send_query_adapter_info(struct dxgprocess *process,
+@@ -3815,7 +3815,7 @@ int dxgvmb_send_query_adapter_info(struct dxgprocess *process,
  	}
  
  cleanup:
@@ -26583,7 +26753,7 @@ index bc8a52606..00f633c62 100644
  	if (ret)
  		DXG_TRACE("err: %d", ret);
  	return ret;
-@@ -3881,13 +3881,13 @@ int dxgvmb_send_submit_command_hwqueue(struct dxgprocess *process,
+@@ -3873,13 +3873,13 @@ int dxgvmb_send_submit_command_hwqueue(struct dxgprocess *process,
  	}
  
  cleanup:
@@ -26599,7 +26769,7 @@ index bc8a52606..00f633c62 100644
  				 struct dxgadapter *adapter,
  				 struct d3dkmt_querystatistics *args)
  {
-@@ -3896,7 +3896,7 @@ int dxgvmb_send_query_statistics(struct dxgprocess *process,
+@@ -3888,7 +3888,7 @@ int dxgvmb_send_query_statistics(struct dxgprocess *process,
  	int ret;
  	struct dxgvmbusmsgres msg = {.hdr = NULL};
  
@@ -26608,7 +26778,7 @@ index bc8a52606..00f633c62 100644
  			       sizeof(*result));
  	if (ret)
  		goto cleanup;
-@@ -3905,7 +3905,7 @@ int dxgvmb_send_query_statistics(struct dxgprocess *process,
+@@ -3897,7 +3897,7 @@ int dxgvmb_send_query_statistics(struct dxgprocess *process,
  
  	command_vgpu_to_host_init2(&command->hdr,
  				   DXGK_VMBCOMMAND_QUERYSTATISTICS,
@@ -26617,7 +26787,7 @@ index bc8a52606..00f633c62 100644
  	command->args = *args;
  
  	ret = dxgvmb_send_sync_msg(msg.channel, msg.hdr, msg.size,
-@@ -3917,7 +3917,7 @@ int dxgvmb_send_query_statistics(struct dxgprocess *process,
+@@ -3909,7 +3909,7 @@ int dxgvmb_send_query_statistics(struct dxgprocess *process,
  	ret = ntstatus2int(result->status);
  
  cleanup:
@@ -26627,7 +26797,7 @@ index bc8a52606..00f633c62 100644
  		DXG_TRACE("err: %d", ret);
  	return ret;
 diff --git a/drivers/hv/dxgkrnl/ioctl.c b/drivers/hv/dxgkrnl/ioctl.c
-index 56b838a87..466bef6c1 100644
+index 56b838a87f09..466bef6c14b3 100644
 --- a/drivers/hv/dxgkrnl/ioctl.c
 +++ b/drivers/hv/dxgkrnl/ioctl.c
 @@ -147,6 +147,23 @@ static int dxgkio_open_adapter_from_luid(struct dxgprocess *process,
@@ -26705,19 +26875,21 @@ index 56b838a87..466bef6c1 100644
  		ret = copy_to_user(adapter_count_out,
  				   &dxgglobal->num_adapters, sizeof(u32));
 -- 
-2.44.0
+2.47.0
 
 
-From 817c14f7225bc4253755c6a8897aa43bffdb20e7 Mon Sep 17 00:00:00 2001
+From edb054dc471f9811dadca4085928f26e06f17fc9 Mon Sep 17 00:00:00 2001
 From: Iouri Tarassov <iourit@linux.microsoft.com>
 Date: Mon, 10 Apr 2023 09:27:37 -0700
-Subject: [PATCH 42/50] drivers: hv: dxgkrnl: Implement the D3DKMTEnumProcesses
+Subject: [PATCH 43/54] drivers: hv: dxgkrnl: Implement the D3DKMTEnumProcesses
  API
 
 D3DKMTEnumProcesses is used to enumerate PIDs for all processes,
 which opened the /dev/dxg device.
 
 Signed-off-by: Iouri Tarassov <iourit@linux.microsoft.com>
+[kms: forward port to 6.6 from 6.1. No code changes made.]
+Signed-off-by: Kelsey Steele <kelseysteele@microsoft.com>
 ---
  drivers/hv/dxgkrnl/dxgkrnl.h    |  1 +
  drivers/hv/dxgkrnl/dxgprocess.c |  2 +
@@ -26726,7 +26898,7 @@ Signed-off-by: Iouri Tarassov <iourit@linux.microsoft.com>
  4 files changed, 96 insertions(+)
 
 diff --git a/drivers/hv/dxgkrnl/dxgkrnl.h b/drivers/hv/dxgkrnl/dxgkrnl.h
-index dbbb566e2..dcc56bc84 100644
+index 6af1e59b0a31..90bcd5377744 100644
 --- a/drivers/hv/dxgkrnl/dxgkrnl.h
 +++ b/drivers/hv/dxgkrnl/dxgkrnl.h
 @@ -387,6 +387,7 @@ struct dxgprocess {
@@ -26738,7 +26910,7 @@ index dbbb566e2..dcc56bc84 100644
  	struct kref		process_kref;
  	/* protects the object memory */
 diff --git a/drivers/hv/dxgkrnl/dxgprocess.c b/drivers/hv/dxgkrnl/dxgprocess.c
-index 5a4c4cb0c..9bfd53df1 100644
+index 5a4c4cb0c2e8..9bfd53df1a54 100644
 --- a/drivers/hv/dxgkrnl/dxgprocess.c
 +++ b/drivers/hv/dxgkrnl/dxgprocess.c
 @@ -13,6 +13,7 @@
@@ -26758,7 +26930,7 @@ index 5a4c4cb0c..9bfd53df1 100644
  		if (ret < 0) {
  			DXG_TRACE("send_create_process failed");
 diff --git a/drivers/hv/dxgkrnl/ioctl.c b/drivers/hv/dxgkrnl/ioctl.c
-index 466bef6c1..24b84be2f 100644
+index 466bef6c14b3..24b84be2fb73 100644
 --- a/drivers/hv/dxgkrnl/ioctl.c
 +++ b/drivers/hv/dxgkrnl/ioctl.c
 @@ -16,6 +16,7 @@
@@ -26864,7 +27036,7 @@ index 466bef6c1..24b84be2f 100644
  
  /*
 diff --git a/include/uapi/misc/d3dkmthk.h b/include/uapi/misc/d3dkmthk.h
-index 84fa07a46..f9f817060 100644
+index 84fa07a46d3c..f9f817060fa9 100644
 --- a/include/uapi/misc/d3dkmthk.h
 +++ b/include/uapi/misc/d3dkmthk.h
 @@ -1580,6 +1580,16 @@ struct d3dkmt_opensyncobjectfromsyncfile {
@@ -26893,19 +27065,21 @@ index 84fa07a46..f9f817060 100644
  
  #endif /* _D3DKMTHK_H */
 -- 
-2.44.0
+2.47.0
 
 
-From 7b9f0bba61502a4879296763251a48b873b8571b Mon Sep 17 00:00:00 2001
+From a535cf181e0b22c016b67310c89d930eb1320f4c Mon Sep 17 00:00:00 2001
 From: Iouri Tarassov <iourit@linux.microsoft.com>
 Date: Mon, 10 Apr 2023 09:30:11 -0700
-Subject: [PATCH 43/50] drivers: hv: dxgkrnl: Implement D3DDKMTIsFeatureEnabled
+Subject: [PATCH 44/54] drivers: hv: dxgkrnl: Implement D3DDKMTIsFeatureEnabled
  API
 
 D3DKMTIsFeatureEnabled is used to query if a particular feature is
 supported by the given adapter.
 
 Signed-off-by: Iouri Tarassov <iourit@linux.microsoft.com>
+[kms: forward port to 6.6 from 6.1. No code changes made.]
+Signed-off-by: Kelsey Steele <kelseysteele@microsoft.com>
 ---
  drivers/hv/dxgkrnl/dxgkrnl.h  |  2 ++
  drivers/hv/dxgkrnl/dxgvmbus.c | 58 ++++++++++++++++++++++++++++++++---
@@ -26915,10 +27089,10 @@ Signed-off-by: Iouri Tarassov <iourit@linux.microsoft.com>
  5 files changed, 163 insertions(+), 5 deletions(-)
 
 diff --git a/drivers/hv/dxgkrnl/dxgkrnl.h b/drivers/hv/dxgkrnl/dxgkrnl.h
-index dcc56bc84..39fa803a0 100644
+index 90bcd5377744..ebf81cffa289 100644
 --- a/drivers/hv/dxgkrnl/dxgkrnl.h
 +++ b/drivers/hv/dxgkrnl/dxgkrnl.h
-@@ -998,6 +998,8 @@ int dxgvmb_send_share_object_with_host(struct dxgprocess *process,
+@@ -994,6 +994,8 @@ int dxgvmb_send_share_object_with_host(struct dxgprocess *process,
  int dxgvmb_send_invalidate_cache(struct dxgprocess *process,
  				struct dxgadapter *adapter,
  				struct d3dkmt_invalidatecache *args);
@@ -26928,7 +27102,7 @@ index dcc56bc84..39fa803a0 100644
  void signal_host_cpu_event(struct dxghostevent *eventhdr);
  int ntstatus2int(struct ntstatus status);
 diff --git a/drivers/hv/dxgkrnl/dxgvmbus.c b/drivers/hv/dxgkrnl/dxgvmbus.c
-index 00f633c62..c5a710b68 100644
+index 916ed9071656..2436e1a7bc73 100644
 --- a/drivers/hv/dxgkrnl/dxgvmbus.c
 +++ b/drivers/hv/dxgkrnl/dxgvmbus.c
 @@ -135,15 +135,16 @@ static int init_message_res(struct dxgvmbusmsgres *msg,
@@ -26952,7 +27126,7 @@ index 00f633c62..c5a710b68 100644
  	return 0;
  }
  
-@@ -2057,6 +2058,55 @@ int dxgvmb_send_invalidate_cache(struct dxgprocess *process,
+@@ -2049,6 +2050,55 @@ int dxgvmb_send_invalidate_cache(struct dxgprocess *process,
  	return ret;
  }
  
@@ -27009,7 +27183,7 @@ index 00f633c62..c5a710b68 100644
  				      struct dxgadapter *adapter,
  				      struct d3dkmt_queryallocationresidency
 diff --git a/drivers/hv/dxgkrnl/dxgvmbus.h b/drivers/hv/dxgkrnl/dxgvmbus.h
-index 20c562b48..a7e625b2f 100644
+index 20c562b485de..a7e625b2f896 100644
 --- a/drivers/hv/dxgkrnl/dxgvmbus.h
 +++ b/drivers/hv/dxgkrnl/dxgvmbus.h
 @@ -48,6 +48,7 @@ enum dxgkvmb_commandtype_global {
@@ -27065,7 +27239,7 @@ index 20c562b48..a7e625b2f 100644
  dxgvmb_send_sync_msg(struct dxgvmbuschannel *channel,
  		     void *command, u32 command_size, void *result,
 diff --git a/drivers/hv/dxgkrnl/ioctl.c b/drivers/hv/dxgkrnl/ioctl.c
-index 24b84be2f..5ff4b27af 100644
+index 24b84be2fb73..5ff4b27af19d 100644
 --- a/drivers/hv/dxgkrnl/ioctl.c
 +++ b/drivers/hv/dxgkrnl/ioctl.c
 @@ -5318,6 +5318,51 @@ dxgkio_enum_processes(struct dxgprocess *process, void *__user inargs)
@@ -27129,7 +27303,7 @@ index 24b84be2f..5ff4b27af 100644
  
  /*
 diff --git a/include/uapi/misc/d3dkmthk.h b/include/uapi/misc/d3dkmthk.h
-index f9f817060..5b345ddaf 100644
+index f9f817060fa9..5b345ddaf66e 100644
 --- a/include/uapi/misc/d3dkmthk.h
 +++ b/include/uapi/misc/d3dkmthk.h
 @@ -1580,7 +1580,7 @@ struct d3dkmt_opensyncobjectfromsyncfile {
@@ -27184,18 +27358,20 @@ index f9f817060..5b345ddaf 100644
  
  #endif /* _D3DKMTHK_H */
 -- 
-2.44.0
+2.47.0
 
 
-From 2fc7de22b34ac7eaa6c6848e9771ca7001433ed8 Mon Sep 17 00:00:00 2001
+From f003644f96e57b5c81aa3daace40a38ff4d83dc4 Mon Sep 17 00:00:00 2001
 From: Iouri Tarassov <iourit@linux.microsoft.com>
 Date: Tue, 11 Apr 2023 16:44:36 -0700
-Subject: [PATCH 44/50] drivers: hv: dxgkrnl: Implement known escapes
+Subject: [PATCH 45/54] drivers: hv: dxgkrnl: Implement known escapes
 
 Implement an escape to build test command buffer.
 Implement other known escapes.
 
 Signed-off-by: Iouri Tarassov <iourit@linux.microsoft.com>
+[kms: forward port to 6.6 from 6.1. No code changes made.]
+Signed-off-by: Kelsey Steele <kelseysteele@microsoft.com>
 ---
  drivers/hv/dxgkrnl/dxgkrnl.h  |   3 +-
  drivers/hv/dxgkrnl/dxgvmbus.c |  40 +++++---
@@ -27204,10 +27380,10 @@ Signed-off-by: Iouri Tarassov <iourit@linux.microsoft.com>
  4 files changed, 205 insertions(+), 39 deletions(-)
 
 diff --git a/drivers/hv/dxgkrnl/dxgkrnl.h b/drivers/hv/dxgkrnl/dxgkrnl.h
-index 39fa803a0..08479015b 100644
+index ebf81cffa289..9599ec8e0f1d 100644
 --- a/drivers/hv/dxgkrnl/dxgkrnl.h
 +++ b/drivers/hv/dxgkrnl/dxgkrnl.h
-@@ -957,7 +957,8 @@ int dxgvmb_send_query_alloc_residency(struct dxgprocess *process,
+@@ -953,7 +953,8 @@ int dxgvmb_send_query_alloc_residency(struct dxgprocess *process,
  				      *args);
  int dxgvmb_send_escape(struct dxgprocess *process,
  		       struct dxgadapter *adapter,
@@ -27218,10 +27394,10 @@ index 39fa803a0..08479015b 100644
  				  struct dxgadapter *adapter,
  				  struct d3dkmt_queryvideomemoryinfo *args,
 diff --git a/drivers/hv/dxgkrnl/dxgvmbus.c b/drivers/hv/dxgkrnl/dxgvmbus.c
-index c5a710b68..64fc1adf6 100644
+index 2436e1a7bc73..de28c6162a70 100644
 --- a/drivers/hv/dxgkrnl/dxgvmbus.c
 +++ b/drivers/hv/dxgkrnl/dxgvmbus.c
-@@ -2182,7 +2182,8 @@ int dxgvmb_send_query_alloc_residency(struct dxgprocess *process,
+@@ -2174,7 +2174,8 @@ int dxgvmb_send_query_alloc_residency(struct dxgprocess *process,
  
  int dxgvmb_send_escape(struct dxgprocess *process,
  		       struct dxgadapter *adapter,
@@ -27231,7 +27407,7 @@ index c5a710b68..64fc1adf6 100644
  {
  	int ret;
  	struct dxgkvmb_command_escape *command = NULL;
-@@ -2211,13 +2212,18 @@ int dxgvmb_send_escape(struct dxgprocess *process,
+@@ -2203,13 +2204,18 @@ int dxgvmb_send_escape(struct dxgprocess *process,
  	command->priv_drv_data_size = args->priv_drv_data_size;
  	command->context = args->context;
  	if (args->priv_drv_data_size) {
@@ -27257,7 +27433,7 @@ index c5a710b68..64fc1adf6 100644
  		}
  	}
  
-@@ -2228,12 +2234,18 @@ int dxgvmb_send_escape(struct dxgprocess *process,
+@@ -2220,12 +2226,18 @@ int dxgvmb_send_escape(struct dxgprocess *process,
  		goto cleanup;
  
  	if (args->priv_drv_data_size) {
@@ -27283,7 +27459,7 @@ index c5a710b68..64fc1adf6 100644
  	}
  
 diff --git a/drivers/hv/dxgkrnl/ioctl.c b/drivers/hv/dxgkrnl/ioctl.c
-index 5ff4b27af..f8ca79d09 100644
+index 5ff4b27af19d..f8ca79d098f3 100644
 --- a/drivers/hv/dxgkrnl/ioctl.c
 +++ b/drivers/hv/dxgkrnl/ioctl.c
 @@ -4257,10 +4257,8 @@ dxgkio_change_vidmem_reservation(struct dxgprocess *process, void *__user inargs
@@ -27532,7 +27708,7 @@ index 5ff4b27af..f8ca79d09 100644
  	DXG_TRACE_IOCTL_END(ret);
  	return ret;
 diff --git a/include/uapi/misc/d3dkmthk.h b/include/uapi/misc/d3dkmthk.h
-index 5b345ddaf..db40e8ff4 100644
+index 5b345ddaf66e..db40e8ff40b0 100644
 --- a/include/uapi/misc/d3dkmthk.h
 +++ b/include/uapi/misc/d3dkmthk.h
 @@ -237,6 +237,37 @@ struct d3dddi_destroypagingqueue {
@@ -27574,15 +27750,17 @@ index 5b345ddaf..db40e8ff4 100644
  	_D3DKMT_ESCAPE_DRIVERPRIVATE	= 0,
  	_D3DKMT_ESCAPE_VIDMM		= 1,
 -- 
-2.44.0
+2.47.0
 
 
-From 3beb1306c8aabc10798330065f60ff052ace562f Mon Sep 17 00:00:00 2001
+From 33ab08fca88d688c38bfa30a55ea4c6a024a2fb1 Mon Sep 17 00:00:00 2001
 From: Iouri Tarassov <iourit@linux.microsoft.com>
 Date: Wed, 12 Apr 2023 10:35:39 -0700
-Subject: [PATCH 45/50] drivers: hv: dxgkrnl: Fixed coding style issues
+Subject: [PATCH 46/54] drivers: hv: dxgkrnl: Fixed coding style issues
 
 Signed-off-by: Iouri Tarassov <iourit@linux.microsoft.com>
+[kms: forward port to 6.6 from 6.1. No code changes made.]
+Signed-off-by: Kelsey Steele <kelseysteele@microsoft.com>
 ---
  drivers/hv/dxgkrnl/dxgadapter.c | 12 ++++--------
  drivers/hv/dxgkrnl/dxgkrnl.h    |  6 +++---
@@ -27591,10 +27769,10 @@ Signed-off-by: Iouri Tarassov <iourit@linux.microsoft.com>
  4 files changed, 15 insertions(+), 25 deletions(-)
 
 diff --git a/drivers/hv/dxgkrnl/dxgadapter.c b/drivers/hv/dxgkrnl/dxgadapter.c
-index d9d45bd4a..d4db4a129 100644
+index bcd19b7267d1..b8ae8099847b 100644
 --- a/drivers/hv/dxgkrnl/dxgadapter.c
 +++ b/drivers/hv/dxgkrnl/dxgadapter.c
-@@ -1025,8 +1025,7 @@ struct dxgprocess_adapter *dxgprocess_adapter_create(struct dxgprocess *process,
+@@ -1017,8 +1017,7 @@ struct dxgprocess_adapter *dxgprocess_adapter_create(struct dxgprocess *process,
  	}
  	return adapter_info;
  cleanup:
@@ -27604,7 +27782,7 @@ index d9d45bd4a..d4db4a129 100644
  	return NULL;
  }
  
-@@ -1233,10 +1232,8 @@ struct dxgsyncobject *dxgsyncobject_create(struct dxgprocess *process,
+@@ -1225,10 +1224,8 @@ struct dxgsyncobject *dxgsyncobject_create(struct dxgprocess *process,
  	DXG_TRACE("Syncobj created: %p", syncobj);
  	return syncobj;
  cleanup:
@@ -27617,7 +27795,7 @@ index d9d45bd4a..d4db4a129 100644
  	return NULL;
  }
  
-@@ -1316,8 +1313,7 @@ void dxgsyncobject_release(struct kref *refcount)
+@@ -1308,8 +1305,7 @@ void dxgsyncobject_release(struct kref *refcount)
  		kref_put(&syncobj->shared_owner->ssyncobj_kref,
  			 dxgsharedsyncobj_release);
  	}
@@ -27628,7 +27806,7 @@ index d9d45bd4a..d4db4a129 100644
  }
  
 diff --git a/drivers/hv/dxgkrnl/dxgkrnl.h b/drivers/hv/dxgkrnl/dxgkrnl.h
-index 08479015b..2a28c9ea3 100644
+index 9599ec8e0f1d..a4d0c504668b 100644
 --- a/drivers/hv/dxgkrnl/dxgkrnl.h
 +++ b/drivers/hv/dxgkrnl/dxgkrnl.h
 @@ -47,10 +47,10 @@ struct dxghwqueue;
@@ -27646,7 +27824,7 @@ index 08479015b..2a28c9ea3 100644
  };
  extern struct dxgdriver dxgdrv;
 diff --git a/drivers/hv/dxgkrnl/dxgvmbus.c b/drivers/hv/dxgkrnl/dxgvmbus.c
-index 64fc1adf6..b67a2e4af 100644
+index de28c6162a70..215e2f6648e2 100644
 --- a/drivers/hv/dxgkrnl/dxgvmbus.c
 +++ b/drivers/hv/dxgkrnl/dxgvmbus.c
 @@ -246,7 +246,7 @@ int dxgvmbuschannel_init(struct dxgvmbuschannel *ch, struct hv_device *hdev)
@@ -27659,7 +27837,7 @@ index 64fc1adf6..b67a2e4af 100644
  #endif
  	ret = vmbus_open(hdev->channel, RING_BUFSIZE, RING_BUFSIZE,
 diff --git a/drivers/hv/dxgkrnl/ioctl.c b/drivers/hv/dxgkrnl/ioctl.c
-index f8ca79d09..5ac6dd1f0 100644
+index f8ca79d098f3..5ac6dd1f09b9 100644
 --- a/drivers/hv/dxgkrnl/ioctl.c
 +++ b/drivers/hv/dxgkrnl/ioctl.c
 @@ -3162,8 +3162,7 @@ dxgkio_signal_sync_object(struct dxgprocess *process, void *__user inargs)
@@ -27725,28 +27903,30 @@ index f8ca79d09..5ac6dd1f0 100644
  			DXGKRNL_ASSERT(0);
  		}
 -- 
-2.44.0
+2.47.0
 
 
-From 6b92c3f1050ba56a92c393dab273203c56eb142f Mon Sep 17 00:00:00 2001
+From c1895cc5bf23afffc5ea3d8a512a644de2437d03 Mon Sep 17 00:00:00 2001
 From: Iouri Tarassov <iourit@linux.microsoft.com>
 Date: Mon, 17 Apr 2023 10:57:23 -0700
-Subject: [PATCH 46/50] drivers: hv: dxgkrnl: Fixed the implementation of
+Subject: [PATCH 47/54] drivers: hv: dxgkrnl: Fixed the implementation of
  D3DKMTQueryClockCalibration
 
 The result of a VM bus call was not copied to the user output structure.
 
 Signed-off-by: Iouri Tarassov <iourit@linux.microsoft.com>
+[kms: forward port to 6.6 from 6.1. No code changes made.]
+Signed-off-by: Kelsey Steele <kelseysteele@microsoft.com>
 ---
  drivers/hv/dxgkrnl/dxgvmbus.c | 18 ++++++++++--------
  drivers/hv/dxgkrnl/ioctl.c    |  5 -----
  2 files changed, 10 insertions(+), 13 deletions(-)
 
 diff --git a/drivers/hv/dxgkrnl/dxgvmbus.c b/drivers/hv/dxgkrnl/dxgvmbus.c
-index b67a2e4af..afc6b9588 100644
+index 215e2f6648e2..67f55f4bf41d 100644
 --- a/drivers/hv/dxgkrnl/dxgvmbus.c
 +++ b/drivers/hv/dxgkrnl/dxgvmbus.c
-@@ -1974,14 +1974,16 @@ int dxgvmb_send_query_clock_calibration(struct dxgprocess *process,
+@@ -1966,14 +1966,16 @@ int dxgvmb_send_query_clock_calibration(struct dxgprocess *process,
  					*__user inargs)
  {
  	struct dxgkvmb_command_queryclockcalibration *command;
@@ -27766,7 +27946,7 @@ index b67a2e4af..afc6b9588 100644
  
  	command_vgpu_to_host_init2(&command->hdr,
  				   DXGK_VMBCOMMAND_QUERYCLOCKCALIBRATION,
-@@ -1989,20 +1991,20 @@ int dxgvmb_send_query_clock_calibration(struct dxgprocess *process,
+@@ -1981,20 +1983,20 @@ int dxgvmb_send_query_clock_calibration(struct dxgprocess *process,
  	command->args = *args;
  
  	ret = dxgvmb_send_sync_msg(msg.channel, msg.hdr, msg.size,
@@ -27793,7 +27973,7 @@ index b67a2e4af..afc6b9588 100644
  		DXG_TRACE("err: %d", ret);
  	return ret;
 diff --git a/drivers/hv/dxgkrnl/ioctl.c b/drivers/hv/dxgkrnl/ioctl.c
-index 5ac6dd1f0..d91af2e17 100644
+index 5ac6dd1f09b9..d91af2e176e9 100644
 --- a/drivers/hv/dxgkrnl/ioctl.c
 +++ b/drivers/hv/dxgkrnl/ioctl.c
 @@ -4303,11 +4303,6 @@ dxgkio_query_clock_calibration(struct dxgprocess *process, void *__user inargs)
@@ -27809,13 +27989,13 @@ index 5ac6dd1f0..d91af2e17 100644
  cleanup:
  
 -- 
-2.44.0
+2.47.0
 
 
-From 26d29d8377a78f1b0014f6c9ba6df9ed5763f885 Mon Sep 17 00:00:00 2001
+From 968d47ae240d7f5c5489f7e02bc738ddd859e9ad Mon Sep 17 00:00:00 2001
 From: Iouri Tarassov <iourit@linux.microsoft.com>
 Date: Mon, 15 May 2023 11:15:17 -0700
-Subject: [PATCH 47/50] drivers: hv: dxgkrnl: Retry sending a VM bus packet
+Subject: [PATCH 48/54] drivers: hv: dxgkrnl: Retry sending a VM bus packet
  when there is no place in the ring buffer
 
 When D3DKMT requests are sent too quickly, the VM bus ring buffer could be
@@ -27823,12 +28003,14 @@ full when a message is submitted. The change adds sleep and re-try count
 to handle this condition.
 
 Signed-off-by: Iouri Tarassov <iourit@linux.microsoft.com>
+[kms: forward port to 6.6 from 6.1. No code changes made.]
+Signed-off-by: Kelsey Steele <kelseysteele@microsoft.com>
 ---
  drivers/hv/dxgkrnl/dxgvmbus.c | 17 ++++++++++++++---
  1 file changed, 14 insertions(+), 3 deletions(-)
 
 diff --git a/drivers/hv/dxgkrnl/dxgvmbus.c b/drivers/hv/dxgkrnl/dxgvmbus.c
-index afc6b9588..9320bede3 100644
+index 67f55f4bf41d..467e7707c8c7 100644
 --- a/drivers/hv/dxgkrnl/dxgvmbus.c
 +++ b/drivers/hv/dxgkrnl/dxgvmbus.c
 @@ -420,6 +420,7 @@ int dxgvmb_send_sync_msg(struct dxgvmbuschannel *channel,
@@ -27863,13 +28045,13 @@ index afc6b9588..9320bede3 100644
  		DXG_ERR("vmbus_sendpacket failed: %x", ret);
  		spin_lock_irq(&channel->packet_list_mutex);
 -- 
-2.44.0
+2.47.0
 
 
-From e8c50f197b62b147dbc3e3ee083dd1fbb66eaeaf Mon Sep 17 00:00:00 2001
+From 4332d5f4ba0b391e6f0e74cc7ed4661a90e68711 Mon Sep 17 00:00:00 2001
 From: Iouri Tarassov <iourit@linux.microsoft.com>
 Date: Fri, 26 May 2023 14:03:11 -0700
-Subject: [PATCH 48/50] drivers: hv: dxgkrnl: Add support for locking a shared
+Subject: [PATCH 49/54] drivers: hv: dxgkrnl: Add support for locking a shared
  allocation by not the owner
 
 WDDM has a restriction that an allocation of a shared resource can be
@@ -27878,6 +28060,8 @@ restriction is removed for system memory only allocations. This change
 adds support for this feature.
 
 Signed-off-by: Iouri Tarassov <iourit@linux.microsoft.com>
+[kms: forward port to 6.6 from 6.1. No code changes made.]
+Signed-off-by: Kelsey Steele <kelseysteele@microsoft.com>
 ---
  drivers/hv/dxgkrnl/dxgadapter.c |  4 ++--
  drivers/hv/dxgkrnl/dxgkrnl.h    | 13 ++++++++++++-
@@ -27885,7 +28069,7 @@ Signed-off-by: Iouri Tarassov <iourit@linux.microsoft.com>
  3 files changed, 31 insertions(+), 11 deletions(-)
 
 diff --git a/drivers/hv/dxgkrnl/dxgadapter.c b/drivers/hv/dxgkrnl/dxgadapter.c
-index d4db4a129..54bf0c386 100644
+index b8ae8099847b..cf946e476411 100644
 --- a/drivers/hv/dxgkrnl/dxgadapter.c
 +++ b/drivers/hv/dxgkrnl/dxgadapter.c
 @@ -559,8 +559,8 @@ void dxgsharedresource_destroy(struct kref *refcount)
@@ -27900,7 +28084,7 @@ index d4db4a129..54bf0c386 100644
  		vfree(resource->alloc_private_data);
  	kfree(resource);
 diff --git a/drivers/hv/dxgkrnl/dxgkrnl.h b/drivers/hv/dxgkrnl/dxgkrnl.h
-index 2a28c9ea3..71eac6b1f 100644
+index a4d0c504668b..d816a875d5ab 100644
 --- a/drivers/hv/dxgkrnl/dxgkrnl.h
 +++ b/drivers/hv/dxgkrnl/dxgkrnl.h
 @@ -613,6 +613,17 @@ struct dxghwqueue *dxghwqueue_create(struct dxgcontext *ctx);
@@ -27931,7 +28115,7 @@ index 2a28c9ea3..71eac6b1f 100644
  	u8			*runtime_private_data;
  	u8			*resource_private_data;
 diff --git a/drivers/hv/dxgkrnl/ioctl.c b/drivers/hv/dxgkrnl/ioctl.c
-index d91af2e17..f8f116a7f 100644
+index d91af2e176e9..f8f116a7f87f 100644
 --- a/drivers/hv/dxgkrnl/ioctl.c
 +++ b/drivers/hv/dxgkrnl/ioctl.c
 @@ -369,6 +369,7 @@ static int dxgsharedresource_seal(struct dxgsharedresource *shared_resource)
@@ -27997,13 +28181,124 @@ index d91af2e17..f8f116a7f 100644
  		total_priv_data_size += open_alloc_info.priv_drv_data_size;
  		open_alloc_info.priv_drv_data = cur_priv_data;
 -- 
-2.44.0
+2.47.0
 
 
-From 2219ede39f1405cce32b9ac922ae2cd6497328a1 Mon Sep 17 00:00:00 2001
+From ac41b060612a1486b017e8cf7bb44a7b0278103e Mon Sep 17 00:00:00 2001
+From: Iouri Tarassov <iourit@linux.microsoft.com>
+Date: Wed, 6 Dec 2023 15:45:30 -0800
+Subject: [PATCH 50/54] drivers: hv: dxgkrnl: Fix build breaks when switching
+ to 6.6 kernel due to hv_driver remove callback change.
+
+The hv_driver remove callback has been updated to return void instead of int.
+dxg_remove_vmbus() in dxgmodule.c needs to be updated to match. See this
+commit for more context:
+96ec2939620c "Drivers: hv: Make remove callback of hyperv driver void returned"
+
+Signed-off-by: Iouri Tarassov <iourit@linux.microsoft.com>
+---
+ drivers/hv/dxgkrnl/dxgmodule.c | 6 +-----
+ 1 file changed, 1 insertion(+), 5 deletions(-)
+
+diff --git a/drivers/hv/dxgkrnl/dxgmodule.c b/drivers/hv/dxgkrnl/dxgmodule.c
+index 0fafb6167229..5459bd9b82fb 100644
+--- a/drivers/hv/dxgkrnl/dxgmodule.c
++++ b/drivers/hv/dxgkrnl/dxgmodule.c
+@@ -803,9 +803,8 @@ static int dxg_probe_vmbus(struct hv_device *hdev,
+ 	return ret;
+ }
+ 
+-static int dxg_remove_vmbus(struct hv_device *hdev)
++static void dxg_remove_vmbus(struct hv_device *hdev)
+ {
+-	int ret = 0;
+ 	struct dxgvgpuchannel *vgpu_channel;
+ 	struct dxgglobal *dxgglobal = dxggbl();
+ 
+@@ -830,12 +829,9 @@ static int dxg_remove_vmbus(struct hv_device *hdev)
+ 	} else {
+ 		/* Unknown device type */
+ 		DXG_ERR("Unknown device type");
+-		ret = -ENODEV;
+ 	}
+ 
+ 	mutex_unlock(&dxgglobal->device_mutex);
+-
+-	return ret;
+ }
+ 
+ MODULE_DEVICE_TABLE(vmbus, dxg_vmbus_id_table);
+-- 
+2.47.0
+
+
+From e2e5f60b77a222d2f4b91897c42c335b135cbc39 Mon Sep 17 00:00:00 2001
+From: Iouri Tarassov <iourit@linux.microsoft.com>
+Date: Wed, 6 Dec 2023 15:52:11 -0800
+Subject: [PATCH 51/54] drivers: hv: dxgkrnl: Fix build breaks when switching
+ to 6.6 kernel due to removed uuid_le_cmp
+
+uuid_le_cmp was removed and needs to be replaced by guid_equal. The
+relevant upstream commits are:
+1fb1ea0d9cb8 "mei: Move uuid.h to the MEI namespace"
+f5b3c341a46e "mei: Move uuid_le_cmp() to its only user"
+5e6a51787fef "uuid: Decouple guid_t and uuid_le types and respective macros"
+
+Signed-off-by: Iouri Tarassov <iourit@linux.microsoft.com>
+---
+ drivers/hv/dxgkrnl/dxgmodule.c | 10 ++++------
+ 1 file changed, 4 insertions(+), 6 deletions(-)
+
+diff --git a/drivers/hv/dxgkrnl/dxgmodule.c b/drivers/hv/dxgkrnl/dxgmodule.c
+index 5459bd9b82fb..e3ac70df1b6f 100644
+--- a/drivers/hv/dxgkrnl/dxgmodule.c
++++ b/drivers/hv/dxgkrnl/dxgmodule.c
+@@ -762,7 +762,7 @@ static int dxg_probe_vmbus(struct hv_device *hdev,
+ 
+ 	mutex_lock(&dxgglobal->device_mutex);
+ 
+-	if (uuid_le_cmp(hdev->dev_type, dxg_vmbus_id_table[0].guid) == 0) {
++	if (guid_equal(&hdev->dev_type, &dxg_vmbus_id_table[0].guid)) {
+ 		/* This is a new virtual GPU channel */
+ 		guid_to_luid(&hdev->channel->offermsg.offer.if_instance, &luid);
+ 		DXG_TRACE("vGPU channel: %pUb",
+@@ -777,8 +777,7 @@ static int dxg_probe_vmbus(struct hv_device *hdev,
+ 		list_add_tail(&vgpuch->vgpu_ch_list_entry,
+ 			      &dxgglobal->vgpu_ch_list_head);
+ 		dxgglobal_start_adapters();
+-	} else if (uuid_le_cmp(hdev->dev_type,
+-		   dxg_vmbus_id_table[1].guid) == 0) {
++	} else if (guid_equal(&hdev->dev_type, &dxg_vmbus_id_table[1].guid)) {
+ 		/* This is the global Dxgkgnl channel */
+ 		DXG_TRACE("Global channel: %pUb",
+ 			 &hdev->channel->offermsg.offer.if_instance);
+@@ -810,7 +809,7 @@ static void dxg_remove_vmbus(struct hv_device *hdev)
+ 
+ 	mutex_lock(&dxgglobal->device_mutex);
+ 
+-	if (uuid_le_cmp(hdev->dev_type, dxg_vmbus_id_table[0].guid) == 0) {
++	if (guid_equal(&hdev->dev_type, &dxg_vmbus_id_table[0].guid)) {
+ 		DXG_TRACE("Remove virtual GPU channel");
+ 		dxgglobal_stop_adapter_vmbus(hdev);
+ 		list_for_each_entry(vgpu_channel,
+@@ -822,8 +821,7 @@ static void dxg_remove_vmbus(struct hv_device *hdev)
+ 				break;
+ 			}
+ 		}
+-	} else if (uuid_le_cmp(hdev->dev_type,
+-		   dxg_vmbus_id_table[1].guid) == 0) {
++	} else if (guid_equal(&hdev->dev_type, &dxg_vmbus_id_table[1].guid)) {
+ 		DXG_TRACE("Remove global channel device");
+ 		dxgglobal_destroy_global_channel();
+ 	} else {
+-- 
+2.47.0
+
+
+From a923b184aebd59e3502c06c5e693de158333e813 Mon Sep 17 00:00:00 2001
 From: Iouri Tarassov <iourit@linux.microsoft.com>
 Date: Thu, 7 Mar 2024 09:34:05 -0800
-Subject: [PATCH 49/50] drivers: hv: dxgkrnl: Implement D3DKMTEnumProcesses to
+Subject: [PATCH 52/54] drivers: hv: dxgkrnl: Implement D3DKMTEnumProcesses to
  match the Windows implementation
 
 The behavior of D3DKMTEnumProcesses on Windows is that when buffer_count is 0 or
@@ -28011,25 +28306,23 @@ input buffer is NULL, the number of active processes is returned. The Linux impl
 is updated to match this.
 
 Signed-off-by: Iouri Tarassov <iourit@linux.microsoft.com>
-[kms: backported from 6.6 to 5.15. No code changes needed]
-Signed-off-by: Kelsey Steele <kelseysteele@microsoft.com>
 ---
  drivers/hv/dxgkrnl/dxgmodule.c |  2 +-
  drivers/hv/dxgkrnl/ioctl.c     | 29 ++++++++++++++++++-----------
  2 files changed, 19 insertions(+), 12 deletions(-)
 
 diff --git a/drivers/hv/dxgkrnl/dxgmodule.c b/drivers/hv/dxgkrnl/dxgmodule.c
-index 0fafb6167..b9fa943a3 100644
+index e3ac70df1b6f..8f5d6db256a3 100644
 --- a/drivers/hv/dxgkrnl/dxgmodule.c
 +++ b/drivers/hv/dxgkrnl/dxgmodule.c
-@@ -971,4 +971,4 @@ module_exit(dxg_drv_exit);
+@@ -965,4 +965,4 @@ module_exit(dxg_drv_exit);
  
  MODULE_LICENSE("GPL");
  MODULE_DESCRIPTION("Microsoft Dxgkrnl virtual compute device Driver");
 -MODULE_VERSION("2.0.2");
 +MODULE_VERSION("2.0.3");
 diff --git a/drivers/hv/dxgkrnl/ioctl.c b/drivers/hv/dxgkrnl/ioctl.c
-index f8f116a7f..42f3de31a 100644
+index f8f116a7f87f..42f3de31a63c 100644
 --- a/drivers/hv/dxgkrnl/ioctl.c
 +++ b/drivers/hv/dxgkrnl/ioctl.c
 @@ -5373,7 +5373,7 @@ dxgkio_enum_processes(struct dxgprocess *process, void *__user inargs)
@@ -28090,28 +28383,26 @@ index f8f116a7f..42f3de31a 100644
  
  cleanup:
 -- 
-2.44.0
+2.47.0
 
 
-From b12445891c254e843cd1cc01265ea047bf7ee300 Mon Sep 17 00:00:00 2001
+From 429134d79a359d3c1092de3385d91506819b1a76 Mon Sep 17 00:00:00 2001
 From: Iouri Tarassov <iourit@linux.microsoft.com>
 Date: Thu, 7 Mar 2024 15:09:03 -0800
-Subject: [PATCH 50/50] drivers: hv: dxgkrnl: Use pin_user_pages instead of
+Subject: [PATCH 53/54] drivers: hv: dxgkrnl: Use pin_user_pages instead of
  get_user_pages for DMA accessible memory
 
 Pages, which are obtained by calling get_user_pages(), can be evicted from memory.
 pin_user_pages() should be used for memory, which is accessed by DMA.
 
 Signed-off-by: Iouri Tarassov <iourit@linux.microsoft.com>
-[kms: backported from 6.6 to 5.15. No code changes needed]
-Signed-off-by: Kelsey Steele <kelseysteele@microsoft.com>
 ---
  drivers/hv/dxgkrnl/dxgadapter.c |  2 +-
  drivers/hv/dxgkrnl/dxgvmbus.c   | 12 ++++++++----
  2 files changed, 9 insertions(+), 5 deletions(-)
 
 diff --git a/drivers/hv/dxgkrnl/dxgadapter.c b/drivers/hv/dxgkrnl/dxgadapter.c
-index 54bf0c386..8eb65e764 100644
+index cf946e476411..c94283b09fa1 100644
 --- a/drivers/hv/dxgkrnl/dxgadapter.c
 +++ b/drivers/hv/dxgkrnl/dxgadapter.c
 @@ -882,7 +882,7 @@ struct dxgallocation *dxgallocation_create(struct dxgprocess *process)
@@ -28124,7 +28415,7 @@ index 54bf0c386..8eb65e764 100644
  		alloc->pages = NULL;
  	}
 diff --git a/drivers/hv/dxgkrnl/dxgvmbus.c b/drivers/hv/dxgkrnl/dxgvmbus.c
-index 9320bede3..f5f7b2f26 100644
+index 467e7707c8c7..abb6d2af89ac 100644
 --- a/drivers/hv/dxgkrnl/dxgvmbus.c
 +++ b/drivers/hv/dxgkrnl/dxgvmbus.c
 @@ -1457,6 +1457,7 @@ int create_existing_sysmem(struct dxgdevice *device,
@@ -28156,5 +28447,61 @@ index 9320bede3..f5f7b2f26 100644
  		dxgalloc->pages = NULL;
  		ret = -ENOMEM;
 -- 
-2.44.0
+2.47.0
+
+
+From 423e5044c57566f8267bbb20cf7cf57d1aefb040 Mon Sep 17 00:00:00 2001
+From: Iouri Tarassov <iourit@linux.microsoft.com>
+Date: Thu, 11 Apr 2024 17:10:28 -0700
+Subject: [PATCH 54/54] drivers: hv: dxgkrnl: Do not print error messages when
+ virtual GPU is not present
+
+Dxgkrnl prints the error message "Failed to acquire global channel lock"
+when a process tries to open the /dev/dxg device and there is no
+virtual GPU. This message should not be printed in this scenario.
+
+Signed-off-by: Iouri Tarassov <iourit@linux.microsoft.com>
+---
+ drivers/hv/dxgkrnl/dxgadapter.c | 2 +-
+ drivers/hv/dxgkrnl/dxgmodule.c  | 4 ++++
+ 2 files changed, 5 insertions(+), 1 deletion(-)
+
+diff --git a/drivers/hv/dxgkrnl/dxgadapter.c b/drivers/hv/dxgkrnl/dxgadapter.c
+index c94283b09fa1..6d3cabb24e6f 100644
+--- a/drivers/hv/dxgkrnl/dxgadapter.c
++++ b/drivers/hv/dxgkrnl/dxgadapter.c
+@@ -78,12 +78,12 @@ void dxgadapter_start(struct dxgadapter *adapter)
+ 
+ 	/* The global channel is initialized when the first adapter starts */
+ 	if (!dxgglobal->global_channel_initialized) {
++		dxgglobal->global_channel_initialized = true;
+ 		ret = dxgglobal_init_global_channel();
+ 		if (ret) {
+ 			dxgglobal_destroy_global_channel();
+ 			return;
+ 		}
+-		dxgglobal->global_channel_initialized = true;
+ 	}
+ 
+ 	/* Initialize vGPU vm bus channel */
+diff --git a/drivers/hv/dxgkrnl/dxgmodule.c b/drivers/hv/dxgkrnl/dxgmodule.c
+index 8f5d6db256a3..c2a4a2a2136f 100644
+--- a/drivers/hv/dxgkrnl/dxgmodule.c
++++ b/drivers/hv/dxgkrnl/dxgmodule.c
+@@ -46,9 +46,13 @@ int dxgglobal_acquire_channel_lock(void)
+ {
+ 	struct dxgglobal *dxgglobal = dxggbl();
+ 
++	if (!dxgglobal->global_channel_initialized)
++		return -ENODEV;
++
+ 	down_read(&dxgglobal->channel_lock);
+ 	if (dxgglobal->channel.channel == NULL) {
+ 		DXG_ERR("Failed to acquire global channel lock");
++		up_read(&dxgglobal->channel_lock);
+ 		return -ENODEV;
+ 	} else {
+ 		return 0;
+-- 
+2.47.0
 
