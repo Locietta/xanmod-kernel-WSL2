@@ -5,6 +5,7 @@ git apply ../0001-6.6.y-dxgkrnl.patch
 git apply ../0002-driver-hv-dxgkrnl-add-missing-vmalloc-header.patch
 git apply ../0003-bbrv3-fix-clang-build.patch
 git apply ../0004-nf_nat_fullcone-fix-clang-uninitialized-var-werror.patch
+git apply ../0005-drivers-hv-dxgkrnl-Remove-argument-in-eventfd_signal.patch
 
 if [ $? != 0 ]; then
     echo "Patch conflict!"
