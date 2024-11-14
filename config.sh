@@ -1,5 +1,7 @@
 #!/bin/bash
 
+shopt -s nullglob
+
 PATCH_DIR="../patches"
 
 IS_LTS_OVERRIDE=false
@@ -15,34 +17,27 @@ done
 
 # Determine the patch directory
 if [[ $IS_LTS_OVERRIDE == true || "$IS_LTS" == "YES" ]]; then
-  SPESIFIC_PATCH_DIR="../patches/LTS"
+  SPESIFIC_PATCH_DIR="$PATCH_DIR/LTS"
 else
-  SPESIFIC_PATCH_DIR="../patches/MAIN"
+  SPESIFIC_PATCH_DIR="$PATCH_DIR/MAIN"
 fi
 
-function check_patch_error() {
-  if [ $? -eq 1 ]; then
-    echo -e "Patch conflict encountered in $patch_file"
-    echo -e "Halting build!"
-    exit 1
-  fi
-} 
+function loop_apply_patch {
+  for patch_file in "$1/"*.patch; do
+    git apply "$patch_file"
+
+    if [ $? != 0 ]; then
+      echo -e "Failed to apply $patch_file"
+      echo -e "Halting build!"
+      exit 1
+    fi
+  done
+}
 
 # Apply common patches
-for patch_file in "$PATCH_DIR/"*.patch; do
-  git apply "$patch_file"
-
-  # Check for patch conflict (exit code 1)
-  check_patch_error
-done
-
-# Apply specific patches
-for patch_file in "$SPESIFIC_PATCH_DIR/"*.patch; do
-  git apply "$patch_file"
-
-  # Check for patch conflict (exit code 1)
-  check_patch_error
-done
+loop_apply_patch $PATCH_DIR
+# Apply LTS/MAIN specific patches
+loop_apply_patch $SPESIFIC_PATCH_DIR
 
 cp ../wsl2_defconfig ./arch/x86/configs/wsl2_defconfig
 make LLVM=1 LLVM_IAS=1 wsl2_defconfig
