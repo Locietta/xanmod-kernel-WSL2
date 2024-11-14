@@ -50,12 +50,6 @@ jobs:
     - name: Trust this directory
       run: git config --global --add safe.directory '*' # v2.35.3 or later
  
-    - name: Initialize ccache
-      uses: hendrikmuhs/ccache-action@v1.2
-      with:
-        max-size: 2048M
-        key: ${{ github.job }}-${{ matrix.arch }}
-       
     - name: Prepare source code
       shell: bash
       run: |
@@ -86,6 +80,13 @@ jobs:
         else 
           echo "REBUILD_FLAG=" | tee -a $GITHUB_ENV
         fi
+
+    - name: Initialize ccache
+      uses: hendrikmuhs/ccache-action@v1.2
+      if: ${{ env.REBUILD_FLAG }}
+      with:
+        max-size: 2048M
+        key: ${{ github.job }}-${{ matrix.arch }}
 
     - name: Build kernel
       if: ${{ env.REBUILD_FLAG }}
