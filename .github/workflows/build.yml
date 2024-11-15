@@ -12,11 +12,12 @@ on:
 
 env:
   IS_LTS: NO
+  MIMALLOC_ALLOW_LARGE_OS_PAGES: 1
 
 jobs:
   build:        
     runs-on: ubuntu-latest
-    container: archlinux/archlinux:base-devel
+    container: cachyos/cachyos-v3:latest
     outputs:
       current_version: ${{ steps.out.outputs.current_version }}
       release_version: ${{ steps.out.outputs.release_version }}
@@ -42,10 +43,11 @@ jobs:
     - name: Install dependencies
       id: dep
       run: |
-        pacman -Syu --noconfirm pahole xmlto inetutils bc cpio jq ccache git python go
+        pacman -Syu --noconfirm pahole xmlto inetutils bc cpio jq ccache git python go mimalloc
         GOBIN=/usr/bin go install go.chromium.org/luci/cipd/client/cmd/...@latest
         cipd install fuchsia/third_party/clang/linux-amd64 latest -root /usr/local/fuchsia-clang
         echo "PATH=/usr/local/fuchsia-clang/bin:$PATH" >> $GITHUB_ENV
+        echo "/usr/lib/libmimalloc.so" > /etc/ld.so.preload
 
     - name: Trust this directory
       run: git config --global --add safe.directory '*' # v2.35.3 or later
@@ -82,11 +84,18 @@ jobs:
         fi
 
     - name: Initialize ccache
-      uses: hendrikmuhs/ccache-action@v1.2
+      uses: Chocobo1/setup-ccache-action@master
       if: ${{ env.REBUILD_FLAG }}
       with:
-        max-size: 2048M
-        key: ${{ github.job }}-${{ matrix.arch }}
+        prepend_symlinks_to_path: false
+        update_packager_index: false
+        install_ccache: false
+        override_cache_key: ${{ github.job }}-${{ matrix.arch }}
+        ccache_options: |
+          max_size=2G
+          compiler_check=none
+          compression=false
+          sloppiness=locale,time_macros,pch_defines
 
     - name: Build kernel
       if: ${{ env.REBUILD_FLAG }}
