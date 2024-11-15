@@ -84,11 +84,18 @@ jobs:
         fi
 
     - name: Initialize ccache
-      uses: hendrikmuhs/ccache-action@v1.2
+      uses: Chocobo1/setup-ccache-action@master
       if: ${{ env.REBUILD_FLAG }}
       with:
-        max-size: 2048M
-        key: ${{ github.job }}-${{ matrix.arch }}
+        prepend_symlinks_to_path: false
+        update_packager_index: false
+        install_ccache: false
+        override_cache_key: ${{ github.job }}-${{ matrix.arch }}
+        ccache_options: |
+          max_size=2G
+          compiler_check=none
+          compression=false
+          sloppiness=locale,time_macros,pch_defines
 
     - name: Build kernel
       if: ${{ env.REBUILD_FLAG }}
