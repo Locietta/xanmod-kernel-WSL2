@@ -35,6 +35,14 @@ jobs:
             image-name: bzImage-x64v4 
           - arch: MSKYLAKE
             image-name: bzImage-skylake
+          - arch: GENERIC_MZEN
+            image-name: bzImage-zen
+          - arch: GENERIC_MZEN2
+            image-name: bzImage-zen2
+          - arch: GENERIC_MZEN3
+            image-name: bzImage-zen3
+          - arch: GENERIC_MZEN4
+            image-name: bzImage-zen4
 
     steps:
 
