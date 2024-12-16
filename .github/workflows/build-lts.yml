@@ -110,6 +110,7 @@ jobs:
     - uses: actions/download-artifact@main
       with:
         path: release_images/
+        merge-multiple: true
 
     - id: fetch_commit_sha
       run: |
@@ -120,6 +121,11 @@ jobs:
           echo "sha=${{ github.sha }}" >> $GITHUB_OUTPUT
           echo "RELEASE_TAG=${{ needs.build.outputs.current_version }}.1" | tee -a $GITHUB_ENV
         fi
+
+    - name: Remove misc files
+      run: |
+        rm -rf release_images/.config*
+        # We don't release .config files, they are in the artifact only for debugging
 
     - name: Release
       uses: softprops/action-gh-release@master
@@ -142,7 +148,7 @@ jobs:
           **NOTE for Win11**: the minimum requirement of Win11 ensures generic-x86_64-v3 support, so feel free to use `bzImage-x64v3`.
           
         files: |
-          release_images/*/*
+          release_images/*
         token: ${{ secrets.GITHUB_TOKEN }}
         # generate_release_notes: true
         fail_on_unmatched_files: true
