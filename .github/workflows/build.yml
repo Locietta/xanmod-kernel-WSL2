@@ -30,7 +30,8 @@ jobs:
             image-name: bzImage-x64v2
           - arch: GENERIC_CPU3
             image-name: bzImage-x64v3
-
+          - arch: MSKYLAKE
+            image-name: bzImage-skylake
     steps:
 
     - uses: actions/checkout@main
