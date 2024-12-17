@@ -39,14 +39,12 @@ scoop install xanmod-WSL2 # alias to xanmod-WSL2-x64v3
 
 # other builds
 # scoop install xanmod-WSL2-x64v2
-# scoop install xanmod-WSL2-x64v4
 # scoop install xanmod-WSL2-skylake
 
 # LTS builds
 # scoop install xanmod-WSL2-lts # alias to xanmod-WSL2-lts-x64v3
 # scoop install xanmod-WSL2-lts-x64v2
 # scoop install xanmod-WSL2-lts-x64v3
-# scoop install xanmod-WSL2-lts-x64v4
 # scoop install xanmod-WSL2-lts-skylake
 ```
 
