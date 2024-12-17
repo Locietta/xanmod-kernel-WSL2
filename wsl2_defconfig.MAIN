@@ -86,7 +86,7 @@ CONFIG_HZ_1000=y
 CONFIG_PHYSICAL_ALIGN=0x1000000
 CONFIG_LEGACY_VSYSCALL_NONE=y
 CONFIG_CMDLINE_BOOL=y
-CONFIG_CMDLINE="cgroup_no_v1=all systemd.unified_cgroup_hierarchy=1"
+CONFIG_CMDLINE="cgroup_no_v1=all systemd.unified_cgroup_hierarchy=1 thp_anon=16K-2M:inherit"
 # CONFIG_MODIFY_LDT_SYSCALL is not set
 # CONFIG_SUSPEND is not set
 # CONFIG_ACPI_SPCR_TABLE is not set
