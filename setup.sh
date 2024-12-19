@@ -104,10 +104,10 @@ loop_apply_patch $PATCH_DIR
 # Apply LTS/MAIN specific patches
 loop_apply_patch $SPESIFIC_PATCH_DIR
 
-if [ "$BRANCH" = "LTS" ]; then
-  cp ../wsl2_defconfig.LTS ./arch/x86/configs/wsl2_defconfig
-else
+if [ "$BRANCH" = "MAIN" ]; then
   cp ../wsl2_defconfig.MAIN ./arch/x86/configs/wsl2_defconfig
+elif [ "$BRANCH" = "LTS" ]; then
+  cp ../wsl2_defconfig.LTS ./arch/x86/configs/wsl2_defconfig
 fi
 
 make LLVM=1 LLVM_IAS=1 wsl2_defconfig

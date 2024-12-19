@@ -79,7 +79,7 @@ jobs:
     - name: Build kernel
       if: ${{ env.REBUILD_FLAG }}
       run: |
-        cd linux && ../build.sh
+        cd linux && ../build.sh --branch LTS
         mv arch/x86/boot/bzImage ../${{ matrix.image-name }}
         cd .. && sha256sum ${{ matrix.image-name }} > ${{ matrix.image-name }}.sha256
 
