@@ -94,6 +94,7 @@ jobs:
       run: |
         cd linux && ../build.sh --branch MAIN
         mv arch/x86/boot/bzImage ../${{ matrix.image-name }}
+        cp .config ../.config-${{ matrix.image-name }}
         cd .. && sha256sum ${{ matrix.image-name }} > ${{ matrix.image-name }}.sha256
 
     - name: Upload bzImage
@@ -104,7 +105,7 @@ jobs:
         path: |
           ${{ matrix.image-name }}
           ${{ matrix.image-name }}.sha256
-          .config-${{ matrix.arch }}
+          .config-${{ matrix.image-name }}
 
     - id: out
       run: |
