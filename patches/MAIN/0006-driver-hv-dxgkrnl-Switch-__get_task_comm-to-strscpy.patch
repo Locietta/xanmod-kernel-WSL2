@@ -1,0 +1,39 @@
+From e35388270970fef0f489d69546c4f6f174606ced Mon Sep 17 00:00:00 2001
+From: Yang Jeong Hun <onyxclover9931@gmail.com>
+Date: Mon, 20 Jan 2025 10:16:21 +0900
+Subject: [PATCH] driver: hv: dxgkrnl: Switch __get_task_comm() to strscpy()
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+
+Error Logs:
+drivers/hv/dxgkrnl/dxgvmbus.c: In function ‘dxgvmb_send_create_process’:
+drivers/hv/dxgkrnl/dxgvmbus.c:693:9: error: implicit declaration of function ‘__get_task_comm’; did you mean ‘__set_task_comm’? [-Wimplicit-function-declaration]
+  693 |         __get_task_comm(s, WIN_MAX_PATH, current);
+      |         ^~~~~~~~~~~~~~~
+      |         __set_task_comm
+
+ * In 4cc0473d7754d387680bdf0728eb29f0ec8834bf, __get_task_comm() has been removed.
+ * Switch to __get_task_comm() to strscpy().
+
+Signed-off-by: Yang Jeong Hun <onyxclover9931@gmail.com>
+---
+ drivers/hv/dxgkrnl/dxgvmbus.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/drivers/hv/dxgkrnl/dxgvmbus.c b/drivers/hv/dxgkrnl/dxgvmbus.c
+index 59149b2969a4..f04240d182b5 100644
+--- a/drivers/hv/dxgkrnl/dxgvmbus.c
++++ b/drivers/hv/dxgkrnl/dxgvmbus.c
+@@ -690,7 +690,7 @@ int dxgvmb_send_create_process(struct dxgprocess *process)
+ 	command->process_id = process->pid;
+ 	command->linux_process = 1;
+ 	s[0] = 0;
+-	__get_task_comm(s, WIN_MAX_PATH, current);
++	strscpy(s, current->comm, WIN_MAX_PATH);
+ 	for (i = 0; i < WIN_MAX_PATH; i++) {
+ 		command->process_name[i] = s[i];
+ 		if (s[i] == 0)
+-- 
+2.48.1
+
