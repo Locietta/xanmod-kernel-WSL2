@@ -113,26 +113,20 @@ fi
 make LLVM=1 LLVM_IAS=1 wsl2_defconfig
 make LLVM=1 LLVM_IAS=1 oldconfig
 
-if [ "$BRANCH" = "LTS" ]; then
-  # avoid override warning for duplicate arch flags
-  scripts/config -d GENERIC_CPU3
-  scripts/config -e $ARCH
-else
-  # avoid override warning for duplicate arch flags
-  scripts/config -d CONFIG_GENERIC_CPU
-  scripts/config -d CONFIG_X86_64_VERSION
-  # Add graysky's compiler config
-  case "$ARCH" in
-    GENERIC_CPU3)
-      scripts/config -e CONFIG_GENERIC_CPU
-      scripts/config --set-val CONFIG_X86_64_VERSION 3
-      ;;
-    GENERIC_CPU2)
-      scripts/config -e CONFIG_GENERIC_CPU
-      scripts/config --set-val CONFIG_X86_64_VERSION 2
-      ;;
-    *) 
-      scripts/config -e $ARCH
-      ;;
-  esac
-fi
+# avoid override warning for duplicate arch flags
+scripts/config -d CONFIG_GENERIC_CPU
+scripts/config -d CONFIG_X86_64_VERSION
+# Add graysky's compiler config
+case "$ARCH" in
+  GENERIC_CPU3)
+    scripts/config -e CONFIG_GENERIC_CPU
+    scripts/config --set-val CONFIG_X86_64_VERSION 3
+    ;;
+  GENERIC_CPU2)
+    scripts/config -e CONFIG_GENERIC_CPU
+    scripts/config --set-val CONFIG_X86_64_VERSION 2
+    ;;
+  *) 
+    scripts/config -e $ARCH
+    ;;
+esac
