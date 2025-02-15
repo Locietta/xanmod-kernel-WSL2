@@ -1,0 +1,63 @@
+From 27ff58a87b8e8f33461b2443efe4dfa6487ad352 Mon Sep 17 00:00:00 2001
+From: Michael Kelley <mhklinux@outlook.com>
+Date: Thu, 6 Feb 2025 10:55:59 -0800
+Subject: [PATCH] x86/hyperv: Don’t enable TSCInvariant on some older Hyper-V hosts
+
+Hyper-V host builds earlier than 22621 (Windows 11 22H2) have a bug in
+the TSC Invariant feature that may result in the guest seeing a "slow"
+TSC after the Hyper-V host resumes from hiberation. As a result, time
+advances more slowly in the guest than in the host. When Linux programs
+the Hyper-V synthetic timer, the timer interrupt can occur sooner than
+expected or even immediately. As the guest time falls further and
+further behind, a timer interrupt storm and unresponsive Linux guest can
+result, along with excessive load on the host. Since the problem occurs
+only after a Hyper-V host resumes from hibernation, the scenario is
+primarily on Windows client devices that are running Linux guests such
+as WSLv2.
+
+Avoid the bug by assuming the TSC Invariant feature is not present when
+WSLv2 is running on these builds.
+
+Closes: https://github.com/microsoft/wsl/issues/6982
+
+Signed-off-by: Michael Kelley <mhklinux@outlook.com>
+Signed-off-by: Mitchell Levy <levymitchell0@gmail.com>
+---
+ arch/x86/kernel/cpu/mshyperv.c | 14 ++++++++++++++
+ 1 file changed, 14 insertions(+)
+
+diff --git a/arch/x86/kernel/cpu/mshyperv.c b/arch/x86/kernel/cpu/mshyperv.c
+index 513adf8fa54b..ca91d09ec0ef 100644
+--- a/arch/x86/kernel/cpu/mshyperv.c
++++ b/arch/x86/kernel/cpu/mshyperv.c
+@@ -364,6 +364,8 @@ int hv_get_hypervisor_version(union hv_hypervisor_version_info *info)
+ 
+ static void __init ms_hyperv_init_platform(void)
+ {
++	union hv_hypervisor_version_info version;
++	unsigned int build = 0;
+ 	int hv_max_functions_eax;
+ 
+ #ifdef CONFIG_PARAVIRT
+@@ -390,6 +392,18 @@ static void __init ms_hyperv_init_platform(void)
+ 	pr_debug("Hyper-V: max %u virtual processors, %u logical processors\n",
+ 		 ms_hyperv.max_vp_index, ms_hyperv.max_lp_index);
+ 
++	/*
++	 * Host builds earlier than 22621 (Win 11 22H2) have a bug in the
++	 * invariant TSC feature that may result in the guest seeing a "slow"
++	 * TSC after host hibernation. This causes problems with synthetic
++	 * timer interrupts. In such a case, avoid the bug by assuming the
++	 * feature is not present.
++	 */
++	if (!hv_get_hypervisor_version(&version))
++		build = version.build_number;
++	if (build < 22621)
++		ms_hyperv.features &= ~HV_ACCESS_TSC_INVARIANT;
++
+ 	/*
+ 	 * Check CPU management privilege.
+ 	 *
+-- 
+2.48.1
+
