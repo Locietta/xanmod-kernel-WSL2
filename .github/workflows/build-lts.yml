@@ -90,6 +90,7 @@ jobs:
       if: ${{ env.REBUILD_FLAG }}
       with:
         name: ${{ matrix.image-name }}
+        include-hidden-files: true
         path: |
           ${{ matrix.image-name }}
           ${{ matrix.image-name }}.sha256
