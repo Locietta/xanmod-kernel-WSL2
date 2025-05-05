@@ -1,0 +1,47 @@
+From 06074b7af41c33b3b13a6d65859319fa81ba50d6 Mon Sep 17 00:00:00 2001
+From: Locietta <locietta@qq.com>
+Date: Sat, 18 May 2024 10:33:58 +0800
+Subject: [PATCH v3] bbrv3: fix clang build
+
+error: use of logical '&&' with constant operand [-Werror,-Wconstant-logical-operand]
+The diagnosis is triggered by `&&` with `bbr_param(sk, ecn_factor)` which expands to constant.
+
+Signed-off-by: Locietta <locietta@gmail.com>
+---
+ net/ipv4/tcp_bbr.c | 6 +++---
+ 1 file changed, 3 insertions(+), 3 deletions(-)
+
+diff --git a/net/ipv4/tcp_bbr.c b/net/ipv4/tcp_bbr.c
+index cd6bef71b..6c8362eaa 100644
+--- a/net/ipv4/tcp_bbr.c
++++ b/net/ipv4/tcp_bbr.c
+@@ -1077,7 +1077,7 @@ static int bbr_update_ecn_alpha(struct sock *sk)
+ 
+ 	/* See if we should use ECN sender logic for this connection. */
+ 	if (!bbr->ecn_eligible && bbr_can_use_ecn(sk) &&
+-	    bbr_param(sk, ecn_factor) &&
++	    !!(bbr_param(sk, ecn_factor)) &&
+ 	    (bbr->min_rtt_us <= bbr_ecn_max_rtt_us ||
+ 	     !bbr_ecn_max_rtt_us))
+ 		bbr->ecn_eligible = 1;
+@@ -1184,7 +1184,7 @@ static bool bbr_is_inflight_too_high(const struct sock *sk,
+ 	}
+ 
+ 	if (rs->delivered_ce > 0 && rs->delivered > 0 &&
+-	    bbr->ecn_eligible && bbr_param(sk, ecn_thresh)) {
++	    bbr->ecn_eligible && !!(bbr_param(sk, ecn_thresh))) {
+ 		ecn_thresh = (u64)rs->delivered * bbr_param(sk, ecn_thresh) >>
+ 				BBR_SCALE;
+ 		if (rs->delivered_ce > ecn_thresh) {
+@@ -1382,7 +1382,7 @@ static void bbr_adapt_lower_bounds(struct sock *sk,
+ 		return;
+ 
+ 	/* ECN response. */
+-	if (bbr->ecn_in_round && bbr_param(sk, ecn_factor)) {
++	if (bbr->ecn_in_round && !!(bbr_param(sk, ecn_factor))) {
+ 		bbr_init_lower_bounds(sk, false);
+ 		bbr_ecn_lower_bounds(sk, &ecn_inflight_lo);
+ 	}
+-- 
+2.45.1
+
