@@ -39,10 +39,10 @@ jobs:
     - name: Install dependencies
       id: dep
       run: |
-        pacman -Syu --noconfirm pahole xmlto inetutils bc cpio jq ccache git python go mimalloc
-        GOBIN=/usr/bin go install go.chromium.org/luci/cipd/client/cmd/...@latest
-        cipd install fuchsia/third_party/clang/linux-amd64 latest -root /usr/local/fuchsia-clang
-        echo "PATH=/usr/local/fuchsia-clang/bin:$PATH" >> $GITHUB_ENV
+        pacman -Syu --noconfirm pahole xmlto inetutils bc cpio jq ccache git python go mimalloc clang llvm llvm-libs lld
+        # GOBIN=/usr/bin go install go.chromium.org/luci/cipd/client/cmd/...@latest
+        # cipd install fuchsia/third_party/clang/linux-amd64 latest -root /usr/local/fuchsia-clang
+        # echo "PATH=/usr/local/fuchsia-clang/bin:$PATH" >> $GITHUB_ENV
         echo "/usr/lib/libmimalloc.so" > /etc/ld.so.preload
 
     - name: Trust this directory
@@ -103,6 +103,7 @@ jobs:
       if: ${{ env.REBUILD_FLAG }}
       with:
         name: ${{ matrix.image-name }}
+        include-hidden-files: true
         path: |
           ${{ matrix.image-name }}
           ${{ matrix.image-name }}.sha256

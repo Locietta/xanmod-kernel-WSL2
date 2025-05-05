@@ -104,14 +104,10 @@ loop_apply_patch $PATCH_DIR
 # Apply LTS/MAIN specific patches
 loop_apply_patch $SPESIFIC_PATCH_DIR
 
-if [ "$BRANCH" = "MAIN" ]; then
-  cp ../wsl2_defconfig.MAIN ./arch/x86/configs/wsl2_defconfig
-elif [ "$BRANCH" = "LTS" ]; then
-  cp ../wsl2_defconfig.LTS ./arch/x86/configs/wsl2_defconfig
-fi
+cp ../wsl2_defconfig.$BRANCH ./arch/x86/configs/wsl2_defconfig
 
 make LLVM=1 LLVM_IAS=1 wsl2_defconfig
-make LLVM=1 LLVM_IAS=1 oldconfig
+# make LLVM=1 LLVM_IAS=1 oldconfig
 
 # avoid override warning for duplicate arch flags
 scripts/config -d CONFIG_GENERIC_CPU
