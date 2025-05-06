@@ -1,6 +1,6 @@
 # xanmod-kernel-WSL2
-![Kernel CI](https://github.com/Locietta/xanmod-kernel-WSL2/actions/workflows/build.yml/badge.svg?branch=main)
-![Kernel LTS CI](https://github.com/Locietta/xanmod-kernel-WSL2/actions/workflows/build-lts.yml/badge.svg?branch=main)
+![Xanmod MAIN](https://github.com/Locietta/xanmod-kernel-WSL2/actions/workflows/MAIN.yml/badge.svg?branch=main)
+![Xanmod LTS](https://github.com/Locietta/xanmod-kernel-WSL2/actions/workflows/LTS.yml/badge.svg?branch=main)
 ![](https://img.shields.io/github/license/Locietta/xanmod-kernel-WSL2)
 ![version](https://badgen.net/github/release/Locietta/xanmod-kernel-WSL2)
 
