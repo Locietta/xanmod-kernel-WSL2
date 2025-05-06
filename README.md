@@ -40,12 +40,14 @@ scoop install xanmod-WSL2 # alias to xanmod-WSL2-x64v3
 # other builds
 # scoop install xanmod-WSL2-x64v2
 # scoop install xanmod-WSL2-skylake
+# scoop install xanmod-WSL2-zen3
 
 # LTS builds
 # scoop install xanmod-WSL2-lts # alias to xanmod-WSL2-lts-x64v3
 # scoop install xanmod-WSL2-lts-x64v2
 # scoop install xanmod-WSL2-lts-x64v3
 # scoop install xanmod-WSL2-lts-skylake
+# scoop install xanmod-WSL2-lts-zen3
 ```
 
 Scoop will automatically set `.wslconfig` for you, but you still need a reboot of WSL2.
