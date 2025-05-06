@@ -1,0 +1,17 @@
+name: MAIN
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+  workflow_dispatch:
+    # manual trigger
+  schedule:
+    - cron: '0 14 * * *'
+
+jobs:
+  build-main:
+    uses: ./.github/workflows/build-core.yml
+    with:
+      branch: MAIN
