@@ -1,4 +1,4 @@
-name: MAIN CI
+name: MAIN
 
 on:
   push:
@@ -15,4 +15,3 @@ jobs:
     uses: ./.github/workflows/build-core.yml
     with:
       branch: MAIN
-      version_suffix: main
