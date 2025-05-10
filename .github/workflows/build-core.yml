@@ -147,18 +147,18 @@ jobs:
 
       - id: fetch_commit_sha
         run: |
-          if [ ${{ inputs.version_suffix }} = '' ]; then
+          if [ "${{ inputs.version_suffix }}" = '' ]; then
             VERSION_SUFFIX=""
           else
             VERSION_SUFFIX="-${{ inputs.version_suffix }}"
           fi
           
-          if [ ${{ github.event_name }} = 'pull_request' ]; then
+          if [ "${{ github.event_name }}" = 'pull_request' ]; then
             echo "sha=${{ github.event.pull_request.head.sha }}" >> $GITHUB_OUTPUT
-            echo "RELEASE_TAG=${{ needs.build.outputs.current_version }}.1$VERSION_SUFFIX-PR" | tee -a $GITHUB_ENV
+            echo "RELEASE_TAG=${{ needs.build.outputs.current_version }}.1${VERSION_SUFFIX}-PR" | tee -a $GITHUB_ENV
           else 
             echo "sha=${{ github.sha }}" >> $GITHUB_OUTPUT
-            echo "RELEASE_TAG=${{ needs.build.outputs.current_version }}.1$VERSION_SUFFIX" | tee -a $GITHUB_ENV
+            echo "RELEASE_TAG=${{ needs.build.outputs.current_version }}.1${VERSION_SUFFIX}" | tee -a $GITHUB_ENV
           fi
 
       - name: Remove misc files
