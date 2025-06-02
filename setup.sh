@@ -79,7 +79,7 @@ fi
 
 cd linux
 PATCH_DIR=${PATCH_DIR:-"../patches"}
-../apply_patches.py "$PATCH_DIR" "$BRANCH"
+../apply-patches.py "$PATCH_DIR" "$BRANCH"
 cp ../wsl2_defconfig.$BRANCH ./arch/x86/configs/wsl2_defconfig
 
 make LLVM=1 LLVM_IAS=1 wsl2_defconfig
