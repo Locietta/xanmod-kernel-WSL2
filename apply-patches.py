@@ -34,10 +34,11 @@ def main():
     sorted_patch_files = sorted(patch_files.items())
     for file_name, file_path in sorted_patch_files:
         print(f"Applying patch: {file_name}")
-        # apply the patch using git
-        result = subprocess.run(["git", "apply", file_path], check=False)
-        if result.returncode != 0:
-            print(f"Failed to apply patch, halting build!")
+        try:
+            # apply the patch using git
+            subprocess.run(["git", "apply", file_path], check=True)
+        except subprocess.CalledProcessError as e:
+            print(f"Error applying patch {file_name}: {e}, halting...")
             exit(1)
 
 

@@ -80,6 +80,11 @@ fi
 cd linux
 PATCH_DIR=${PATCH_DIR:-"../patches"}
 ../apply-patches.py "$PATCH_DIR" "$BRANCH"
+if [ $? -ne 0 ]; then
+  echo "Failed to apply patches. Please check the patch directory and try again."
+  exit 1
+fi
+
 cp ../wsl2_defconfig.$BRANCH ./arch/x86/configs/wsl2_defconfig
 
 make LLVM=1 LLVM_IAS=1 wsl2_defconfig
