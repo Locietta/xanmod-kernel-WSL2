@@ -1,0 +1,103 @@
+From 23267e0a127c764f8114dde2576f1f401aee1242 Mon Sep 17 00:00:00 2001
+From: MkfsSion <myychina28759@gmail.com>
+Date: Fri, 22 Aug 2025 00:16:45 +0800
+Subject: [PATCH] drivers: hv: dxgkrnl: Fix locking rule violation with
+ io_remap_pfn_range
+
+Commit
+```
+commit bc292ab00f6c7a661a8a605c714e8a148f629ef6
+Author: Suren Baghdasaryan <surenb@google.com>
+Date:   Thu Jan 26 11:37:47 2023 -0800
+
+    mm: introduce vma->vm_flags wrapper functions
+```
+introduces `vm_flags_*` accessor functions and following
+commit
+```
+commit 1c71222e5f2393b5ea1a41795c67589eea7e3490
+Author: Suren Baghdasaryan <surenb@google.com>
+Date:   Thu Jan 26 11:37:49 2023 -0800
+
+    mm: replace vma->vm_flags direct modifications with modifier calls
+```
+replaces direct `vm_flags` modification with calling of accessor functions.
+Accessor functions calls `vma_start_write`, if CONFIG_PER_VMA_LOCK is enabled,
+`mmap_assert_write_locked` will be called and issues a warning if caller does not
+take writer lock of `mm->mmap_lock`. `dxg_map_iospace` does only take a reader lock
+of `current->mm->mmap_lock` which causes the following warnings. It's a locking rule
+violation as `io_remap_pfn_range` is considered a write operation to process address
+space. By taking writer lock, warnings no longer issued.
+
+Selected dmesg output:
+```
+WARNING: CPU: 0 PID: 311 at track_pfn_remap+0x119/0x130
+...
+RIP: 0010:track_pfn_remap+0x119/0x130
+...
+remap_pfn_range+0x4f/0xc0
+dxg_map_iospace+0xea/0x290
+dxgvmb_send_create_paging_queue+0x209/0x290
+dxgkio_create_paging_queue+0xac/0x290
+dxgk_unlocked_ioctl+0xe/0x20
+__se_sys_ioctl+0x7c/0xd0
+do_syscall_64+0x86/0x140
+? find_vma+0x3b/0x60
+? __rseq_handle_notify_resume+0x269/0x560
+? clear_bhb_loop+0x50/0xa0
+? clear_bhb_loop+0x50/0xa0
+? clear_bhb_loop+0x50/0xa0
+entry_SYSCALL_64_after_hwframe+0x76/0x7e
+...
+WARNING: CPU: 0 PID: 311 at remap_pfn_range_notrack+0x4f4/0x510
+...
+RIP: 0010:remap_pfn_range_notrack+0x4f4/0x510
+? asm_exc_invalid_op+0x1a/0x20
+? __cfi_interval_augment_rotate+0x10/0x10
+? __vma_start_write+0xa9/0x100
+remap_pfn_range+0x6f/0xc0
+dxg_map_iospace+0xea/0x290
+dxgvmb_send_create_paging_queue+0x209/0x290
+dxgkio_create_paging_queue+0xac/0x290
+dxgk_unlocked_ioctl+0xe/0x20
+__se_sys_ioctl+0x7c/0xd0
+do_syscall_64+0x86/0x140
+? find_vma+0x3b/0x60
+? __rseq_handle_notify_resume+0x269/0x560
+? clear_bhb_loop+0x50/0xa0
+? clear_bhb_loop+0x50/0xa0
+? clear_bhb_loop+0x50/0xa0
+entry_SYSCALL_64_after_hwframe+0x76/0x7e
+...
+```
+
+Signed-off-by: MkfsSion <myychina28759@gmail.com>
+---
+ drivers/hv/dxgkrnl/dxgvmbus.c | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/drivers/hv/dxgkrnl/dxgvmbus.c b/drivers/hv/dxgkrnl/dxgvmbus.c
+index f04240d18..9fa7ce58c 100644
+--- a/drivers/hv/dxgkrnl/dxgvmbus.c
++++ b/drivers/hv/dxgkrnl/dxgvmbus.c
+@@ -601,7 +601,7 @@ static u8 *dxg_map_iospace(u64 iospace_address, u32 size,
+ 		return NULL;
+ 	}
+ 
+-	mmap_read_lock(current->mm);
++	mmap_write_lock(current->mm);
+ 	vma = find_vma(current->mm, (unsigned long)va);
+ 	if (vma) {
+ 		pgprot_t prot = vma->vm_page_prot;
+@@ -619,7 +619,7 @@ static u8 *dxg_map_iospace(u64 iospace_address, u32 size,
+ 		DXG_ERR("failed to find vma: %p %lx", vma, va);
+ 		ret = -ENOMEM;
+ 	}
+-	mmap_read_unlock(current->mm);
++	mmap_write_unlock(current->mm);
+ 
+ 	if (ret) {
+ 		dxg_unmap_iospace((void *)va, size);
+-- 
+2.50.1
+
