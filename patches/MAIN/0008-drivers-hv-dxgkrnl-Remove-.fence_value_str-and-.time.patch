@@ -1,0 +1,67 @@
+From 3274fe89da15675534334a8042905becf57b6bc6 Mon Sep 17 00:00:00 2001
+From: Yang Jeong Hun <onyxclover9931@gmail.com>
+Date: Mon, 28 Jul 2025 09:52:12 +0900
+Subject: [PATCH] drivers: hv: dxgkrnl: Remove .fence_value_str and
+ .timeline_value_str in dxgsyncfile
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+
+Error Logs:
+drivers/hv/dxgkrnl/dxgsyncfile.c: At top level:
+drivers/hv/dxgkrnl/dxgsyncfile.c:479:10: error: ‘const struct dma_fence_ops’ has no member named ‘fence_value_str’
+  479 |         .fence_value_str = dxgdmafence_value_str,
+      |          ^~~~~~~~~~~~~~~
+drivers/hv/dxgkrnl/dxgsyncfile.c:479:28: error: initialization of ‘void (*)(struct dma_fence *, ktime_t)’ {aka ‘void (*)(struct dma_fence *, long long int)’} from incompatible pointer type ‘void (*)(struct dma_fence *, char *, int)’ [-Wincompatible-pointer-types]
+  479 |         .fence_value_str = dxgdmafence_value_str,
+      |                            ^~~~~~~~~~~~~~~~~~~~~
+drivers/hv/dxgkrnl/dxgsyncfile.c:480:10: error: ‘const struct dma_fence_ops’ has no member named ‘timeline_value_str’
+  480 |         .timeline_value_str = dxgdmafence_timeline_value_str,
+      |          ^~~~~~~~~~~~~~~~~~
+drivers/hv/dxgkrnl/dxgsyncfile.c:480:31: warning: excess elements in struct initializer
+  480 |         .timeline_value_str = dxgdmafence_timeline_value_str,
+      |                               ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+ * In 2ce07fe, .fence_value_str and .timeline_value_str has been removed.
+ * Remove them and also remove dxgdmafence_value_str and dxgdmafence_timeline_value_str.
+
+Signed-off-by: Yang Jeong Hun <onyxclover9931@gmail.com>
+---
+ drivers/hv/dxgkrnl/dxgsyncfile.c | 17 -----------------
+ 1 file changed, 17 deletions(-)
+
+diff --git a/drivers/hv/dxgkrnl/dxgsyncfile.c b/drivers/hv/dxgkrnl/dxgsyncfile.c
+index f3b3e8dd4568..d4aef69095be 100644
+--- a/drivers/hv/dxgkrnl/dxgsyncfile.c
++++ b/drivers/hv/dxgkrnl/dxgsyncfile.c
+@@ -455,27 +455,10 @@ static bool dxgdmafence_enable_signaling(struct dma_fence *fence)
+ 	return true;
+ }
+ 
+-static void dxgdmafence_value_str(struct dma_fence *fence,
+-				  char *str, int size)
+-{
+-	snprintf(str, size, "%lld", fence->seqno);
+-}
+-
+-static void dxgdmafence_timeline_value_str(struct dma_fence *fence,
+-					   char *str, int size)
+-{
+-	struct dxgsyncpoint *syncpoint;
+-
+-	syncpoint = to_syncpoint(fence);
+-	snprintf(str, size, "%lld", syncpoint->fence_value);
+-}
+-
+ static const struct dma_fence_ops dxgdmafence_ops = {
+ 	.get_driver_name = dxgdmafence_get_driver_name,
+ 	.get_timeline_name = dxgdmafence_get_timeline_name,
+ 	.enable_signaling = dxgdmafence_enable_signaling,
+ 	.signaled = dxgdmafence_signaled,
+ 	.release = dxgdmafence_release,
+-	.fence_value_str = dxgdmafence_value_str,
+-	.timeline_value_str = dxgdmafence_timeline_value_str,
+ };
+-- 
+2.50.1
+
