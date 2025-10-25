@@ -1,0 +1,31 @@
+From: locietta@gmail.com
+Subject: [Patch] Revert "fuse: fix livelock in synchronous file put from fuseblk workers"
+
+Revert the previous change that always used asynchronous
+fuse_file_put, because it breaks the wslg's virtio.
+
+Signed-off-by: Locietta <locietta@gmail.com>
+---
+ fs/fuse/file.c | 8 +-------
+ 1 file changed, 1 insertions(+), 7 deletions(-)
+
+diff --git a/fs/fuse/file.c b/fs/fuse/file.c
+index a52cf1b9cfc6..c7351ca07065 100644
+--- a/fs/fuse/file.c
++++ b/fs/fuse/file.c
+@@ -356,14 +356,8 @@ void fuse_file_release(struct inode *inode, struct fuse_file *ff,
+ 	 * Make the release synchronous if this is a fuseblk mount,
+ 	 * synchronous RELEASE is allowed (and desirable) in this case
+ 	 * because the server can be trusted not to screw up.
+-	 *
+-	 * Always use the asynchronous file put because the current thread
+-	 * might be the fuse server.  This can happen if a process starts some
+-	 * aio and closes the fd before the aio completes.  Since aio takes its
+-	 * own ref to the file, the IO completion has to drop the ref, which is
+-	 * how the fuse server can end up closing its clients' files.
+ 	 */
+-	fuse_file_put(ff, false);
++	fuse_file_put(ff, ff->fm->fc->destroy);
+ }
+ 
+ void fuse_release_common(struct file *file, bool isdir)
