@@ -107,7 +107,7 @@ jobs:
         if: ${{ env.REBUILD_FLAG }}
         run: |
           cd linux && ../scripts/build.sh --branch ${{ inputs.branch }}
-          ../scripts/post-build.sh -image-name ${{ matrix.image-name }}
+          ../scripts/post-build.sh --name ${{ matrix.image-name }}
 
       - name: Upload bzImage
         uses: actions/upload-artifact@main

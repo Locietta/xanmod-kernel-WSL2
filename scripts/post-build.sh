@@ -8,11 +8,11 @@ usage() {
     echo "Usage: $0 [options]"
     echo "Options:"
     echo "  -h|--help                   - Show this help message."
-    echo "  -image-name <name>          - Specify the name of the output image. (Default: bzImage-x64v3)"
+    echo "  -n|--name <image name>          - Specify the name of the output image. (Default: bzImage-x64v3)"
 }
 
 # Parse options with getopt
-temp=$(getopt -o 'h' --long 'help,image-name:' -n 'post-build.sh' -- "$@")
+temp=$(getopt -o 'hn:' --long 'help,name:' -n 'post-build.sh' -- "$@")
 if [ $? -ne 0 ]; then
     # unsupported options provided
     usage
@@ -26,7 +26,7 @@ while true; do
             usage
             exit 0
             ;;
-        '--image-name')
+        '-n'|'--name')
             IMAGE_NAME="$2"
             shift 2
             continue
