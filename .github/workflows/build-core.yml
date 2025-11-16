@@ -47,7 +47,7 @@ jobs:
       - name: Install dependencies
         id: dep
         run: |
-          pacman -Syu --noconfirm pahole xmlto inetutils bc cpio jq ccache git python go mimalloc clang llvm llvm-libs lld
+          pacman -Syu --noconfirm pahole xmlto inetutils bc cpio jq ccache git python go mimalloc clang llvm llvm-libs lld qemu-img
           # GOBIN=/usr/bin go install go.chromium.org/luci/cipd/client/cmd/...@latest
           # cipd install fuchsia/third_party/clang/linux-amd64 latest -root /usr/local/fuchsia-clang
           # echo "PATH=/usr/local/fuchsia-clang/bin:$PATH" >> $GITHUB_ENV
@@ -57,7 +57,7 @@ jobs:
         shell: bash
         run: |
           git config --global --add safe.directory '*' # workaround for git safe.directory issue
-          ./setup.sh --arch ${{ matrix.arch }} --branch ${{ inputs.branch }}
+          ./scripts/setup.sh --arch ${{ matrix.arch }} --branch ${{ inputs.branch }}
           cd linux
 
           # Load version info into env
@@ -106,10 +106,8 @@ jobs:
       - name: Build kernel
         if: ${{ env.REBUILD_FLAG }}
         run: |
-          cd linux && ../build.sh --branch ${{ inputs.branch }}
-          mv arch/x86/boot/bzImage ../${{ matrix.image-name }}
-          cp .config ../.config-${{ matrix.image-name }}
-          cd .. && sha256sum ${{ matrix.image-name }} > ${{ matrix.image-name }}.sha256
+          cd linux && ../scripts/build.sh --branch ${{ inputs.branch }}
+          ../scripts/post-build.sh -image-name ${{ matrix.image-name }}
 
       - name: Upload bzImage
         uses: actions/upload-artifact@main
@@ -119,8 +117,7 @@ jobs:
           include-hidden-files: true
           path: |
             ${{ matrix.image-name }}
-            ${{ matrix.image-name }}.sha256
-            .config-${{ matrix.image-name }}
+            ${{ matrix.image-name }}-addons.vhdx
 
       - id: out
         run: |
@@ -160,11 +157,6 @@ jobs:
             echo "sha=${{ github.sha }}" >> $GITHUB_OUTPUT
             echo "RELEASE_TAG=${{ needs.build.outputs.current_version }}.1${VERSION_SUFFIX}" | tee -a $GITHUB_ENV
           fi
-
-      - name: Remove misc files
-        run: |
-          rm -rf release_images/.config*
-          # We don't release .config files, they are in the artifact only for debugging
 
       - name: Release
         uses: softprops/action-gh-release@v2.1.0
