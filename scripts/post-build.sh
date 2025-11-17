@@ -51,7 +51,7 @@ KERNEL_VERSION=$(make -s kernelrelease)
 
 # Generate Kernel Modules
 mkdir -p $IMAGE_NAME-addons
-make INSTALL_MOD_PATH=$IMAGE_NAME-addons modules_install
+make INSTALL_MOD_PATH=$IMAGE_NAME-addons INSTALL_MOD_STRIP=1 modules_install
 
 # Create VHDX for Kernel Modules
 sudo ../scripts/gen_modules_vhdx.sh "$IMAGE_NAME-addons" "$KERNEL_VERSION" "${IMAGE_NAME}-addons.vhdx"
