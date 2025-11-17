@@ -66,7 +66,7 @@ SKIP_DOWNLOAD=${SKIP_DOWNLOAD:-NO}
 
 if [ "$SKIP_DOWNLOAD" = "NO" ]; then
   CURL_UA="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36 Edg/120.0.0.0"
-  VERSION_BRANCH=$(curl -s https://xanmod.org/ -A $CURL_UA | awk "/$BRANCH/{getline; getline; print}" | grep -oP '[0-9]+\.[0-9]+')
+  VERSION_BRANCH=$(curl -s https://xanmod.org/ -A "$CURL_UA" | sed -n "/$BRANCH/{n;n;s/.*<td>\([0-9]\+\.[0-9]\+\)<\/td>.*/\1/p}")
   XANMOD_REPO="https://gitlab.com/xanmod/linux.git"
   echo "Fetching Xanmod $BRANCH($VERSION_BRANCH) source..."
   git clone $XANMOD_REPO -b $VERSION_BRANCH --depth 1 linux
@@ -79,16 +79,14 @@ fi
 
 cd linux
 PATCH_DIR=${PATCH_DIR:-"../patches"}
-../apply-patches.py "$PATCH_DIR" "$BRANCH"
+../scripts/apply-patches.py "$PATCH_DIR" "$BRANCH"
 if [ $? -ne 0 ]; then
   echo "Failed to apply patches. Please check the patch directory and try again."
   exit 1
 fi
 
-cp ../wsl2_defconfig.$BRANCH ./arch/x86/configs/wsl2_defconfig
-
-make LLVM=1 LLVM_IAS=1 wsl2_defconfig
-# make LLVM=1 LLVM_IAS=1 oldconfig
+cp ../configs/config-wsl.$BRANCH .config
+make LLVM=1 LLVM_IAS=1 olddefconfig
 
 # avoid override warning for duplicate arch flags
 scripts/config -d CONFIG_GENERIC_CPU

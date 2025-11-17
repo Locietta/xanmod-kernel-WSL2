@@ -1,0 +1,38 @@
+From ecacd146b27f78ec2e6a70ff0d475c67d28a5d63 Mon Sep 17 00:00:00 2001
+From: Locietta <locietta@gmail.com>
+Date: Mon, 17 Nov 2025 10:23:26 +0800
+Subject: [PATCH] netfilter: FLOWOFFLOAD: fix unintialized dir & update module
+ infos
+
+Signed-off-by: Locietta <locietta@gmail.com>
+---
+ net/netfilter/xt_FLOWOFFLOAD.c | 7 +++++--
+ 1 file changed, 5 insertions(+), 2 deletions(-)
+
+diff --git a/net/netfilter/xt_FLOWOFFLOAD.c b/net/netfilter/xt_FLOWOFFLOAD.c
+index 5a8a4ffde..4f7d7c43c 100644
+--- a/net/netfilter/xt_FLOWOFFLOAD.c
++++ b/net/netfilter/xt_FLOWOFFLOAD.c
+@@ -467,7 +467,7 @@ flowoffload_tg(struct sk_buff *skb, const struct xt_action_param *par)
+ 	const struct xt_flowoffload_target_info *info = par->targinfo;
+ 	struct tcphdr _tcph, *tcph = NULL;
+ 	enum ip_conntrack_info ctinfo;
+-	enum ip_conntrack_dir dir;
++	enum ip_conntrack_dir dir = IP_CT_DIR_ORIGINAL;
+ 	struct nf_flow_route route = {};
+ 	struct flow_offload *flow = NULL;
+ 	struct net_device *devs[2] = {};
+@@ -693,6 +693,9 @@ static void __exit xt_flowoffload_tg_exit(void)
+ 	nf_flow_table_free(&flowtable[1].ft);
+ }
+ 
+-MODULE_LICENSE("GPL");
+ module_init(xt_flowoffload_tg_init);
+ module_exit(xt_flowoffload_tg_exit);
++
++MODULE_LICENSE("GPL");
++MODULE_AUTHOR("Felix Fietkau <nbd@nbd.name>");
++MODULE_DESCRIPTION("Netfilter FLOWOFFLOAD nf_flow_offload module");
+-- 
+2.51.2
+
