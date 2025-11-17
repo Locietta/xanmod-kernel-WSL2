@@ -49,7 +49,7 @@ jobs:
       - name: Install dependencies
         id: dep
         run: |
-          pacman -Syu --noconfirm pahole xmlto inetutils bc cpio jq ccache git python go mimalloc clang llvm llvm-libs lld qemu-img
+          pacman -Syu --noconfirm pahole xmlto inetutils bc cpio jq ccache git python go mimalloc clang llvm llvm-libs lld qemu-img rsync
           # GOBIN=/usr/bin go install go.chromium.org/luci/cipd/client/cmd/...@latest
           # cipd install fuchsia/third_party/clang/linux-amd64 latest -root /usr/local/fuchsia-clang
           # echo "PATH=/usr/local/fuchsia-clang/bin:$PATH" >> $GITHUB_ENV
