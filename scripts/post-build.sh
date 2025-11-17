@@ -89,6 +89,7 @@ done
 if [ -d tools/objtool ]; then
     mkdir -p "$HEADERS_DIR/tools"
     cp -r tools/objtool "$HEADERS_DIR/tools/"
+    cp -r tools/bpf/resolve_btfids "$HEADERS_DIR/tools/bpf/resolve_btfids"
 fi
 
 # Copy security and other kernel directories that may be referenced
