@@ -16,7 +16,9 @@ env:
 jobs:
   build:
     runs-on: ubuntu-latest
-    container: cachyos/cachyos-v3:latest
+    container:
+      image: cachyos/cachyos-v3:latest
+      options: --privileged
     outputs:
       current_version: ${{ steps.out.outputs.current_version }}
       release_version: ${{ steps.out.outputs.release_version }}
@@ -149,7 +151,7 @@ jobs:
           else
             VERSION_SUFFIX="-${{ inputs.version_suffix }}"
           fi
-          
+
           if [ "${{ github.event_name }}" = 'pull_request' ]; then
             echo "sha=${{ github.event.pull_request.head.sha }}" >> $GITHUB_OUTPUT
             echo "RELEASE_TAG=${{ needs.build.outputs.current_version }}.1${VERSION_SUFFIX}-PR" | tee -a $GITHUB_ENV
