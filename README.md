@@ -5,9 +5,8 @@
 ![](https://img.shields.io/github/license/Locietta/xanmod-kernel-WSL2)
 ![version](https://img.shields.io/github/v/release/Locietta/xanmod-kernel-WSL2)
 
-An **unofficial** [XanMod](https://gitlab.com/xanmod/linux) kernel optimized for **Windows Subsystem for Linux 2 (WSL2)**, featuring:
+An **unofficial** [XanMod](https://gitlab.com/xanmod/linux) kernel port for **Windows Subsystem for Linux 2 (WSL2)**, featuring:
 
-- **XanMod optimizations** for better performance
 - **Microsoft's dxgkrnl** patches for GPU support
 - **Compiled with Clang + ThinLTO** for additional optimizations
 - **Automated builds** via GitHub Actions (always up-to-date)
@@ -17,7 +16,7 @@ An **unofficial** [XanMod](https://gitlab.com/xanmod/linux) kernel optimized for
 
 ### Install via Scoop (Recommended)
 
-[scoop](https://scoop.sh/) is a command-line installer on windows. You can use it to easily install and update this kernel.
+[scoop](https://scoop.sh/) is a command-line installer on windows that makes installation and update easy. We provide scoop manifests for this kernel in the [Locietta/sniffer](https://github.com/Locietta/sniffer) repository.
 
 #### Installation
 
@@ -54,16 +53,13 @@ wsl --shutdown
 
 **That's it!** Scoop automatically configures everything for you.
 
-> [!warning]
-> Modules VHDX support is only available with WSL version 2.5.1 or later. Try running `wsl --version` to check your WSL version and use `wsl --update` to update WSL if needed.
-
 #### Update kernel
 
 Run `scoop update *` to update all scoop installed apps including this kernel.
 
-**NOTE:** To make the kernel update applied, you have to reboot WSL2 after running scoop update!
+We recommend to run `scoop update *` instead of `scoop update xanmod-WSL2` alone to make sure the addons package is also updated and in sync with the kernel.
 
-> If you are interested in how we handle install and update with scoop, see [scoop manifest](https://github.com/Locietta/sniffer/blob/master/bucket/xanmod-WSL2.json) for this kernel.
+> **NOTE:** To make the kernel update applied, you have to reboot WSL2 after running scoop update!
 
 ### Manual Installation
 
@@ -100,7 +96,11 @@ wsl --shutdown
 wsl --list --running  # Should show "no running distributions"
 ```
 
-### Can't find `.wslconfig` file
+### Modules are not loaded to `/lib/modules`?
+
+Modules VHDX support is only available with WSL version **2.5.1** or later. Try running `wsl --version` to check your WSL version and use `wsl --update` to update WSL if needed.
+
+### Can't find `.wslconfig` file?
 
 It doesn't exist by default. Just create it manually in your user profile folder (e.g. `C:\Users\YourName\.wslconfig`).
 
@@ -111,6 +111,10 @@ It doesn't exist by default. Just create it manually in your user profile folder
 If you are unsure whether to use x64v2 or x64v3, you can visit [xanmod.org](https://xanmod.org/). There's literally a table showing all the CPU models and their corresponding x86_64 psABI levels.
 
 You can also get a [checking script](https://dl.xanmod.org/check_x86-64_psabi.sh) from there.
+
+## Development
+
+🚧WIP
 
 ## Credits
 
