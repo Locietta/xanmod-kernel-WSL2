@@ -1,83 +1,128 @@
 # xanmod-kernel-WSL2
+
 ![Xanmod MAIN](https://github.com/Locietta/xanmod-kernel-WSL2/actions/workflows/MAIN.yml/badge.svg?branch=main)
 ![Xanmod LTS](https://github.com/Locietta/xanmod-kernel-WSL2/actions/workflows/LTS.yml/badge.svg?branch=main)
 ![](https://img.shields.io/github/license/Locietta/xanmod-kernel-WSL2)
-![version](https://badgen.net/github/release/Locietta/xanmod-kernel-WSL2)
+![version](https://img.shields.io/github/v/release/Locietta/xanmod-kernel-WSL2)
 
-Unoffical [XanMod](https://gitlab.com/xanmod/linux) port with [dxgkrnl](https://github.com/microsoft/WSL2-Linux-Kernel/tree/linux-msft-wsl-6.6.y/drivers/hv/dxgkrnl) patched for **WSL2**, compiled by [clang](https://clang.llvm.org/) with ThinLTO enabled.
+An **unofficial** [XanMod](https://gitlab.com/xanmod/linux) kernel optimized for **Windows Subsystem for Linux 2 (WSL2)**, featuring:
 
-This repo holds an automated **GitHub Action** workflow to build and release WSL kernel images. It checks if newer upstream version is available everyday, and trigger the build&release process accordingly. 
-
-We are currently releasing both latest stable (MAIN) and LTS Xanmod kernels, LTS kernel builds are released with extra `-lts` suffix.
+- **XanMod optimizations** for better performance
+- **Microsoft's dxgkrnl** patches for GPU support
+- **Compiled with Clang + ThinLTO** for additional optimizations
+- **Automated builds** via GitHub Actions (always up-to-date)
+- **Multiple CPU-optimized variants** (x64v2, x64v3, Skylake, Zen3)
 
 ## Usage
 
-### Manual Installation
+### Install via Scoop (Recommended)
 
-* Download kernel image from [releases](https://github.com/Locietta/xanmod-kernel-WSL2/releases).
-* Place it to somewhere appropriate. (e.g. `D:\.WSL\bzImage`) 
-* Save the `.wslconfig` in current user's home directory with following content:
-```ini
-[wsl2]
-kernel = the\\path\\to\\bzImage
-; e.g.
-; kernel = D:\\.WSL\\bzImage
-;
-; Note that all `\` should be escaped with `\\`.
-```
-* Reboot your WSL2 to check your new kernel and enjoy!
+[scoop](https://scoop.sh/) is a command-line installer on windows. You can use it to easily install and update this kernel.
 
-> For more information about `.wslconfig`, see microsoft's official [documentation](https://docs.microsoft.com/en-us/windows/wsl/wsl-config#configure-global-options-with-wslconfig).
-
-### Install via Scoop
-
-[scoop](https://scoop.sh/) is a command-line installer on windows. If you have scoop installed, then you can install this kernel with following commands:
+#### Installation
 
 ```bash
+# Add the repository
 scoop bucket add sniffer https://github.com/Locietta/sniffer
-scoop install xanmod-WSL2 # alias to xanmod-WSL2-x64v3
 
-# other builds
-# scoop install xanmod-WSL2-x64v2
-# scoop install xanmod-WSL2-skylake
-# scoop install xanmod-WSL2-zen3
+# Install kernel (alias to x64v3 variant, works for most modern CPUs)
+scoop install xanmod-WSL2
+
+# Optional: Install addons (extra modules, headers, documentation)
+scoop install xanmod-WSL2-addons
+
+# Restart WSL2 to apply
+wsl --shutdown
+```
+
+<details>
+<summary>Expand all other builds</summary>
+
+```bash
+# other MAIN builds
+# scoop install xanmod-WSL2-{x64v2, x64v3, skylake, zen3}
+# scoop install xanmod-WSL2-addons-{x64v2, x64v3, skylake, zen3}
 
 # LTS builds
 # scoop install xanmod-WSL2-lts # alias to xanmod-WSL2-lts-x64v3
-# scoop install xanmod-WSL2-lts-x64v2
-# scoop install xanmod-WSL2-lts-x64v3
-# scoop install xanmod-WSL2-lts-skylake
-# scoop install xanmod-WSL2-lts-zen3
+# scoop install xanmod-WSL2-lts-addons
+# scoop install xanmod-WSL2-lts-{x64v2, x64v3, skylake, zen3}
+# scoop install xanmod-WSL2-addons-lts-{x64v2, x64v3, skylake, zen3}
 ```
 
-Scoop will automatically set `.wslconfig` for you, but you still need a reboot of WSL2.
+</details>
 
-### Update kernel
+**That's it!** Scoop automatically configures everything for you.
 
-To update kernel for WSL2, you can use `scoop update *` if installed by scoop. Or you can just manually replace your kernel image with newer one.
+> [!warning]
+> Modules VHDX support is only available with WSL version 2.5.1 or later. Try running `wsl --version` to check your WSL version and use `wsl --update` to update WSL if needed.
 
-**NOTE:** To make the kernel update applied, you have to reboot WSL2 (namely, `wsl --shutdown` and open a fresh WSL2 instance).
+#### Update kernel
+
+Run `scoop update *` to update all scoop installed apps including this kernel.
+
+**NOTE:** To make the kernel update applied, you have to reboot WSL2 after running scoop update!
 
 > If you are interested in how we handle install and update with scoop, see [scoop manifest](https://github.com/Locietta/sniffer/blob/master/bucket/xanmod-WSL2.json) for this kernel.
 
-## Miscs
+### Manual Installation
 
-### Systemd
+It's also straight forward to manually install this kernel. For each arch, we release two files: the kernel image `bzImage` and an optional addon VHDX `bzImage-addons.vhdx` that contains extra modules, headers and documentation.
 
-Compatible with [built-in systemd support](https://devblogs.microsoft.com/commandline/systemd-support-is-now-available-in-wsl/) since WSL 0.67.6 and [wsl-distrod](https://github.com/nullpo-head/wsl-distrod) for older WSL versions. 
+The manual installation steps are as follows:
 
-But [sorah/subsystemd](https://github.com/sorah/subsystemctl) and [arkane-systems/genie](https://github.com/arkane-systems/genie) will refuse to work due to modified kernel version string (they demand "microsoft" in it...).
+- Download kernel image from [releases](https://github.com/Locietta/xanmod-kernel-WSL2/releases)
+  - optionally, download the addon vhdx if you need extra modules/headers/docs
+- Place it to somewhere appropriate. (e.g. `D:\.WSL\bzImage`)
+- Edit and save the `%UserProfile%\.wslconfig` with following content:
 
-I'll not add "microsoft" back into the version string (it's quite long now), since "WSL2" is sufficient, see [WSL#423](https://github.com/Microsoft/WSL/issues/423#issuecomment-221627364). And you can check it with `systemd-detect-virt`, it should return `wsl`. I'll make a change if there's any update.
+```ini
+[wsl2]
+kernel = the\\path\\to\\bzImage
+kernelModules = the\\path\\to\\bzImage-addons.vhdx ; optional
+; e.g.
+; kernel = D:\\.WSL\\bzImage
+; kernelModules = D:\\.WSL\\bzImage-addons.vhdx
+;
+; Note that all `\` should be escaped with `\\`.
+```
+
+- Reboot your WSL2 to check your new kernel and enjoy!
+
+## Troubleshooting
+
+### Changes not applied after installation or update?
+
+You must fully shut down WSL2 utill no WSL2 instances are running, then start it again to apply the new kernel.
+
+```powershell
+wsl --shutdown
+wsl --list --running  # Should show "no running distributions"
+```
+
+### Can't find `.wslconfig` file
+
+It doesn't exist by default. Just create it manually in your user profile folder (e.g. `C:\Users\YourName\.wslconfig`).
+
+> For more information about `.wslconfig`, see microsoft's official [documentation](https://docs.microsoft.com/en-us/windows/wsl/wsl-config#configure-global-options-with-wslconfig).
+
+### Which architecture should I choose?
+
+If you are unsure whether to use x64v2 or x64v3, you can visit [xanmod.org](https://xanmod.org/). There's literally a table showing all the CPU models and their corresponding x86_64 psABI levels.
+
+You can also get a [checking script](https://dl.xanmod.org/check_x86-64_psabi.sh) from there.
 
 ## Credits
 
-* The Linux community for the awesome OS kernel.
-* Microsoft for WSL2 and dxgkrnl patches.
-* XanMod project for various optimizations.
+- Linux community for the awesome OS kernel.
+- Microsoft for WSL2 and dxgkrnl patches.
+- XanMod project for various optimizations.
+- LLVM/Clang for the compiler infrastructure.
 
 ## Contributing
 
-Sending an issue to let me know bugs, missing features or anything else.
+We welcome contributions! You can:
 
-Open a PR if you'd like to improve this repo.
+* 🐛 Report bugs by opening an [issue](https://github.com/Locietta/xanmod-kernel-WSL2/issues)
+* 💡 Suggest features via [issues](https://github.com/Locietta/xanmod-kernel-WSL2/issues)
+* 🔧 Submit improvements through [pull requests](https://github.com/Locietta/xanmod-kernel-WSL2/pulls)
