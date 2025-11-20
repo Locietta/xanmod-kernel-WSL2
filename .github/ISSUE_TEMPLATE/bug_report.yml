@@ -1,0 +1,56 @@
+---
+name: "🐞 Bug report"
+description: "Report a bug related to the kernel"
+labels: ["BUG"]
+title: "[Bug] "
+body:
+  - type: markdown
+    attributes:
+      value: |
+        ❤️ Thanks for taking the time to fill out this bug report!
+  - type: textarea
+    id: bug-description
+    attributes:
+      label: "Bug Description and Repro"
+      description: "Describe the bug you encountered, and also include steps to reproduce it."
+      placeholder: "After I installed the kernel from scoop, the WSL2 instance fails to boot with the following error message: ..."
+    validations:
+      required: true
+  - type: input
+    id: kernel-version
+    attributes:
+      label: "Kernel version"
+      description: "The release version, channel, and the build you are using."
+      placeholder: "6.17.8-1.1 main-x64v3"
+    validations:
+      required: true
+  - type: input
+    id: wsl-version
+    attributes:
+      label: "WSL version"
+      description: "The WSL version you are using."
+      placeholder: "Paste the output of `wsl --version` here."
+    validations:
+      required: true
+  - type: input
+    id: windows-version
+    attributes:
+      label: "Windows version"
+      description: "The Windows version you are using."
+      placeholder: "Paste the output of `cmd /c ver` here."
+    validations:
+      required: true
+  - type: input
+    id: distro
+    attributes:
+      label: "Distro"
+      description: "The Linux distribution you are using."
+      placeholder: "Ubuntu 22.04 / Arch Linux"
+  - type: textarea
+    id: additional-context
+    attributes:
+      label: "Additional context"
+      description: |
+        Add any other context about the problem here, such as relevant logs or screenshots.
+        More context helps us debug the issue faster!
+      placeholder: "Error logs, screenshots, etc."

@@ -1,0 +1,29 @@
+---
+name: "Request Feature"
+description: Request Feature on Xanmod WSL2 Kernel Builds
+title: "[REQUEST] "
+labels: ["REQUEST"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Please [search for existing issues](https://github.com/Locietta/xanmod-kernel-WSL2/issues) before creating a new one.
+
+  - type: textarea
+    attributes:
+      label: Request Feature
+      description: Request a new feature that's missing in current kernel.
+      placeholder: |
+        Describe the feature you want. What's your use case for this feature? How would you use it?
+        e.g. I need support for XYZ network feature in WSL2 because [...]
+    validations:
+      required: true
+  - type: textarea
+    id: patch-or-config
+    attributes:
+      label: "Requested Patch or Config"
+      description: |
+        If your request involves a specific kernel patch or configuration option, please provide details here.
+        This could include links to patch files, kernel config options, or relevant documentation.
+      placeholder: |
+        e.g. The patch can be found at [link], or the config option is CONFIG_XYZ
