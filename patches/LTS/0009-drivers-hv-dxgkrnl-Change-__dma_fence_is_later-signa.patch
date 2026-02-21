@@ -1,0 +1,56 @@
+From 8d4d0497d8201d01316d28683e04706b4d4e738e Mon Sep 17 00:00:00 2001
+From: Yang Jeong Hun <onyxclover9931@gmail.com>
+Date: Mon, 29 Sep 2025 11:41:27 +0900
+Subject: [PATCH] drivers: hv: dxgkrnl: Change __dma_fence_is_later signature
+ in dxgsyncfile
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+
+Error Logs:
+drivers/hv/dxgkrnl/dxgsyncfile.c: In function ‘dxgdmafence_signaled’:
+drivers/hv/dxgkrnl/dxgsyncfile.c:449:46: error: passing argument 1 of ‘__dma_fence_is_later’ makes pointer from integer without a cast [-Wint-conversion]
+  449 |         return __dma_fence_is_later(syncpoint->fence_value, fence->seqno,
+      |                                     ~~~~~~~~~^~~~~~~~~~~~~
+      |                                              |
+      |                                              u64 {aka long long unsigned int}
+In file included from ./include/linux/sync_file.h:20,
+                 from drivers/hv/dxgkrnl/dxgsyncfile.h:17,
+                 from drivers/hv/dxgkrnl/dxgsyncfile.c:36:
+./include/linux/dma-fence.h:471:59: note: expected ‘struct dma_fence *’ but argument is of type ‘u64’ {aka ‘long long unsigned int’}
+  471 | static inline bool __dma_fence_is_later(struct dma_fence *fence, u64 f1, u64 f2)
+      |                                         ~~~~~~~~~~~~~~~~~~^~~~~
+drivers/hv/dxgkrnl/dxgsyncfile.c:450:42: error: passing argument 3 of ‘__dma_fence_is_later’ makes integer from pointer without a cast [-Wint-conversion]
+  450 |                                     fence->ops);
+      |                                     ~~~~~^~~~~
+      |                                          |
+      |                                          const struct dma_fence_ops *
+./include/linux/dma-fence.h:471:78: note: expected ‘u64’ {aka ‘long long unsigned int’} but argument is of type ‘const struct dma_fence_ops *’
+  471 | static inline bool __dma_fence_is_later(struct dma_fence *fence, u64 f1, u64 f2)
+      |                                                                          ~~~~^~
+
+ * In 549810e918155cc00d65d44ed3e7d2bd0aa89df9, __dma_fence_is_later signature was changed.
+ * This commit changes __dma_fence_is_later signature in dxgdmafence_signaled.
+
+Signed-off-by: Yang Jeong Hun <onyxclover9931@gmail.com>
+---
+ drivers/hv/dxgkrnl/dxgsyncfile.c | 3 +--
+ 1 file changed, 1 insertion(+), 2 deletions(-)
+
+diff --git a/drivers/hv/dxgkrnl/dxgsyncfile.c b/drivers/hv/dxgkrnl/dxgsyncfile.c
+index d4aef69095be..d7921a1ff4eb 100644
+--- a/drivers/hv/dxgkrnl/dxgsyncfile.c
++++ b/drivers/hv/dxgkrnl/dxgsyncfile.c
+@@ -446,8 +446,7 @@ static bool dxgdmafence_signaled(struct dma_fence *fence)
+ 	syncpoint = to_syncpoint(fence);
+ 	if (syncpoint == 0)
+ 		return true;
+-	return __dma_fence_is_later(syncpoint->fence_value, fence->seqno,
+-				    fence->ops);
++	return __dma_fence_is_later(fence, syncpoint->fence_value, fence->seqno);
+ }
+ 
+ static bool dxgdmafence_enable_signaling(struct dma_fence *fence)
+-- 
+2.51.0
+

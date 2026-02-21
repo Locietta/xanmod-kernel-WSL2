@@ -1,7 +1,11 @@
-From 27ff58a87b8e8f33461b2443efe4dfa6487ad352 Mon Sep 17 00:00:00 2001
+From 894b67ff9e9312e2d78a00f83ba24e4192337c66 Mon Sep 17 00:00:00 2001
 From: Michael Kelley <mhklinux@outlook.com>
 Date: Thu, 6 Feb 2025 10:55:59 -0800
-Subject: [PATCH] x86/hyperv: Don’t enable TSCInvariant on some older Hyper-V hosts
+Subject: [PATCH] =?UTF-8?q?x86/hyperv:=20Don=E2=80=99t=20enable=20TSCInvar?=
+ =?UTF-8?q?iant=20on=20some=20older=20Hyper-V=20hosts?=
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
 
 Hyper-V host builds earlier than 22621 (Windows 11 22H2) have a bug in
 the TSC Invariant feature that may result in the guest seeing a "slow"
@@ -22,15 +26,17 @@ Closes: https://github.com/microsoft/wsl/issues/6982
 
 Signed-off-by: Michael Kelley <mhklinux@outlook.com>
 Signed-off-by: Mitchell Levy <levymitchell0@gmail.com>
+[Nevuly: Forward port to 6.15]
+Signed-off-by: Yang Jeong Hun <onyxclover9931@gmail.com>
 ---
  arch/x86/kernel/cpu/mshyperv.c | 14 ++++++++++++++
  1 file changed, 14 insertions(+)
 
 diff --git a/arch/x86/kernel/cpu/mshyperv.c b/arch/x86/kernel/cpu/mshyperv.c
-index 513adf8fa54b..ca91d09ec0ef 100644
+index 3e2533954675..d71a2cc11d95 100644
 --- a/arch/x86/kernel/cpu/mshyperv.c
 +++ b/arch/x86/kernel/cpu/mshyperv.c
-@@ -364,6 +364,8 @@ int hv_get_hypervisor_version(union hv_hypervisor_version_info *info)
+@@ -433,6 +433,8 @@ EXPORT_SYMBOL_GPL(hv_get_hypervisor_version);
  
  static void __init ms_hyperv_init_platform(void)
  {
@@ -39,7 +45,7 @@ index 513adf8fa54b..ca91d09ec0ef 100644
  	int hv_max_functions_eax;
  
  #ifdef CONFIG_PARAVIRT
-@@ -390,6 +392,18 @@ static void __init ms_hyperv_init_platform(void)
+@@ -461,6 +463,18 @@ static void __init ms_hyperv_init_platform(void)
  	pr_debug("Hyper-V: max %u virtual processors, %u logical processors\n",
  		 ms_hyperv.max_vp_index, ms_hyperv.max_lp_index);
  
@@ -55,9 +61,9 @@ index 513adf8fa54b..ca91d09ec0ef 100644
 +	if (build < 22621)
 +		ms_hyperv.features &= ~HV_ACCESS_TSC_INVARIANT;
 +
- 	/*
- 	 * Check CPU management privilege.
- 	 *
+ 	hv_identify_partition_type();
+ 
+ 	if (ms_hyperv.hints & HV_X64_HYPERV_NESTED) {
 -- 
-2.48.1
+2.49.0
 
