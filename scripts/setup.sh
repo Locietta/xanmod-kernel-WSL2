@@ -65,9 +65,21 @@ BRANCH=${BRANCH:-MAIN}
 SKIP_DOWNLOAD=${SKIP_DOWNLOAD:-NO}
 
 if [ "$SKIP_DOWNLOAD" = "NO" ]; then
-  CURL_UA="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36 Edg/120.0.0.0"
-  VERSION_BRANCH=$(curl -s https://xanmod.org/ -A "$CURL_UA" | sed -n "/$BRANCH/{n;n;s/.*<td>\([0-9]\+\.[0-9]\+\)<\/td>.*/\1/p}")
+  LOWERCASE_BRANCH="${BRANCH,,}"
+  VERSION_BRANCH=$(
+    curl -sL "https://sourceforge.net/projects/xanmod/rss?path=/releases/$LOWERCASE_BRANCH" |
+    sed -n "s|.*/releases/$LOWERCASE_BRANCH/\([0-9]*\.[0-9]*\).*|\1|p" |
+    sort -uV |
+    tail -n 1
+  )
+
   XANMOD_REPO="https://gitlab.com/xanmod/linux.git"
+
+  if [ -z "$VERSION_BRANCH" ]; then
+    echo "Failed to fetch Xanmod version for branch $BRANCH!"
+    exit 2
+  fi
+
   echo "Fetching Xanmod $BRANCH($VERSION_BRANCH) source..."
   git clone $XANMOD_REPO -b $VERSION_BRANCH --depth 1 linux
 fi
