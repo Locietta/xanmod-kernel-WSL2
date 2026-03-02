@@ -1,4 +1,4 @@
-From b06359f134eedf494606b65783d953438caf3869 Mon Sep 17 00:00:00 2001
+From 532d65e35bd5090782c6a3c492205b49d5c64fbd Mon Sep 17 00:00:00 2001
 From: Iouri Tarassov <iourit@linux.microsoft.com>
 Date: Tue, 15 Feb 2022 18:11:52 -0800
 Subject: [PATCH 01/56] drivers: hv: dxgkrnl: Add virtual compute device VMBus
@@ -10,17 +10,17 @@ device driver.
 Signed-off-by: Iouri Tarassov <iourit@linux.microsoft.com>
 [kms: forward port to 6.6 from 6.1. No code changes made.]
 Signed-off-by: Kelsey Steele <kelseysteele@microsoft.com>
-[Nevuly: Forward port to 6.15]
+[Nevuly: Forward port to v6.19 kernel]
 Signed-off-by: Yang Jeong Hun <onyxclover9931@gmail.com>
 ---
  include/linux/hyperv.h | 16 ++++++++++++++++
  1 file changed, 16 insertions(+)
 
 diff --git a/include/linux/hyperv.h b/include/linux/hyperv.h
-index b52ac40d5830..ff9ac2e6fd1f 100644
+index dfc516c1c719..cfb120e56005 100644
 --- a/include/linux/hyperv.h
 +++ b/include/linux/hyperv.h
-@@ -1404,6 +1404,22 @@ void vmbus_free_mmio(resource_size_t start, resource_size_t size);
+@@ -1432,6 +1432,22 @@ void vmbus_free_mmio(resource_size_t start, resource_size_t size);
  	.guid = GUID_INIT(0xda0a7802, 0xe377, 0x4aac, 0x8e, 0x77, \
  			  0x05, 0x58, 0xeb, 0x10, 0x73, 0xf8)
  
@@ -44,10 +44,10 @@ index b52ac40d5830..ff9ac2e6fd1f 100644
   * Synthetic FC GUID
   * {2f9bcc4a-0069-4af3-b76b-6fd0be528cda}
 -- 
-2.49.0
+2.53.0
 
 
-From 6a6355829020b931d6af13b01ca8b56d6e120fdc Mon Sep 17 00:00:00 2001
+From a2c08bf7555c8c77965f0310cd4dff7bffffc5f5 Mon Sep 17 00:00:00 2001
 From: Iouri Tarassov <iourit@linux.microsoft.com>
 Date: Wed, 24 Mar 2021 11:10:28 -0700
 Subject: [PATCH 02/56] drivers: hv: dxgkrnl: Driver initialization and loading
@@ -84,7 +84,7 @@ allocations. Hyper-V allocates IO space for the global VMBus channel.
 Signed-off-by: Iouri Tarassov <iourit@linux.microsoft.com>
 [kms: forward port to 6.6 from 6.1. No code changes made.]
 Signed-off-by: Kelsey Steele <kelseysteele@microsoft.com>
-[Nevuly: Forward port to 6.15]
+[Nevuly: Forward port to v6.19 kernel]
 Signed-off-by: Yang Jeong Hun <onyxclover9931@gmail.com>
 ---
  MAINTAINERS                    |   7 +
@@ -107,10 +107,10 @@ Signed-off-by: Yang Jeong Hun <onyxclover9931@gmail.com>
  create mode 100644 include/uapi/misc/d3dkmthk.h
 
 diff --git a/MAINTAINERS b/MAINTAINERS
-index dd844ac8d910..554f3e5b470d 100644
+index e08767323763..9b534bd7d849 100644
 --- a/MAINTAINERS
 +++ b/MAINTAINERS
-@@ -11101,6 +11101,13 @@ F:	Documentation/devicetree/bindings/mtd/ti,am654-hbmc.yaml
+@@ -11798,6 +11798,13 @@ F:	Documentation/devicetree/bindings/mtd/ti,am654-hbmc.yaml
  F:	drivers/mtd/hyperbus/
  F:	include/linux/mtd/hyperbus.h
  
@@ -125,10 +125,10 @@ index dd844ac8d910..554f3e5b470d 100644
  L:	linuxppc-dev@lists.ozlabs.org
  S:	Odd Fixes
 diff --git a/drivers/hv/Kconfig b/drivers/hv/Kconfig
-index 8308a88e2aa5..c54ea3fa5324 100644
+index 98b2ea9eaed5..399389384faf 100644
 --- a/drivers/hv/Kconfig
 +++ b/drivers/hv/Kconfig
-@@ -72,4 +72,6 @@ config MSHV_ROOT
+@@ -109,4 +109,6 @@ config MSHV_VTL
  
  	  If unsure, say N.
  
@@ -136,13 +136,13 @@ index 8308a88e2aa5..c54ea3fa5324 100644
 +
  endmenu
 diff --git a/drivers/hv/Makefile b/drivers/hv/Makefile
-index 976189c725dc..a3331289a2c3 100644
+index a49f93c2d245..80d1c0a8c91c 100644
 --- a/drivers/hv/Makefile
 +++ b/drivers/hv/Makefile
-@@ -3,6 +3,7 @@ obj-$(CONFIG_HYPERV)		+= hv_vmbus.o
- obj-$(CONFIG_HYPERV_UTILS)	+= hv_utils.o
+@@ -4,6 +4,7 @@ obj-$(CONFIG_HYPERV_UTILS)	+= hv_utils.o
  obj-$(CONFIG_HYPERV_BALLOON)	+= hv_balloon.o
  obj-$(CONFIG_MSHV_ROOT)		+= mshv_root.o
+ obj-$(CONFIG_MSHV_VTL)          += mshv_vtl.o
 +obj-$(CONFIG_DXGKRNL)		+= dxgkrnl/
  
  CFLAGS_hv_trace.o = -I$(src)
@@ -1020,10 +1020,10 @@ index 000000000000..5d973604400c
 +
 +#endif /* _D3DKMTHK_H */
 -- 
-2.49.0
+2.53.0
 
 
-From 9d7f5aedd19ae1c15b7552076eeafc7092c998c7 Mon Sep 17 00:00:00 2001
+From 4658c797b4ddd6014f22f471d25929b09e708f1b Mon Sep 17 00:00:00 2001
 From: Iouri Tarassov <iourit@linux.microsoft.com>
 Date: Tue, 15 Feb 2022 18:53:07 -0800
 Subject: [PATCH 03/56] drivers: hv: dxgkrnl: Add VMBus message support,
@@ -1038,7 +1038,7 @@ settings of the VMBus global channel.
 Signed-off-by: Iouri Tarassov <iourit@linux.microsoft.com>
 [kms: forward port to 6.6 from 6.1. No code changes made.]
 Signed-off-by: Kelsey Steele <kelseysteele@microsoft.com>
-[Nevuly: Forward port to 6.15]
+[Nevuly: Forward port to v6.19 kernel]
 Signed-off-by: Yang Jeong Hun <onyxclover9931@gmail.com>
 ---
  drivers/hv/dxgkrnl/dxgkrnl.h   |  14 ++
@@ -1685,10 +1685,10 @@ index 5d973604400c..2ea04cc02a1f 100644
   * Matches the Windows LUID definition.
   * LUID is a locally unique identifier (similar to GUID, but not global),
 -- 
-2.49.0
+2.53.0
 
 
-From a48fd9f339a8ffadc134db7aacebbfae1937ca5f Mon Sep 17 00:00:00 2001
+From 169bb7cce509603fadd0473de08eeb38e2a0e10e Mon Sep 17 00:00:00 2001
 From: Iouri Tarassov <iourit@linux.microsoft.com>
 Date: Tue, 15 Feb 2022 19:00:38 -0800
 Subject: [PATCH 04/56] drivers: hv: dxgkrnl: Creation of dxgadapter object
@@ -1720,7 +1720,7 @@ channel are destroyed, the adapter object is destroyed.
 Signed-off-by: Iouri Tarassov <iourit@linux.microsoft.com>
 [kms: forward port to 6.6 from 6.1. No code changes made.]
 Signed-off-by: Kelsey Steele <kelseysteele@microsoft.com>
-[Nevuly: Forward port to 6.15]
+[Nevuly: Forward port to v6.19 kernel]
 Signed-off-by: Yang Jeong Hun <onyxclover9931@gmail.com>
 ---
  drivers/hv/dxgkrnl/Makefile     |   2 +-
@@ -2850,10 +2850,10 @@ index 4c6047c32a20..d292e9a9bb7f 100644
   * Some of the Windows return codes, which needs to be translated to Linux
   * IOCTL return codes. Positive values are success codes and need to be
 -- 
-2.49.0
+2.53.0
 
 
-From cf2d502b2d584504636b54e0981d1a988c29292a Mon Sep 17 00:00:00 2001
+From 25815df06a662aaf2ae9fd0bdff78b891fcdf42e Mon Sep 17 00:00:00 2001
 From: Iouri Tarassov <iourit@linux.microsoft.com>
 Date: Tue, 15 Feb 2022 19:12:48 -0800
 Subject: [PATCH 05/56] drivers: hv: dxgkrnl: Opening of /dev/dxg device and
@@ -2886,7 +2886,7 @@ first and its value is assigned to the guest object.
 Signed-off-by: Iouri Tarassov <iourit@linux.microsoft.com>
 [kms: forward port to 6.6 from 6.1. No code changes made.]
 Signed-off-by: Kelsey Steele <kelseysteele@microsoft.com>
-[Nevuly: Forward port to 6.15]
+[Nevuly: Forward port to v6.19 kernel]
 Signed-off-by: Yang Jeong Hun <onyxclover9931@gmail.com>
 ---
  drivers/hv/dxgkrnl/Makefile     |   2 +-
@@ -4703,10 +4703,10 @@ index 2ea04cc02a1f..c675d5827ed5 100644
 +
  #endif /* _D3DKMTHK_H */
 -- 
-2.49.0
+2.53.0
 
 
-From 48f4b2f37a9f6cefa5d866c3f28f3c7010241e30 Mon Sep 17 00:00:00 2001
+From aefe9a20d4e008aae87d4b5220b13c9384ad8bbb Mon Sep 17 00:00:00 2001
 From: Iouri Tarassov <iourit@linux.microsoft.com>
 Date: Mon, 21 Mar 2022 19:18:50 -0700
 Subject: [PATCH 06/56] drivers: hv: dxgkrnl: Enumerate and open dxgadapter
@@ -4741,7 +4741,7 @@ could be destroyed first.
 Signed-off-by: Iouri Tarassov <iourit@linux.microsoft.com>
 [kms: forward port to 6.6 from 6.1. No code changes made.]
 Signed-off-by: Kelsey Steele <kelseysteele@microsoft.com>
-[Nevuly: Forward port to 6.15]
+[Nevuly: Forward port to v6.19 kernel]
 Signed-off-by: Yang Jeong Hun <onyxclover9931@gmail.com>
 ---
  drivers/hv/dxgkrnl/dxgmodule.c |   3 +
@@ -5261,10 +5261,10 @@ index 60e38d104517..b08ea9430093 100644
 +}
 +#endif
 -- 
-2.49.0
+2.53.0
 
 
-From 1bdf5e1c2bd8c0f78b1735fb8b6489179225d299 Mon Sep 17 00:00:00 2001
+From 9b49491e7b50839a2a92385c78b1cac8c8c036cc Mon Sep 17 00:00:00 2001
 From: Iouri Tarassov <iourit@linux.microsoft.com>
 Date: Tue, 1 Feb 2022 17:23:58 -0800
 Subject: [PATCH 07/56] drivers: hv: dxgkrnl: Creation of dxgdevice objects
@@ -5281,7 +5281,7 @@ etc.). It belongs to a dxgadapter object.
 Signed-off-by: Iouri Tarassov <iourit@linux.microsoft.com>
 [kms: forward port to 6.6 from 6.1. No code changes made.]
 Signed-off-by: Kelsey Steele <kelseysteele@microsoft.com>
-[Nevuly: Forward port to 6.15]
+[Nevuly: Forward port to v6.19 kernel]
 Signed-off-by: Yang Jeong Hun <onyxclover9931@gmail.com>
 ---
  drivers/hv/dxgkrnl/dxgadapter.c | 187 ++++++++++++++++++++++++++++++++
@@ -6092,10 +6092,10 @@ index c675d5827ed5..7414f0f5ce8e 100644
  	_IOWR(0x47, 0x3e, struct d3dkmt_enumadapters3)
  
 -- 
-2.49.0
+2.53.0
 
 
-From bcb73189f9ae928d9344b06896baa5f10b79df8e Mon Sep 17 00:00:00 2001
+From 214d00aa5e60d4519ce84aad6e57bb7f3f9554eb Mon Sep 17 00:00:00 2001
 From: Iouri Tarassov <iourit@linux.microsoft.com>
 Date: Tue, 1 Feb 2022 17:03:47 -0800
 Subject: [PATCH 08/56] drivers: hv: dxgkrnl: Creation of dxgcontext objects
@@ -6113,7 +6113,7 @@ belong to a dxgdevice object.
 Signed-off-by: Iouri Tarassov <iourit@linux.microsoft.com>
 [kms: forward port to 6.6 from 6.1. No code changes made.]
 Signed-off-by: Kelsey Steele <kelseysteele@microsoft.com>
-[Nevuly: Forward port to 6.15]
+[Nevuly: Forward port to v6.19 kernel]
 Signed-off-by: Yang Jeong Hun <onyxclover9931@gmail.com>
 ---
  drivers/hv/dxgkrnl/dxgadapter.c | 103 ++++++++++++++++++++
@@ -6763,10 +6763,10 @@ index 7414f0f5ce8e..4ba0070b061f 100644
  	_IOWR(0x47, 0x09, struct d3dkmt_queryadapterinfo)
  #define LX_DXENUMADAPTERS2		\
 -- 
-2.49.0
+2.53.0
 
 
-From 66bc2f7d29e61721702911a4a32800977548fed0 Mon Sep 17 00:00:00 2001
+From 375cd7453620934200313ccac8322da2a3491000 Mon Sep 17 00:00:00 2001
 From: Iouri Tarassov <iourit@linux.microsoft.com>
 Date: Tue, 1 Feb 2022 15:37:52 -0800
 Subject: [PATCH 09/56] drivers: hv: dxgkrnl: Creation of compute device
@@ -6799,7 +6799,7 @@ its content is stored in the backing store in system memory.
 Signed-off-by: Iouri Tarassov <iourit@linux.microsoft.com>
 [kms: forward port to 6.6 from 6.1. No code changes made.]
 Signed-off-by: Kelsey Steele <kelseysteele@microsoft.com>
-[Nevuly: Forward port to 6.15]
+[Nevuly: Forward port to v6.19 kernel]
 Signed-off-by: Yang Jeong Hun <onyxclover9931@gmail.com>
 ---
  drivers/hv/dxgkrnl/dxgadapter.c | 282 ++++++++++++++
@@ -9029,10 +9029,10 @@ index 4ba0070b061f..cf670b9c4dc2 100644
  	_IOWR(0x47, 0x14, struct d3dkmt_enumadapters2)
  #define LX_DXCLOSEADAPTER		\
 -- 
-2.49.0
+2.53.0
 
 
-From 3faecff13b6976a1ac092e844de2e120c5e1e486 Mon Sep 17 00:00:00 2001
+From 5fc6fefb210145a3e074462706004bca22e8c25e Mon Sep 17 00:00:00 2001
 From: Iouri Tarassov <iourit@linux.microsoft.com>
 Date: Tue, 1 Feb 2022 14:38:32 -0800
 Subject: [PATCH 10/56] drivers: hv: dxgkrnl: Creation of compute device sync
@@ -9066,7 +9066,7 @@ This is done as follow:
 Signed-off-by: Iouri Tarassov <iourit@linux.microsoft.com>
 [kms: forward port to 6.6 from 6.1. No code changes made.]
 Signed-off-by: Kelsey Steele <kelseysteele@microsoft.com>
-[Nevuly: Forward port to 6.15]
+[Nevuly: Forward port to v6.19 kernel]
 Signed-off-by: Yang Jeong Hun <onyxclover9931@gmail.com>
 ---
  drivers/hv/dxgkrnl/dxgadapter.c | 184 ++++++++++++++++++++++++++++
@@ -10049,10 +10049,10 @@ index cf670b9c4dc2..4e1069f41d76 100644
  	_IOWR(0x47, 0x3e, struct d3dkmt_enumadapters3)
  
 -- 
-2.49.0
+2.53.0
 
 
-From 92ccbcd79bb2c54e4b71db3c1a7edb3265bfc9dc Mon Sep 17 00:00:00 2001
+From 15a2b7b8b970c6e5a76f22af567af4f1b264f8cd Mon Sep 17 00:00:00 2001
 From: Iouri Tarassov <iourit@linux.microsoft.com>
 Date: Tue, 1 Feb 2022 13:59:23 -0800
 Subject: [PATCH 11/56] drivers: hv: dxgkrnl: Operations using sync objects
@@ -10090,7 +10090,7 @@ asynchronously when the host supports it.
 Signed-off-by: Iouri Tarassov <iourit@linux.microsoft.com>
 [kms: forward port to 6.6 from 6.1. No code changes made.]
 Signed-off-by: Kelsey Steele <kelseysteele@microsoft.com>
-[Nevuly: Forward port to 6.15]
+[Nevuly: Forward port to v6.19 kernel]
 Signed-off-by: Yang Jeong Hun <onyxclover9931@gmail.com>
 ---
  drivers/hv/dxgkrnl/dxgadapter.c |  38 +-
@@ -11741,10 +11741,10 @@ index 4e1069f41d76..39055b0c1069 100644
  	_IOWR(0x47, 0x3e, struct d3dkmt_enumadapters3)
  
 -- 
-2.49.0
+2.53.0
 
 
-From 7443a3bd63ffc24aa7d3a53b44bf1faaf9c17c29 Mon Sep 17 00:00:00 2001
+From 1750974c33b5c612fd27639da072beb7558aecab Mon Sep 17 00:00:00 2001
 From: Iouri Tarassov <iourit@linux.microsoft.com>
 Date: Mon, 31 Jan 2022 17:52:31 -0800
 Subject: [PATCH 12/56] drivers: hv: dxgkrnl: Sharing of dxgresource objects
@@ -11777,7 +11777,7 @@ ioctl.
 Signed-off-by: Iouri Tarassov <iourit@linux.microsoft.com>
 [kms: forward port to 6.6 from 6.1. No code changes made.]
 Signed-off-by: Kelsey Steele <kelseysteele@microsoft.com>
-[Nevuly: Forward port to 6.15]
+[Nevuly: Forward port to v6.19 kernel]
 Signed-off-by: Yang Jeong Hun <onyxclover9931@gmail.com>
 ---
  drivers/hv/dxgkrnl/dxgadapter.c |  81 ++++
@@ -13208,10 +13208,10 @@ index 39055b0c1069..f74564cf7ee9 100644
  
  #endif /* _D3DKMTHK_H */
 -- 
-2.49.0
+2.53.0
 
 
-From 731b9912bfaa9d583a25d2a0e0674fd54ab0fe29 Mon Sep 17 00:00:00 2001
+From 17cf05a07be2f3e62835983d08ffb46b07bde781 Mon Sep 17 00:00:00 2001
 From: Iouri Tarassov <iourit@linux.microsoft.com>
 Date: Mon, 31 Jan 2022 16:41:28 -0800
 Subject: [PATCH 13/56] drivers: hv: dxgkrnl: Sharing of sync objects
@@ -13233,7 +13233,7 @@ value.
 Signed-off-by: Iouri Tarassov <iourit@linux.microsoft.com>
 [kms: forward port to 6.6 from 6.1. No code changes made.]
 Signed-off-by: Kelsey Steele <kelseysteele@microsoft.com>
-[Nevuly: Forward port to 6.15]
+[Nevuly: Forward port to v6.19 kernel]
 Signed-off-by: Yang Jeong Hun <onyxclover9931@gmail.com>
 ---
  drivers/hv/dxgkrnl/dxgadapter.c | 181 ++++++++++-
@@ -14766,10 +14766,10 @@ index f74564cf7ee9..a78252901c8d 100644
  	_IOWR(0x47, 0x3a, struct d3dkmt_waitforsynchronizationobjectfromcpu)
  #define LX_DXWAITFORSYNCHRONIZATIONOBJECTFROMGPU \
 -- 
-2.49.0
+2.53.0
 
 
-From c207a8ba934e6388aec1c8d375616a5703cdb6fa Mon Sep 17 00:00:00 2001
+From 3ae0dc20ed310d5f23fc648c1d9a1a284596def7 Mon Sep 17 00:00:00 2001
 From: Iouri Tarassov <iourit@linux.microsoft.com>
 Date: Thu, 20 Jan 2022 15:15:18 -0800
 Subject: [PATCH 14/56] drivers: hv: dxgkrnl: Creation of paging queue objects.
@@ -14790,7 +14790,7 @@ is used to detect when a paging operation is completed.
 Signed-off-by: Iouri Tarassov <iourit@linux.microsoft.com>
 [kms: forward port to 6.6 from 6.1. No code changes made.]
 Signed-off-by: Kelsey Steele <kelseysteele@microsoft.com>
-[Nevuly: Forward port to 6.15]
+[Nevuly: Forward port to v6.19 kernel]
 Signed-off-by: Yang Jeong Hun <onyxclover9931@gmail.com>
 ---
  drivers/hv/dxgkrnl/dxgadapter.c |  89 +++++++++++++++
@@ -15409,10 +15409,10 @@ index a78252901c8d..6ec70852de6e 100644
  	_IOWR(0x47, 0x19, struct d3dkmt_destroydevice)
  #define LX_DXDESTROYSYNCHRONIZATIONOBJECT \
 -- 
-2.49.0
+2.53.0
 
 
-From d55a6bfdc13a9bec0a46b11dcf9e403b6a905161 Mon Sep 17 00:00:00 2001
+From 0c778417e3b4550a349c5cf93bd9838cbaf5c257 Mon Sep 17 00:00:00 2001
 From: Iouri Tarassov <iourit@linux.microsoft.com>
 Date: Wed, 19 Jan 2022 18:02:09 -0800
 Subject: [PATCH 15/56] drivers: hv: dxgkrnl: Submit execution commands to the
@@ -15433,7 +15433,7 @@ to communicate with the host as these are high frequency operations.
 Signed-off-by: Iouri Tarassov <iourit@linux.microsoft.com>
 [kms: forward port to 6.6 from 6.1. No code changes made.]
 Signed-off-by: Kelsey Steele <kelseysteele@microsoft.com>
-[Nevuly: Forward port to 6.15]
+[Nevuly: Forward port to v6.19 kernel]
 Signed-off-by: Yang Jeong Hun <onyxclover9931@gmail.com>
 ---
  drivers/hv/dxgkrnl/dxgkrnl.h  |   6 ++
@@ -15863,10 +15863,10 @@ index 6ec70852de6e..9238115d165d 100644
  	_IOWR(0x47, 0x35, struct d3dkmt_submitsignalsyncobjectstohwqueue)
  #define LX_DXSUBMITWAITFORSYNCOBJECTSTOHWQUEUE \
 -- 
-2.49.0
+2.53.0
 
 
-From 9c02091c75192b61288fd67a2d07ce68bad750d0 Mon Sep 17 00:00:00 2001
+From bcbd780b45aeb6131785f27eb1e06d94623ca28f Mon Sep 17 00:00:00 2001
 From: Iouri Tarassov <iourit@linux.microsoft.com>
 Date: Sat, 7 Aug 2021 18:11:34 -0700
 Subject: [PATCH 16/56] drivers: hv: dxgkrnl: Share objects with the host
@@ -15885,7 +15885,7 @@ Fix incorrect handling of error results from copy_from_user().
 Signed-off-by: Iouri Tarassov <iourit@linux.microsoft.com>
 [kms: forward port to 6.6 from 6.1. No code changes made.]
 Signed-off-by: Kelsey Steele <kelseysteele@microsoft.com>
-[Nevuly: Forward port to 6.15]
+[Nevuly: Forward port to v6.19 kernel]
 Signed-off-by: Yang Jeong Hun <onyxclover9931@gmail.com>
 ---
  drivers/hv/dxgkrnl/dxgkrnl.h  |  2 ++
@@ -16137,10 +16137,10 @@ index 9238115d165d..895861505e6e 100644
  
  #endif /* _D3DKMTHK_H */
 -- 
-2.49.0
+2.53.0
 
 
-From 779297969dd1fb9c8aaa373e7dcb71f61f84840c Mon Sep 17 00:00:00 2001
+From 172c81caf11608ad4578552a9655f00414b1df42 Mon Sep 17 00:00:00 2001
 From: Iouri Tarassov <iourit@linux.microsoft.com>
 Date: Wed, 19 Jan 2022 16:53:47 -0800
 Subject: [PATCH 17/56] drivers: hv: dxgkrnl: Query the dxgdevice state
@@ -16167,7 +16167,7 @@ bus message to the host for every call:
 Signed-off-by: Iouri Tarassov <iourit@linux.microsoft.com>
 [kms: forward port to 6.6 from 6.1. No code changes made.]
 Signed-off-by: Kelsey Steele <kelseysteele@microsoft.com>
-[Nevuly: Forward port to 6.15]
+[Nevuly: Forward port to v6.19 kernel]
 Signed-off-by: Yang Jeong Hun <onyxclover9931@gmail.com>
 ---
  drivers/hv/dxgkrnl/dxgkrnl.h   |  11 ++++
@@ -16594,10 +16594,10 @@ index 895861505e6e..8a013b07e88a 100644
  	_IOWR(0x47, 0x0f, struct d3dkmt_submitcommand)
  #define LX_DXCREATESYNCHRONIZATIONOBJECT \
 -- 
-2.49.0
+2.53.0
 
 
-From 45b017a816d005e82a0b9e5272b4944bedc19904 Mon Sep 17 00:00:00 2001
+From 7489e137a1065835293c26fc1965ed6f3ff7b413 Mon Sep 17 00:00:00 2001
 From: Iouri Tarassov <iourit@linux.microsoft.com>
 Date: Wed, 19 Jan 2022 13:58:28 -0800
 Subject: [PATCH 18/56] drivers: hv: dxgkrnl: Map(unmap) CPU address to device
@@ -16628,7 +16628,7 @@ device allocation.
 Signed-off-by: Iouri Tarassov <iourit@linux.microsoft.com>
 [kms: forward port to 6.6 from 6.1. No code changes made.]
 Signed-off-by: Kelsey Steele <kelseysteele@microsoft.com>
-[Nevuly: Forward port to 6.15]
+[Nevuly: Forward port to v6.19 kernel]
 Signed-off-by: Yang Jeong Hun <onyxclover9931@gmail.com>
 ---
  drivers/hv/dxgkrnl/dxgadapter.c |  11 +++
@@ -17096,10 +17096,10 @@ index 8a013b07e88a..b498f09e694d 100644
  	_IOWR(0x47, 0x3a, struct d3dkmt_waitforsynchronizationobjectfromcpu)
  #define LX_DXWAITFORSYNCHRONIZATIONOBJECTFROMGPU \
 -- 
-2.49.0
+2.53.0
 
 
-From 7eaa66249208ccab863066ed70a2dcf88546c8b2 Mon Sep 17 00:00:00 2001
+From e77a43a4217995d7bbab7427c5991eb5cd15ae9f Mon Sep 17 00:00:00 2001
 From: Iouri Tarassov <iourit@linux.microsoft.com>
 Date: Wed, 19 Jan 2022 11:14:22 -0800
 Subject: [PATCH 19/56] drivers: hv: dxgkrnl: Manage device allocation
@@ -17128,7 +17128,7 @@ memory reservation of an allocation.
 Signed-off-by: Iouri Tarassov <iourit@linux.microsoft.com>
 [kms: forward port to 6.6 from 6.1. No code changes made.]
 Signed-off-by: Kelsey Steele <kelseysteele@microsoft.com>
-[Nevuly: Forward port to 6.15]
+[Nevuly: Forward port to v6.19 kernel]
 Signed-off-by: Yang Jeong Hun <onyxclover9931@gmail.com>
 ---
  drivers/hv/dxgkrnl/dxgkrnl.h  |  21 +++
@@ -18012,10 +18012,10 @@ index b498f09e694d..af381101fd90 100644
  	_IOWR(0x47, 0x3e, struct d3dkmt_enumadapters3)
  #define LX_DXSHAREOBJECTS		\
 -- 
-2.49.0
+2.53.0
 
 
-From a80d24b624692c5085eb419c05f1c0cbf89e63a7 Mon Sep 17 00:00:00 2001
+From b2828194d03c0384e776ce8977fe02957209819b Mon Sep 17 00:00:00 2001
 From: Iouri Tarassov <iourit@linux.microsoft.com>
 Date: Tue, 18 Jan 2022 17:25:37 -0800
 Subject: [PATCH 20/56] drivers: hv: dxgkrnl: Flush heap transitions
@@ -18029,7 +18029,7 @@ flushes all internal operations.
 Signed-off-by: Iouri Tarassov <iourit@linux.microsoft.com>
 [kms: forward port to 6.6 from 6.1. No code changes made.]
 Signed-off-by: Kelsey Steele <kelseysteele@microsoft.com>
-[Nevuly: Forward port to 6.15]
+[Nevuly: Forward port to v6.19 kernel]
 Signed-off-by: Yang Jeong Hun <onyxclover9931@gmail.com>
 ---
  drivers/hv/dxgkrnl/dxgadapter.c |  2 +-
@@ -18209,10 +18209,10 @@ index af381101fd90..873feb951129 100644
  	_IOWR(0x47, 0x25, struct d3dkmt_lock2)
  #define LX_DXQUERYALLOCATIONRESIDENCY	\
 -- 
-2.49.0
+2.53.0
 
 
-From c31365b0da4a7397f33e1fee057f02d08330454c Mon Sep 17 00:00:00 2001
+From 65b520eeedae7c10c3fa4c4a09029cb739403df4 Mon Sep 17 00:00:00 2001
 From: Iouri Tarassov <iourit@linux.microsoft.com>
 Date: Tue, 8 Feb 2022 18:34:07 -0800
 Subject: [PATCH 21/56] drivers: hv: dxgkrnl: Query video memory information
@@ -18223,7 +18223,7 @@ Implement the ioctl to query video memory information from the host
 Signed-off-by: Iouri Tarassov <iourit@linux.microsoft.com>
 [kms: forward port to 6.6 from 6.1. No code changes made.]
 Signed-off-by: Kelsey Steele <kelseysteele@microsoft.com>
-[Nevuly: Forward port to 6.15]
+[Nevuly: Forward port to v6.19 kernel]
 Signed-off-by: Yang Jeong Hun <onyxclover9931@gmail.com>
 ---
  drivers/hv/dxgkrnl/dxgkrnl.h  |  5 +++
@@ -18449,10 +18449,10 @@ index 873feb951129..b7d8b1d91cfc 100644
  	_IOWR(0x47, 0x0e, struct d3dkmt_getdevicestate)
  #define LX_DXSUBMITCOMMAND		\
 -- 
-2.49.0
+2.53.0
 
 
-From 9cec336663f4e7c0af17a400028bd028c6570c3f Mon Sep 17 00:00:00 2001
+From fc84c18a935914f79bbb417fcb62a2d91eda7565 Mon Sep 17 00:00:00 2001
 From: Iouri Tarassov <iourit@linux.microsoft.com>
 Date: Tue, 18 Jan 2022 15:50:30 -0800
 Subject: [PATCH 22/56] drivers: hv: dxgkrnl: The escape ioctl
@@ -18467,7 +18467,7 @@ compute device API.
 Signed-off-by: Iouri Tarassov <iourit@linux.microsoft.com>
 [kms: forward port to 6.6 from 6.1. No code changes made.]
 Signed-off-by: Kelsey Steele <kelseysteele@microsoft.com>
-[Nevuly: Forward port to 6.15]
+[Nevuly: Forward port to v6.19 kernel]
 Signed-off-by: Yang Jeong Hun <onyxclover9931@gmail.com>
 ---
  drivers/hv/dxgkrnl/dxgkrnl.h  |  3 ++
@@ -18757,10 +18757,10 @@ index b7d8b1d91cfc..749edf28bd43 100644
  	_IOWR(0x47, 0x0e, struct d3dkmt_getdevicestate)
  #define LX_DXSUBMITCOMMAND		\
 -- 
-2.49.0
+2.53.0
 
 
-From e8a4edb6baa4d58f2b485640b8fbcc6a0f43c84d Mon Sep 17 00:00:00 2001
+From d5c80e0dd3e020642598676808a55967bff0fdd6 Mon Sep 17 00:00:00 2001
 From: Iouri Tarassov <iourit@linux.microsoft.com>
 Date: Wed, 9 Feb 2022 10:57:57 -0800
 Subject: [PATCH 23/56] drivers: hv: dxgkrnl: Ioctl to put device to error
@@ -18778,7 +18778,7 @@ ioctl calls to the device will fail.
 Signed-off-by: Iouri Tarassov <iourit@linux.microsoft.com>
 [kms: forward port to 6.6 from 6.1. No code changes made.]
 Signed-off-by: Kelsey Steele <kelseysteele@microsoft.com>
-[Nevuly: Forward port to 6.15]
+[Nevuly: Forward port to v6.19 kernel]
 Signed-off-by: Yang Jeong Hun <onyxclover9931@gmail.com>
 ---
  drivers/hv/dxgkrnl/dxgkrnl.h  |  3 +++
@@ -18941,10 +18941,10 @@ index 749edf28bd43..ce5a638a886d 100644
  	_IOWR(0x47, 0x2a, struct d3dkmt_queryallocationresidency)
  #define LX_DXSETALLOCATIONPRIORITY	\
 -- 
-2.49.0
+2.53.0
 
 
-From e8aa76199e85f2a8200de57219fb9469761ac1a8 Mon Sep 17 00:00:00 2001
+From a3eac1cbee4bc2c2c69e64455bd8d0601845dbdd Mon Sep 17 00:00:00 2001
 From: Iouri Tarassov <iourit@linux.microsoft.com>
 Date: Wed, 9 Feb 2022 11:01:57 -0800
 Subject: [PATCH 24/56] drivers: hv: dxgkrnl: Ioctls to query statistics and
@@ -18963,7 +18963,7 @@ and is used for performance monitoring.
 Signed-off-by: Iouri Tarassov <iourit@linux.microsoft.com>
 [kms: forward port to 6.6 from 6.1. No code changes made.]
 Signed-off-by: Kelsey Steele <kelseysteele@microsoft.com>
-[Nevuly: Forward port to 6.15]
+[Nevuly: Forward port to v6.19 kernel]
 Signed-off-by: Yang Jeong Hun <onyxclover9931@gmail.com>
 ---
  drivers/hv/dxgkrnl/dxgkrnl.h  |   8 +++
@@ -19367,10 +19367,10 @@ index ce5a638a886d..ea18242ceb83 100644
  	_IOWR(0x47, 0x44, struct d3dkmt_shareobjectwithhost)
  
 -- 
-2.49.0
+2.53.0
 
 
-From d4be8cc02d497889afb46f5e5bc486cb68c9d508 Mon Sep 17 00:00:00 2001
+From cfc9e8b5aa95381527d4d4cc3ec75eeabaaf2cca Mon Sep 17 00:00:00 2001
 From: Iouri Tarassov <iourit@linux.microsoft.com>
 Date: Tue, 18 Jan 2022 15:01:55 -0800
 Subject: [PATCH 25/56] drivers: hv: dxgkrnl: Offer and reclaim allocations
@@ -19393,7 +19393,7 @@ the device.
 Signed-off-by: Iouri Tarassov <iourit@linux.microsoft.com>
 [kms: forward port to 6.6 from 6.1. No code changes made.]
 Signed-off-by: Kelsey Steele <kelseysteele@microsoft.com>
-[Nevuly: Forward port to 6.15]
+[Nevuly: Forward port to v6.19 kernel]
 Signed-off-by: Yang Jeong Hun <onyxclover9931@gmail.com>
 ---
  drivers/hv/dxgkrnl/dxgkrnl.h  |   8 +++
@@ -19836,10 +19836,10 @@ index ea18242ceb83..46b9f6d303bf 100644
  	_IOWR(0x47, 0x2e, struct d3dkmt_setallocationpriority)
  #define LX_DXSIGNALSYNCHRONIZATIONOBJECTFROMCPU \
 -- 
-2.49.0
+2.53.0
 
 
-From a1192f33fef955c5b02768323cbf18f09d9ee81e Mon Sep 17 00:00:00 2001
+From 864b5c3689755043a090dd050edbb10e126fdeb8 Mon Sep 17 00:00:00 2001
 From: Iouri Tarassov <iourit@linux.microsoft.com>
 Date: Fri, 14 Jan 2022 17:57:41 -0800
 Subject: [PATCH 26/56] drivers: hv: dxgkrnl: Ioctls to manage scheduling
@@ -19859,7 +19859,7 @@ priority within a process.
 Signed-off-by: Iouri Tarassov <iourit@linux.microsoft.com>
 [kms: forward port to 6.6 from 6.1. No code changes made.]
 Signed-off-by: Kelsey Steele <kelseysteele@microsoft.com>
-[Nevuly: Forward port to 6.15]
+[Nevuly: Forward port to v6.19 kernel]
 Signed-off-by: Yang Jeong Hun <onyxclover9931@gmail.com>
 ---
  drivers/hv/dxgkrnl/dxgkrnl.h  |   9 ++
@@ -20267,10 +20267,10 @@ index 46b9f6d303bf..a9bafab97c18 100644
  	_IOWR(0x47, 0x31, struct d3dkmt_signalsynchronizationobjectfromcpu)
  #define LX_DXSIGNALSYNCHRONIZATIONOBJECTFROMGPU \
 -- 
-2.49.0
+2.53.0
 
 
-From 162f5d7a680ee9794a9c11b49d2f1c17370b3b94 Mon Sep 17 00:00:00 2001
+From ad8f4e5d1b9b45d2e5c4c5ef3fcd1930c589460d Mon Sep 17 00:00:00 2001
 From: Iouri Tarassov <iourit@linux.microsoft.com>
 Date: Fri, 14 Jan 2022 17:33:52 -0800
 Subject: [PATCH 27/56] drivers: hv: dxgkrnl: Manage residency of allocations
@@ -20299,7 +20299,7 @@ the given allocations from device accessible memory.
 Signed-off-by: Iouri Tarassov <iourit@linux.microsoft.com>
 [kms: forward port to 6.6 from 6.1. No code changes made.]
 Signed-off-by: Kelsey Steele <kelseysteele@microsoft.com>
-[Nevuly: Forward port to 6.15]
+[Nevuly: Forward port to v6.19 kernel]
 Signed-off-by: Yang Jeong Hun <onyxclover9931@gmail.com>
 ---
  drivers/hv/dxgkrnl/dxgkrnl.h  |   4 +
@@ -20717,10 +20717,10 @@ index a9bafab97c18..944f9d1e73d6 100644
  	_IOWR(0x47, 0x1f, struct d3dkmt_flushheaptransitions)
  #define LX_DXGETCONTEXTINPROCESSSCHEDULINGPRIORITY \
 -- 
-2.49.0
+2.53.0
 
 
-From b5559dfc7a719cd83804f8b7712dcf1b6277276d Mon Sep 17 00:00:00 2001
+From 3cef444764bfdd80bf051e5db2b324a30147d880 Mon Sep 17 00:00:00 2001
 From: Iouri Tarassov <iourit@linux.microsoft.com>
 Date: Fri, 14 Jan 2022 17:13:04 -0800
 Subject: [PATCH 28/56] drivers: hv: dxgkrnl: Manage compute device virtual
@@ -20755,7 +20755,7 @@ of other compute device DMA buffers..
 Signed-off-by: Iouri Tarassov <iourit@linux.microsoft.com>
 [kms: forward port to 6.6 from 6.1. No code changes made.]
 Signed-off-by: Kelsey Steele <kelseysteele@microsoft.com>
-[Nevuly: Forward port to 6.15]
+[Nevuly: Forward port to v6.19 kernel]
 Signed-off-by: Yang Jeong Hun <onyxclover9931@gmail.com>
 ---
  drivers/hv/dxgkrnl/dxgkrnl.h  |  10 ++
@@ -21424,10 +21424,10 @@ index 944f9d1e73d6..1f60f5120e1d 100644
  	_IOWR(0x47, 0x3a, struct d3dkmt_waitforsynchronizationobjectfromcpu)
  #define LX_DXWAITFORSYNCHRONIZATIONOBJECTFROMGPU \
 -- 
-2.49.0
+2.53.0
 
 
-From 575c52bae7e8d57d7dcccfb1c7c7fc9e846e3ed8 Mon Sep 17 00:00:00 2001
+From ed6d7e918cf9f1f34cf04afc0a8b12e634ec88bd Mon Sep 17 00:00:00 2001
 From: Iouri Tarassov <iourit@linux.microsoft.com>
 Date: Fri, 8 Oct 2021 14:17:39 -0700
 Subject: [PATCH 29/56] drivers: hv: dxgkrnl: Add support to map guest pages by
@@ -21453,7 +21453,7 @@ instead uses the following code flow:
 Signed-off-by: Iouri Tarassov <iourit@linux.microsoft.com>
 [kms: forward port to 6.6 from 6.1. No code changes made.]
 Signed-off-by: Kelsey Steele <kelseysteele@microsoft.com>
-[Nevuly: Forward port to 6.15]
+[Nevuly: Forward port to v6.19 kernel]
 Signed-off-by: Yang Jeong Hun <onyxclover9931@gmail.com>
 ---
  drivers/hv/dxgkrnl/Makefile    |   2 +-
@@ -21741,10 +21741,10 @@ index cb1e0635bebc..4a1309d80ee5 100644
  }
 +
 -- 
-2.49.0
+2.53.0
 
 
-From beb2d4bb75f75f6bd9ae53510e1b03cd20c3ea62 Mon Sep 17 00:00:00 2001
+From 566ab63c221ff32246dad3dc3dc26b5d78804d5b Mon Sep 17 00:00:00 2001
 From: Iouri Tarassov <iourit@linux.microsoft.com>
 Date: Mon, 21 Mar 2022 20:32:44 -0700
 Subject: [PATCH 30/56] drivers: hv: dxgkrnl: Removed struct vmbus_gpadl, which
@@ -21753,7 +21753,7 @@ Subject: [PATCH 30/56] drivers: hv: dxgkrnl: Removed struct vmbus_gpadl, which
 Signed-off-by: Iouri Tarassov <iourit@linux.microsoft.com>
 [kms: forward port to 6.6 from 6.1. No code changes made.]
 Signed-off-by: Kelsey Steele <kelseysteele@microsoft.com>
-[Nevuly: Forward port to 6.15]
+[Nevuly: Forward port to v6.19 kernel]
 Signed-off-by: Yang Jeong Hun <onyxclover9931@gmail.com>
 ---
  drivers/hv/dxgkrnl/dxgadapter.c | 2 +-
@@ -21773,10 +21773,10 @@ index 6f763e326a65..236febbc6fca 100644
  		DXG_TRACE("Teardown gpadl %d", alloc->gpadl);
  		vmbus_teardown_gpadl(dxgglobal_get_vmbus(), alloc->gpadl);
 -- 
-2.49.0
+2.53.0
 
 
-From 851cf18603d5a4f12c1229212412625682cb5eaf Mon Sep 17 00:00:00 2001
+From e1357a3eca6c9e597d195ed62c4104a0d0156866 Mon Sep 17 00:00:00 2001
 From: Iouri Tarassov <iourit@linux.microsoft.com>
 Date: Tue, 22 Mar 2022 10:32:54 -0700
 Subject: [PATCH 31/56] drivers: hv: dxgkrnl: Remove dxgk_init_ioctls
@@ -21787,7 +21787,7 @@ function.
 Signed-off-by: Iouri Tarassov <iourit@linux.microsoft.com>
 [kms: forward port to 6.6 from 6.1. No code changes made.]
 Signed-off-by: Kelsey Steele <kelseysteele@microsoft.com>
-[Nevuly: Forward port to 6.15]
+[Nevuly: Forward port to v6.19 kernel]
 Signed-off-by: Yang Jeong Hun <onyxclover9931@gmail.com>
 ---
  drivers/hv/dxgkrnl/dxgmodule.c |  2 +-
@@ -21876,10 +21876,10 @@ index f6700e974f25..8732a66040a0 100644
  		 LX_DXSUBMITWAITFORSYNCOBJECTSTOHWQUEUE},
  /* 0x37 */	{dxgkio_unlock2, LX_DXUNLOCK2},
 -- 
-2.49.0
+2.53.0
 
 
-From 719cfe681d8f7fc335a2f3725c8fd2142c362595 Mon Sep 17 00:00:00 2001
+From 25a2500e3229ba3716815298126fd571774137cb Mon Sep 17 00:00:00 2001
 From: Iouri Tarassov <iourit@linux.microsoft.com>
 Date: Tue, 22 Mar 2022 11:02:49 -0700
 Subject: [PATCH 32/56] drivers: hv: dxgkrnl: Creation of dxgsyncfile objects
@@ -21902,7 +21902,7 @@ sync_file object is signaled.
 Signed-off-by: Iouri Tarassov <iourit@linux.microsoft.com>
 [kms: forward port to 6.6 from 6.1. No code changes made.]
 Signed-off-by: Kelsey Steele <kelseysteele@microsoft.com>
-[Nevuly: Forward port to 6.15]
+[Nevuly: Forward port to v6.19 kernel]
 Signed-off-by: Yang Jeong Hun <onyxclover9931@gmail.com>
 ---
  drivers/hv/dxgkrnl/Kconfig       |   2 +
@@ -22363,10 +22363,10 @@ index 1f60f5120e1d..c7f168425dc7 100644
  
  #endif /* _D3DKMTHK_H */
 -- 
-2.49.0
+2.53.0
 
 
-From 46c78712b388bf1cede3154a1fcb35b4dddc8331 Mon Sep 17 00:00:00 2001
+From 253cf1e11deea6fd54d621e3a9ea18e6ce44c55d Mon Sep 17 00:00:00 2001
 From: Iouri Tarassov <iourit@linux.microsoft.com>
 Date: Thu, 24 Mar 2022 15:03:41 -0700
 Subject: [PATCH 33/56] drivers: hv: dxgkrnl: Use tracing instead of dev_dbg
@@ -22374,7 +22374,7 @@ Subject: [PATCH 33/56] drivers: hv: dxgkrnl: Use tracing instead of dev_dbg
 Signed-off-by: Iouri Tarassov <iourit@linux.microsoft.com>
 [kms: forward port to 6.6 from 6.1. No code changes made.]
 Signed-off-by: Kelsey Steele <kelseysteele@microsoft.com>
-[Nevuly: Forward port to 6.15]
+[Nevuly: Forward port to v6.19 kernel]
 Signed-off-by: Yang Jeong Hun <onyxclover9931@gmail.com>
 ---
  drivers/hv/dxgkrnl/dxgadapter.c |  4 ++--
@@ -22571,10 +22571,10 @@ index 4a1309d80ee5..4bf6fe80d22a 100644
  u16 *wcsncpy(u16 *dest, const u16 *src, size_t n)
  {
 -- 
-2.49.0
+2.53.0
 
 
-From 179c2e29884946d5a3dc621ecab7e66377cc85b2 Mon Sep 17 00:00:00 2001
+From 15635f8b2afc8100643cf74a9ad14d0fb7e4d417 Mon Sep 17 00:00:00 2001
 From: Iouri Tarassov <iourit@linux.microsoft.com>
 Date: Mon, 2 May 2022 11:46:48 -0700
 Subject: [PATCH 34/56] drivers: hv: dxgkrnl: Implement D3DKMTWaitSyncFile
@@ -22582,7 +22582,7 @@ Subject: [PATCH 34/56] drivers: hv: dxgkrnl: Implement D3DKMTWaitSyncFile
 Signed-off-by: Iouri Tarassov <iourit@linux.microsoft.com>
 [kms: forward port to 6.6 from 6.1. No code changes made.]
 Signed-off-by: Kelsey Steele <kelseysteele@microsoft.com>
-[Nevuly: Forward port to 6.15]
+[Nevuly: Forward port to v6.19 kernel]
 Signed-off-by: Yang Jeong Hun <onyxclover9931@gmail.com>
 ---
  drivers/hv/dxgkrnl/dxgkrnl.h     |  11 ++
@@ -23232,10 +23232,10 @@ index c7f168425dc7..1eaa3f038322 100644
  
  #endif /* _D3DKMTHK_H */
 -- 
-2.49.0
+2.53.0
 
 
-From 5aa3b7a55c27a896fff97b6a8e84176857835061 Mon Sep 17 00:00:00 2001
+From 4939a5d257aff2b170f3c756e9a107d3c641241f Mon Sep 17 00:00:00 2001
 From: Iouri Tarassov <iourit@linux.microsoft.com>
 Date: Fri, 6 May 2022 19:19:09 -0700
 Subject: [PATCH 35/56] drivers: hv: dxgkrnl: Improve tracing and return values
@@ -23244,7 +23244,7 @@ Subject: [PATCH 35/56] drivers: hv: dxgkrnl: Improve tracing and return values
 Signed-off-by: Iouri Tarassov <iourit@linux.microsoft.com>
 [kms: forward port to 6.6 from 6.1. No code changes made.]
 Signed-off-by: Kelsey Steele <kelseysteele@microsoft.com>
-[Nevuly: Forward port to 6.15]
+[Nevuly: Forward port to v6.19 kernel]
 Signed-off-by: Yang Jeong Hun <onyxclover9931@gmail.com>
 ---
  drivers/hv/dxgkrnl/dxgkrnl.h     |  17 +-
@@ -25235,10 +25235,10 @@ index 622904d5c3a9..3dc9e76f4f3d 100644
  }
  
 -- 
-2.49.0
+2.53.0
 
 
-From 3a92c1041bbb59b54c05f9ce05633b4750af53d0 Mon Sep 17 00:00:00 2001
+From 8a4b1075f5fa51872b8878e366ed1d844694750c Mon Sep 17 00:00:00 2001
 From: Iouri Tarassov <iourit@linux.microsoft.com>
 Date: Mon, 13 Jun 2022 14:18:10 -0700
 Subject: [PATCH 36/56] drivers: hv: dxgkrnl: Fix synchronization locks
@@ -25246,7 +25246,7 @@ Subject: [PATCH 36/56] drivers: hv: dxgkrnl: Fix synchronization locks
 Signed-off-by: Iouri Tarassov <iourit@linux.microsoft.com>
 [kms: forward port to 6.6 from 6.1. No code changes made.]
 Signed-off-by: Kelsey Steele <kelseysteele@microsoft.com>
-[Nevuly: Forward port to 6.15]
+[Nevuly: Forward port to v6.19 kernel]
 Signed-off-by: Yang Jeong Hun <onyxclover9931@gmail.com>
 ---
  drivers/hv/dxgkrnl/dxgadapter.c | 19 ++++----
@@ -25629,10 +25629,10 @@ index ee2ebfdd1c13..9fcab4ae2c0c 100644
   * device_mutex (dxgglobal mutex)
   */
 -- 
-2.49.0
+2.53.0
 
 
-From 7fdfc0745f4fef7e68d883ec7b9a8db69c5a6829 Mon Sep 17 00:00:00 2001
+From eaabbaf5d4966033b6377e519ef325e23e4e6bf7 Mon Sep 17 00:00:00 2001
 From: Iouri Tarassov <iourit@linux.microsoft.com>
 Date: Tue, 28 Jun 2022 17:26:11 -0700
 Subject: [PATCH 37/56] drivers: hv: dxgkrnl: Close shared file objects in case
@@ -25641,7 +25641,7 @@ Subject: [PATCH 37/56] drivers: hv: dxgkrnl: Close shared file objects in case
 Signed-off-by: Iouri Tarassov <iourit@linux.microsoft.com>
 [kms: forward port to 6.6 from 6.1. No code changes made.]
 Signed-off-by: Kelsey Steele <kelseysteele@microsoft.com>
-[Nevuly: Forward port to 6.15]
+[Nevuly: Forward port to v6.19 kernel]
 Signed-off-by: Yang Jeong Hun <onyxclover9931@gmail.com>
 ---
  drivers/hv/dxgkrnl/ioctl.c | 14 ++++++++++----
@@ -25713,10 +25713,10 @@ index 7c72790f917f..69324510c9e2 100644
  			put_unused_fd(object_fd);
  	}
 -- 
-2.49.0
+2.53.0
 
 
-From 379fac826914f3480507709779fbb77a638fc633 Mon Sep 17 00:00:00 2001
+From 7b8720906aa9f9ba6d67ae3f7e8da277ddabe2ed Mon Sep 17 00:00:00 2001
 From: Iouri Tarassov <iourit@linux.microsoft.com>
 Date: Wed, 29 Jun 2022 10:04:23 -0700
 Subject: [PATCH 38/56] drivers: hv: dxgkrnl: Added missed NULL check for
@@ -25725,7 +25725,7 @@ Subject: [PATCH 38/56] drivers: hv: dxgkrnl: Added missed NULL check for
 Signed-off-by: Iouri Tarassov <iourit@linux.microsoft.com>
 [kms: forward port to 6.6 from 6.1. No code changes made.]
 Signed-off-by: Kelsey Steele <kelseysteele@microsoft.com>
-[Nevuly: Forward port to 6.15]
+[Nevuly: Forward port to v6.19 kernel]
 Signed-off-by: Yang Jeong Hun <onyxclover9931@gmail.com>
 ---
  drivers/hv/dxgkrnl/ioctl.c | 10 ++++++----
@@ -25768,21 +25768,21 @@ index 69324510c9e2..98350583943e 100644
  		dxgdevice_release_lock_shared(device);
  		kref_put(&device->device_kref, dxgdevice_release);
 -- 
-2.49.0
+2.53.0
 
 
-From be05843c5259b64ed33116bf99dae776e5d6d9ec Mon Sep 17 00:00:00 2001
+From fabfd97a2c437b0e966df5da8a4c87c24c68ff63 Mon Sep 17 00:00:00 2001
 From: Iouri Tarassov <iourit@linux.microsoft.com>
 Date: Thu, 26 Jan 2023 10:49:41 -0800
 Subject: [PATCH 39/56] drivers: hv: dxgkrnl: Fixed dxgkrnl to build for the
- 6.1 kernel
+ main linux branch
 
 Definition for GPADL was changed from u32 to struct vmbus_gpadl.
 
 Signed-off-by: Iouri Tarassov <iourit@linux.microsoft.com>
 [kms: forward port to 6.6 from 6.1. No code changes made.]
 Signed-off-by: Kelsey Steele <kelseysteele@microsoft.com>
-[Nevuly: Forward port to 6.15]
+[Nevuly: Forward port to v6.19 kernel]
 Signed-off-by: Yang Jeong Hun <onyxclover9931@gmail.com>
 ---
  drivers/hv/dxgkrnl/dxgadapter.c | 8 --------
@@ -25858,10 +25858,10 @@ index 8c99f141482e..eb3f4c5153a6 100644
  						    msg.size);
  		if (ret < 0)
 -- 
-2.49.0
+2.53.0
 
 
-From 1612643c6f778fee130a1b734295dce13d0cabbd Mon Sep 17 00:00:00 2001
+From 22add6ef09bec57da09fc9fbd6d0d206a127aa12 Mon Sep 17 00:00:00 2001
 From: Iouri Tarassov <iourit@linux.microsoft.com>
 Date: Thu, 22 Dec 2022 14:54:28 -0800
 Subject: [PATCH 40/56] drivers: hv: dxgkrnl: Added support for compute only
@@ -25870,7 +25870,7 @@ Subject: [PATCH 40/56] drivers: hv: dxgkrnl: Added support for compute only
 Signed-off-by: Iouri Tarassov <iourit@linux.microsoft.com>
 [kms: forward port to 6.6 from 6.1. No code changes made.]
 Signed-off-by: Kelsey Steele <kelseysteele@microsoft.com>
-[Nevuly: Forward port to 6.15]
+[Nevuly: Forward port to v6.19 kernel]
 Signed-off-by: Yang Jeong Hun <onyxclover9931@gmail.com>
 ---
  drivers/hv/dxgkrnl/dxgkrnl.h   |  1 +
@@ -25966,10 +25966,10 @@ index 98350583943e..f735b18fcc14 100644
  			struct d3dkmt_adapterinfo *inf = &info[adapter_count];
  
 -- 
-2.49.0
+2.53.0
 
 
-From 12ce294ad23718666f6633694460aba315bb914d Mon Sep 17 00:00:00 2001
+From 12b29d7f3296ec336a6423c65e2143e92766f449 Mon Sep 17 00:00:00 2001
 From: Iouri Tarassov <iourit@linux.microsoft.com>
 Date: Wed, 15 Feb 2023 16:56:35 -0800
 Subject: [PATCH 41/56] drivers: hv: dxgkrnl: Added implementation for
@@ -25983,7 +25983,7 @@ needs to be accessed by the device. And vice versa.
 Signed-off-by: Iouri Tarassov <iourit@linux.microsoft.com>
 [kms: forward port to 6.6 from 6.1. No code changes made.]
 Signed-off-by: Kelsey Steele <kelseysteele@microsoft.com>
-[Nevuly: Forward port to 6.15]
+[Nevuly: Forward port to v6.19 kernel]
 Signed-off-by: Yang Jeong Hun <onyxclover9931@gmail.com>
 ---
  drivers/hv/dxgkrnl/dxgkrnl.h  |  3 +++
@@ -26183,10 +26183,10 @@ index 1eaa3f038322..84fa07a46d3c 100644
  	_IOWR(0x47, 0x25, struct d3dkmt_lock2)
  #define LX_DXMARKDEVICEASERROR		\
 -- 
-2.49.0
+2.53.0
 
 
-From d9f182de6c0812d9fee416d56268eeee5d808bac Mon Sep 17 00:00:00 2001
+From 7e679fb81ced58161cd7b4dae91507a6d813dc65 Mon Sep 17 00:00:00 2001
 From: Iouri Tarassov <iourit@linux.microsoft.com>
 Date: Wed, 15 Feb 2023 17:13:48 -0800
 Subject: [PATCH 42/56] drivers: hv: dxgkrnl: Handle process ID in
@@ -26198,7 +26198,7 @@ translated to the host process handle before sending a message to the host.
 Signed-off-by: Iouri Tarassov <iourit@linux.microsoft.com>
 [kms: forward port to 6.6 from 6.1. No code changes made.]
 Signed-off-by: Kelsey Steele <kelseysteele@microsoft.com>
-[Nevuly: Forward port to 6.15]
+[Nevuly: Forward port to v6.19 kernel]
 Signed-off-by: Yang Jeong Hun <onyxclover9931@gmail.com>
 ---
  drivers/hv/dxgkrnl/dxgkrnl.h    |   3 +-
@@ -26959,10 +26959,10 @@ index 56b838a87f09..466bef6c14b3 100644
  		ret = copy_to_user(adapter_count_out,
  				   &dxgglobal->num_adapters, sizeof(u32));
 -- 
-2.49.0
+2.53.0
 
 
-From 76a1856f1b44f4d42b79ca367f7c0c651d27f3f7 Mon Sep 17 00:00:00 2001
+From 592709b6416c63528819a869215c4be58797eac8 Mon Sep 17 00:00:00 2001
 From: Iouri Tarassov <iourit@linux.microsoft.com>
 Date: Mon, 10 Apr 2023 09:27:37 -0700
 Subject: [PATCH 43/56] drivers: hv: dxgkrnl: Implement the D3DKMTEnumProcesses
@@ -26974,7 +26974,7 @@ which opened the /dev/dxg device.
 Signed-off-by: Iouri Tarassov <iourit@linux.microsoft.com>
 [kms: forward port to 6.6 from 6.1. No code changes made.]
 Signed-off-by: Kelsey Steele <kelseysteele@microsoft.com>
-[Nevuly: Forward port to 6.15]
+[Nevuly: Forward port to v6.19 kernel]
 Signed-off-by: Yang Jeong Hun <onyxclover9931@gmail.com>
 ---
  drivers/hv/dxgkrnl/dxgkrnl.h    |  1 +
@@ -27151,10 +27151,10 @@ index 84fa07a46d3c..f9f817060fa9 100644
  
  #endif /* _D3DKMTHK_H */
 -- 
-2.49.0
+2.53.0
 
 
-From bb145501d328eed99456bdc61f1c7915c45f3feb Mon Sep 17 00:00:00 2001
+From 29644fb7d79e700dba6c224f72c053a06f6ae1c4 Mon Sep 17 00:00:00 2001
 From: Iouri Tarassov <iourit@linux.microsoft.com>
 Date: Mon, 10 Apr 2023 09:30:11 -0700
 Subject: [PATCH 44/56] drivers: hv: dxgkrnl: Implement D3DDKMTIsFeatureEnabled
@@ -27166,7 +27166,7 @@ supported by the given adapter.
 Signed-off-by: Iouri Tarassov <iourit@linux.microsoft.com>
 [kms: forward port to 6.6 from 6.1. No code changes made.]
 Signed-off-by: Kelsey Steele <kelseysteele@microsoft.com>
-[Nevuly: Forward port to 6.15]
+[Nevuly: Forward port to v6.19 kernel]
 Signed-off-by: Yang Jeong Hun <onyxclover9931@gmail.com>
 ---
  drivers/hv/dxgkrnl/dxgkrnl.h  |  2 ++
@@ -27446,10 +27446,10 @@ index f9f817060fa9..5b345ddaf66e 100644
  
  #endif /* _D3DKMTHK_H */
 -- 
-2.49.0
+2.53.0
 
 
-From bd84da9b7e5d442ce4156a907a66fe7ce74b7548 Mon Sep 17 00:00:00 2001
+From 404461851d58807e01a4db70a4b4fa3aaa95ccfd Mon Sep 17 00:00:00 2001
 From: Iouri Tarassov <iourit@linux.microsoft.com>
 Date: Tue, 11 Apr 2023 16:44:36 -0700
 Subject: [PATCH 45/56] drivers: hv: dxgkrnl: Implement known escapes
@@ -27460,7 +27460,7 @@ Implement other known escapes.
 Signed-off-by: Iouri Tarassov <iourit@linux.microsoft.com>
 [kms: forward port to 6.6 from 6.1. No code changes made.]
 Signed-off-by: Kelsey Steele <kelseysteele@microsoft.com>
-[Nevuly: Forward port to 6.15]
+[Nevuly: Forward port to v6.19 kernel]
 Signed-off-by: Yang Jeong Hun <onyxclover9931@gmail.com>
 ---
  drivers/hv/dxgkrnl/dxgkrnl.h  |   3 +-
@@ -27840,10 +27840,10 @@ index 5b345ddaf66e..db40e8ff40b0 100644
  	_D3DKMT_ESCAPE_DRIVERPRIVATE	= 0,
  	_D3DKMT_ESCAPE_VIDMM		= 1,
 -- 
-2.49.0
+2.53.0
 
 
-From 1672b37bbf5d0e951cb087e56bc466ec159fa32f Mon Sep 17 00:00:00 2001
+From 1e7ae894af7a922e5a2100b262895c3acb85d780 Mon Sep 17 00:00:00 2001
 From: Iouri Tarassov <iourit@linux.microsoft.com>
 Date: Wed, 12 Apr 2023 10:35:39 -0700
 Subject: [PATCH 46/56] drivers: hv: dxgkrnl: Fixed coding style issues
@@ -27851,7 +27851,7 @@ Subject: [PATCH 46/56] drivers: hv: dxgkrnl: Fixed coding style issues
 Signed-off-by: Iouri Tarassov <iourit@linux.microsoft.com>
 [kms: forward port to 6.6 from 6.1. No code changes made.]
 Signed-off-by: Kelsey Steele <kelseysteele@microsoft.com>
-[Nevuly: Forward port to 6.15]
+[Nevuly: Forward port to v6.19 kernel]
 Signed-off-by: Yang Jeong Hun <onyxclover9931@gmail.com>
 ---
  drivers/hv/dxgkrnl/dxgadapter.c | 12 ++++--------
@@ -27995,10 +27995,10 @@ index f8ca79d098f3..5ac6dd1f09b9 100644
  			DXGKRNL_ASSERT(0);
  		}
 -- 
-2.49.0
+2.53.0
 
 
-From f458a788bb03c43f0f27d99699c7071f143e1eaf Mon Sep 17 00:00:00 2001
+From 267f1acf83327bc6e5ac756f18c937749db8f879 Mon Sep 17 00:00:00 2001
 From: Iouri Tarassov <iourit@linux.microsoft.com>
 Date: Mon, 17 Apr 2023 10:57:23 -0700
 Subject: [PATCH 47/56] drivers: hv: dxgkrnl: Fixed the implementation of
@@ -28009,7 +28009,7 @@ The result of a VM bus call was not copied to the user output structure.
 Signed-off-by: Iouri Tarassov <iourit@linux.microsoft.com>
 [kms: forward port to 6.6 from 6.1. No code changes made.]
 Signed-off-by: Kelsey Steele <kelseysteele@microsoft.com>
-[Nevuly: Forward port to 6.15]
+[Nevuly: Forward port to v6.19 kernel]
 Signed-off-by: Yang Jeong Hun <onyxclover9931@gmail.com>
 ---
  drivers/hv/dxgkrnl/dxgvmbus.c | 18 ++++++++++--------
@@ -28083,10 +28083,10 @@ index 5ac6dd1f09b9..d91af2e176e9 100644
  cleanup:
  
 -- 
-2.49.0
+2.53.0
 
 
-From acf0cd7bbee9e10b7739fd7152ac132f553c675d Mon Sep 17 00:00:00 2001
+From d1e0003b509cae778394bbc3ae1687ba7053e6ea Mon Sep 17 00:00:00 2001
 From: Iouri Tarassov <iourit@linux.microsoft.com>
 Date: Mon, 15 May 2023 11:15:17 -0700
 Subject: [PATCH 48/56] drivers: hv: dxgkrnl: Retry sending a VM bus packet
@@ -28099,7 +28099,7 @@ to handle this condition.
 Signed-off-by: Iouri Tarassov <iourit@linux.microsoft.com>
 [kms: forward port to 6.6 from 6.1. No code changes made.]
 Signed-off-by: Kelsey Steele <kelseysteele@microsoft.com>
-[Nevuly: Forward port to 6.15]
+[Nevuly: Forward port to v6.19 kernel]
 Signed-off-by: Yang Jeong Hun <onyxclover9931@gmail.com>
 ---
  drivers/hv/dxgkrnl/dxgvmbus.c | 17 ++++++++++++++---
@@ -28141,10 +28141,10 @@ index 67f55f4bf41d..467e7707c8c7 100644
  		DXG_ERR("vmbus_sendpacket failed: %x", ret);
  		spin_lock_irq(&channel->packet_list_mutex);
 -- 
-2.49.0
+2.53.0
 
 
-From 6aeb5394f9079e2a2b6785838a3c80cc39eb6710 Mon Sep 17 00:00:00 2001
+From 97ff95202ebd171e5a46034355b34bdeabfc1a30 Mon Sep 17 00:00:00 2001
 From: Iouri Tarassov <iourit@linux.microsoft.com>
 Date: Fri, 26 May 2023 14:03:11 -0700
 Subject: [PATCH 49/56] drivers: hv: dxgkrnl: Add support for locking a shared
@@ -28158,7 +28158,7 @@ adds support for this feature.
 Signed-off-by: Iouri Tarassov <iourit@linux.microsoft.com>
 [kms: forward port to 6.6 from 6.1. No code changes made.]
 Signed-off-by: Kelsey Steele <kelseysteele@microsoft.com>
-[Nevuly: Forward port to 6.15]
+[Nevuly: Forward port to v6.19 kernel]
 Signed-off-by: Yang Jeong Hun <onyxclover9931@gmail.com>
 ---
  drivers/hv/dxgkrnl/dxgadapter.c |  4 ++--
@@ -28279,10 +28279,10 @@ index d91af2e176e9..f8f116a7f87f 100644
  		total_priv_data_size += open_alloc_info.priv_drv_data_size;
  		open_alloc_info.priv_drv_data = cur_priv_data;
 -- 
-2.49.0
+2.53.0
 
 
-From 62ba2d321ee994626d69fdbe9981dd5d426d7c65 Mon Sep 17 00:00:00 2001
+From 91c62d3572ea4161a39f51c6921a6b15e7a693b9 Mon Sep 17 00:00:00 2001
 From: Iouri Tarassov <iourit@linux.microsoft.com>
 Date: Wed, 6 Dec 2023 15:45:30 -0800
 Subject: [PATCH 50/56] drivers: hv: dxgkrnl: Fix build breaks when switching
@@ -28294,7 +28294,7 @@ commit for more context:
 96ec2939620c "Drivers: hv: Make remove callback of hyperv driver void returned"
 
 Signed-off-by: Iouri Tarassov <iourit@linux.microsoft.com>
-[Nevuly: Forward port to 6.15]
+[Nevuly: Forward port to v6.19 kernel]
 Signed-off-by: Yang Jeong Hun <onyxclover9931@gmail.com>
 ---
  drivers/hv/dxgkrnl/dxgmodule.c | 6 +-----
@@ -28329,10 +28329,10 @@ index 0fafb6167229..5459bd9b82fb 100644
  
  MODULE_DEVICE_TABLE(vmbus, dxg_vmbus_id_table);
 -- 
-2.49.0
+2.53.0
 
 
-From 0a1c4d32873e7204ef218043b51beea7b8b1b566 Mon Sep 17 00:00:00 2001
+From fca6cc13a7965574478a89d7bd626689aefe84c8 Mon Sep 17 00:00:00 2001
 From: Iouri Tarassov <iourit@linux.microsoft.com>
 Date: Wed, 6 Dec 2023 15:52:11 -0800
 Subject: [PATCH 51/56] drivers: hv: dxgkrnl: Fix build breaks when switching
@@ -28345,7 +28345,7 @@ f5b3c341a46e "mei: Move uuid_le_cmp() to its only user"
 5e6a51787fef "uuid: Decouple guid_t and uuid_le types and respective macros"
 
 Signed-off-by: Iouri Tarassov <iourit@linux.microsoft.com>
-[Nevuly: Forward port to 6.15]
+[Nevuly: Forward port to v6.19 kernel]
 Signed-off-by: Yang Jeong Hun <onyxclover9931@gmail.com>
 ---
  drivers/hv/dxgkrnl/dxgmodule.c | 10 ++++------
@@ -28394,10 +28394,10 @@ index 5459bd9b82fb..e3ac70df1b6f 100644
  		dxgglobal_destroy_global_channel();
  	} else {
 -- 
-2.49.0
+2.53.0
 
 
-From a8bae46ec5af35d1e94a1cf933d2638d9b8ff7e3 Mon Sep 17 00:00:00 2001
+From 6a25c2b342a3d47e0ada25b966a417cda62da92f Mon Sep 17 00:00:00 2001
 From: Iouri Tarassov <iourit@linux.microsoft.com>
 Date: Thu, 7 Mar 2024 09:34:05 -0800
 Subject: [PATCH 52/56] drivers: hv: dxgkrnl: Implement D3DKMTEnumProcesses to
@@ -28408,7 +28408,7 @@ input buffer is NULL, the number of active processes is returned. The Linux impl
 is updated to match this.
 
 Signed-off-by: Iouri Tarassov <iourit@linux.microsoft.com>
-[Nevuly: Forward port to 6.15]
+[Nevuly: Forward port to v6.19 kernel]
 Signed-off-by: Yang Jeong Hun <onyxclover9931@gmail.com>
 ---
  drivers/hv/dxgkrnl/dxgmodule.c |  2 +-
@@ -28487,10 +28487,10 @@ index f8f116a7f87f..42f3de31a63c 100644
  
  cleanup:
 -- 
-2.49.0
+2.53.0
 
 
-From c255d0d74ac0576faeb9b7165255d46c02fc9e4f Mon Sep 17 00:00:00 2001
+From 6d87c457d188051125493528c989b673240217d0 Mon Sep 17 00:00:00 2001
 From: Iouri Tarassov <iourit@linux.microsoft.com>
 Date: Thu, 7 Mar 2024 15:09:03 -0800
 Subject: [PATCH 53/56] drivers: hv: dxgkrnl: Use pin_user_pages instead of
@@ -28500,7 +28500,7 @@ Pages, which are obtained by calling get_user_pages(), can be evicted from memor
 pin_user_pages() should be used for memory, which is accessed by DMA.
 
 Signed-off-by: Iouri Tarassov <iourit@linux.microsoft.com>
-[Nevuly: Forward port to 6.15]
+[Nevuly: Forward port to v6.19 kernel]
 Signed-off-by: Yang Jeong Hun <onyxclover9931@gmail.com>
 ---
  drivers/hv/dxgkrnl/dxgadapter.c |  2 +-
@@ -28553,10 +28553,10 @@ index 467e7707c8c7..abb6d2af89ac 100644
  		dxgalloc->pages = NULL;
  		ret = -ENOMEM;
 -- 
-2.49.0
+2.53.0
 
 
-From 21e6e898c40b36570b6df34ecb01f4a3fa979a26 Mon Sep 17 00:00:00 2001
+From d13dff3785888e182898629188135b716d787ec9 Mon Sep 17 00:00:00 2001
 From: Iouri Tarassov <iourit@linux.microsoft.com>
 Date: Thu, 11 Apr 2024 17:10:28 -0700
 Subject: [PATCH 54/56] drivers: hv: dxgkrnl: Do not print error messages when
@@ -28567,7 +28567,7 @@ when a process tries to open the /dev/dxg device and there is no
 virtual GPU. This message should not be printed in this scenario.
 
 Signed-off-by: Iouri Tarassov <iourit@linux.microsoft.com>
-[Nevuly: Forward port to 6.15]
+[Nevuly: Forward port to v6.19 kernel]
 Signed-off-by: Yang Jeong Hun <onyxclover9931@gmail.com>
 ---
  drivers/hv/dxgkrnl/dxgadapter.c | 2 +-
@@ -28611,16 +28611,16 @@ index 8f5d6db256a3..c2a4a2a2136f 100644
  	} else {
  		return 0;
 -- 
-2.49.0
+2.53.0
 
 
-From 9dd364a8ea95262c73a18c2b8e49cd27252d83ac Mon Sep 17 00:00:00 2001
+From 1cc2e6dadb6f3fad9b3dfede37ae7e0b4abba83b Mon Sep 17 00:00:00 2001
 From: Hideyuki Nagase <hideyukn@microsoft.com>
 Date: Fri, 21 Feb 2025 18:16:53 +0000
 Subject: [PATCH 55/56] drivers: hv: dxgkrnl: Fix crash at
  hmgrtable_free_handle
 
-[Nevuly: Forward port to 6.15]
+[Nevuly: Forward port to v6.19 kernel]
 Signed-off-by: Yang Jeong Hun <onyxclover9931@gmail.com>
 ---
  drivers/hv/dxgkrnl/hmgr.c | 9 +++++++--
@@ -28648,16 +28648,16 @@ index 24101d0091ab..059f94307a0e 100644
  		DXG_ERR("Invalid handle to free: %d %x", i, h.v);
  	}
 -- 
-2.49.0
+2.53.0
 
 
-From 0f86f5435c5c8f71f8cbed17527e752e7e3b4f89 Mon Sep 17 00:00:00 2001
+From c4513fbbfea7e7567cf8762087592a635f771ee0 Mon Sep 17 00:00:00 2001
 From: Mitchell Levy <levymitchell0@gmail.com>
 Date: Fri, 28 Mar 2025 11:28:56 -0700
 Subject: [PATCH 56/56] Include `linux/types.h` in `d3dkmthk.h`
 
 Signed-off-by: Mitchell Levy <levymitchell0@gmail.com>
-[Nevuly: Forward port to 6.15]
+[Nevuly: Forward port to v6.19 kernel]
 Signed-off-by: Yang Jeong Hun <onyxclover9931@gmail.com>
 ---
  include/uapi/misc/d3dkmthk.h | 2 ++
@@ -28677,5 +28677,5 @@ index db40e8ff40b0..1ef12c8982e8 100644
   * This structure matches the definition of D3DKMTHANDLE in Windows.
   * The handle is opaque in user mode. It is used by user mode applications to
 -- 
-2.49.0
+2.53.0
 
