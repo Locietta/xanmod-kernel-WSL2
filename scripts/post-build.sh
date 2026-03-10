@@ -131,7 +131,10 @@ cp README COPYING "$DOC_DIR/" 2>/dev/null || true
 # Create VHDX for Kernel Modules
 sudo ../scripts/gen_modules_vhdx.sh "$IMAGE_NAME-addons" "$KERNEL_VERSION" "${IMAGE_NAME}-addons.vhdx"
 
+# Compress the addon VHDX to reduce release and install size.
+7z a -mx=9 "${IMAGE_NAME}-addons.vhdx.7z" "${IMAGE_NAME}-addons.vhdx" >/dev/null
+rm -f "${IMAGE_NAME}-addons.vhdx"
+
 # move generated files to upper directory
 mv arch/x86/boot/bzImage ../$IMAGE_NAME
-mv ./$IMAGE_NAME-addons.vhdx ../
-
+mv ./$IMAGE_NAME-addons.vhdx.7z ../

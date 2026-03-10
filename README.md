@@ -63,12 +63,12 @@ We recommend to run `scoop update *` instead of `scoop update xanmod-WSL2` alone
 
 ### Manual Installation
 
-It's also straight forward to manually install this kernel. For each arch, we release two files: the kernel image `bzImage` and an optional addon VHDX `bzImage-addons.vhdx` that contains extra modules, headers and documentation.
+It's also straightforward to manually install this kernel. For each arch, we release two files: the kernel image `bzImage` and an optional addon archive `bzImage-addons.vhdx.7z` that contains the VHDX with extra modules, headers and documentation.
 
 The manual installation steps are as follows:
 
 - Download kernel image from [releases](https://github.com/Locietta/xanmod-kernel-WSL2/releases)
-  - optionally, download the addon vhdx if you need extra modules/headers/docs
+  - optionally, download the addon archive if you need extra modules/headers/docs, then extract the `.vhdx` file from it
 - Place it to somewhere appropriate. (e.g. `D:\.WSL\bzImage`)
 - Edit and save the `%UserProfile%\.wslconfig` with following content:
 
