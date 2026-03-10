@@ -1,0 +1,71 @@
+From dea0611bf9f3f6971bc890f27e7b426fe8bdc84d Mon Sep 17 00:00:00 2001
+From: Sergio Lopez <slp@redhat.com>
+Date: Mon, 19 Jan 2026 00:24:11 +0100
+Subject: [PATCH] fuse: mark DAX inode releases as blocking
+
+Commit 26e5c67deb2e ("fuse: fix livelock in synchronous file put from
+fuseblk workers") made fputs on closing files always asynchronous.
+
+As cleaning up DAX inodes may require issuing a number of synchronous
+request for releasing the mappings, completing the release request from
+the worker thread may lead to it hanging like this:
+
+[   21.386751] Workqueue: events virtio_fs_requests_done_work
+[   21.386769] Call trace:
+[   21.386770]  __switch_to+0xe4/0x140
+[   21.386780]  __schedule+0x294/0x72c
+[   21.386787]  schedule+0x24/0x90
+[   21.386794]  request_wait_answer+0x184/0x298
+[   21.386799]  __fuse_simple_request+0x1f4/0x320
+[   21.386805]  fuse_send_removemapping+0x80/0xa0
+[   21.386810]  dmap_removemapping_list+0xac/0xfc
+[   21.386814]  inode_reclaim_dmap_range.constprop.0+0xd0/0x204
+[   21.386820]  fuse_dax_inode_cleanup+0x28/0x5c
+[   21.386825]  fuse_evict_inode+0x120/0x190
+[   21.386834]  evict+0x188/0x320
+[   21.386847]  iput_final+0xb0/0x20c
+[   21.386854]  iput+0xa0/0xbc
+[   21.386862]  fuse_release_end+0x18/0x2c
+[   21.386868]  fuse_request_end+0x9c/0x2c0
+[   21.386872]  virtio_fs_request_complete+0x150/0x384
+[   21.386879]  virtio_fs_requests_done_work+0x18c/0x37c
+[   21.386885]  process_one_work+0x15c/0x2e8
+[   21.386891]  worker_thread+0x278/0x480
+[   21.386898]  kthread+0xd0/0xdc
+[   21.386902]  ret_from_fork+0x10/0x20
+
+Here, the virtio-fs worker_thread is waiting on request_wait_answer()
+for a reply from the virtio-fs server that is already in the virtqueue
+but will never be processed since it's that same worker thread the one
+in charge of consuming the elements from the virtqueue.
+
+To address this issue, when relesing a DAX inode mark the operation as
+potentially blocking. Doing this will ensure these release requests are
+processed on a different worker thread.
+
+Signed-off-by: Sergio Lopez <slp@redhat.com>
+Reviewed-by: Darrick J. Wong <djwong@kernel.org>
+---
+ fs/fuse/file.c | 6 ++++++
+ 1 file changed, 6 insertions(+)
+
+diff --git a/fs/fuse/file.c b/fs/fuse/file.c
+index 3b2a171e652f..a65c5d32a34b 100644
+--- a/fs/fuse/file.c
++++ b/fs/fuse/file.c
+@@ -117,6 +117,12 @@ static void fuse_file_put(struct fuse_file *ff, bool sync)
+ 			fuse_simple_request(ff->fm, args);
+ 			fuse_release_end(ff->fm, args, 0);
+ 		} else {
++			/*
++			 * DAX inodes may need to issue a number of synchronous
++			 * request for clearing the mappings.
++			 */
++			if (ra && ra->inode && FUSE_IS_DAX(ra->inode))
++				args->may_block = true;
+ 			args->end = fuse_release_end;
+ 			if (fuse_simple_background(ff->fm, args,
+ 						   GFP_KERNEL | __GFP_NOFAIL))
+-- 
+2.53.0
+
