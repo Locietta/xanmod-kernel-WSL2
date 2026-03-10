@@ -63,7 +63,7 @@ We recommend to run `scoop update *` instead of `scoop update xanmod-WSL2` alone
 
 ### Manual Installation
 
-It's also straight forward to manually install this kernel. For each arch, we release two files: the kernel image `bzImage` and an optional addon archive `bzImage-addons.vhdx.7z` that contains the VHDX with extra modules, headers and documentation.
+It's also straightforward to manually install this kernel. For each arch, we release two files: the kernel image `bzImage` and an optional addon archive `bzImage-addons.vhdx.7z` that contains the VHDX with extra modules, headers and documentation.
 
 The manual installation steps are as follows:
 
