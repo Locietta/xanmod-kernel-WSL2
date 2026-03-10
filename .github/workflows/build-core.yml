@@ -49,7 +49,7 @@ jobs:
       - name: Install dependencies
         id: dep
         run: |
-          pacman -Syu --noconfirm pahole xmlto inetutils bc cpio jq ccache git python go mimalloc clang llvm llvm-libs lld qemu-img rsync
+          pacman -Syu --noconfirm pahole xmlto inetutils bc cpio jq ccache git python go mimalloc clang llvm llvm-libs lld qemu-img rsync 7zip
           # GOBIN=/usr/bin go install go.chromium.org/luci/cipd/client/cmd/...@latest
           # cipd install fuchsia/third_party/clang/linux-amd64 latest -root /usr/local/fuchsia-clang
           # echo "PATH=/usr/local/fuchsia-clang/bin:$PATH" >> $GITHUB_ENV
@@ -119,7 +119,7 @@ jobs:
           include-hidden-files: true
           path: |
             ${{ matrix.image-name }}
-            ${{ matrix.image-name }}-addons.vhdx
+            ${{ matrix.image-name }}-addons.vhdx.7z
 
       - id: out
         run: |
