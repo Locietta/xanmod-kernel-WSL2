@@ -1,0 +1,72 @@
+From fd35d48f7aa61743e8265994cc2e4d2527241d41 Mon Sep 17 00:00:00 2001
+From: Locietta <locietta@gmail.com>
+Date: Fri, 13 Mar 2026 21:01:32 +0800
+Subject: [PATCH] hv_sock: fix stale recv_desc handling in hvs_stream_has_data()
+
+Nevuly/WSL2-Rolling-Kernel-Issue#42 reports an issue about stdin
+redirection from Windows to Linux (e.g., `echo hi | wsl -u root sh`)
+silently fails and returns error code 1.
+
+We have a quick fix by
+https://github.com/Nevuly/WSL2-Linux-Kernel-Rolling/commit/95e754d76d299db54f2e8a7075bb1cd29bbc02c5.
+While it does work, it brings more potential side effect.
+
+I find a new issue that prevents me from calling .exe inside WSL2
+after the patch. The issue is not reliably reproducible though. It
+may or may not disappear after a reboot of WSL2.
+
+When recv_desc points at a packet that has already been fully drained,
+hvs_stream_has_data() must advance the iterator before reporting payload.
+
+The previous workaround of returning a synthetic positive byte count
+fixes the stdin pipe regression, but it misreports stream state to
+other hvsock users. WSL interop uses blocking framed control messages
+on hvsock channels, so that fake readability can surface as unexpected
+EOF or protocol breakage. So in rare cases, the exe interop between WSL2
+and Windows host will break.
+
+Advance recv_desc with hv_pkt_iter_next() when the current descriptor
+has already been consumed, otherwise refill from hv_pkt_iter_first().
+If the iterator reaches the end of the ring, treat that as iterator
+completion / EOF rather than -ENOBUFS. This preserves the stdin pipe
+fix while keeping receive semantics correct for other hvsock clients.
+
+Test: Build and type `echo echo hi |  wsl -u root sh` in Windows CMD
+Signed-off-by: Locietta <locietta@gmail.com>
+---
+ net/vmw_vsock/hyperv_transport.c | 13 +++++++------
+ 1 file changed, 7 insertions(+), 6 deletions(-)
+
+diff --git a/net/vmw_vsock/hyperv_transport.c b/net/vmw_vsock/hyperv_transport.c
+index 432fcbbd1..1dc531f7b 100644
+--- a/net/vmw_vsock/hyperv_transport.c
++++ b/net/vmw_vsock/hyperv_transport.c
+@@ -694,7 +694,6 @@ static ssize_t hvs_stream_enqueue(struct vsock_sock *vsk, struct msghdr *msg,
+ static s64 hvs_stream_has_data(struct vsock_sock *vsk)
+ {
+ 	struct hvsock *hvs = vsk->trans;
+-	bool need_refill;
+ 	s64 ret;
+ 
+ 	if (hvs->recv_data_len > 0)
+@@ -702,11 +701,13 @@ static s64 hvs_stream_has_data(struct vsock_sock *vsk)
+ 
+ 	switch (hvs_channel_readable_payload(hvs->chan)) {
+ 	case 1:
+-		need_refill = !hvs->recv_desc;
+-		if (!need_refill)
+-			return -EIO;
+-
+-		hvs->recv_desc = hv_pkt_iter_first(hvs->chan);
++		if (hvs->recv_desc) {
++			hvs->recv_desc = hv_pkt_iter_next(hvs->chan, hvs->recv_desc);
++			if (!hvs->recv_desc)
++				return 0;
++		} else {
++			hvs->recv_desc = hv_pkt_iter_first(hvs->chan);
++		}
+ 		if (!hvs->recv_desc)
+ 			return -ENOBUFS;
+ 
+-- 
+2.53.0
