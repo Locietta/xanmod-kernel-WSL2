@@ -111,11 +111,11 @@ jobs:
           cd linux && ../scripts/build.sh --branch ${{ inputs.branch }}
           ../scripts/post-build.sh --name ${{ matrix.image-name }}
 
-      - name: Upload bzImage
+      - name: Upload raw build artifacts
         uses: actions/upload-artifact@main
         if: ${{ env.REBUILD_FLAG }}
         with:
-          name: ${{ matrix.image-name }}
+          name: ${{ matrix.image-name }}-raw
           include-hidden-files: true
           path: |
             ${{ matrix.image-name }}
@@ -128,9 +128,61 @@ jobs:
           echo "clang_version=${{ env.CLANG_VERSION }}" >> $GITHUB_OUTPUT
           echo "rebuild_flag=${{ env.REBUILD_FLAG }}" >> $GITHUB_OUTPUT
 
+  repack:
+    # WSL >= 2.7.1 rejects kernelModules vhdx without proper NTFS ACL (issue #153).
+    # Apply the required ACL on a Windows runner and repack with `rar -ow` so the
+    # security descriptor is preserved through the archive.
+    runs-on: windows-latest
+    needs: build
+    if: ${{ needs.build.outputs.rebuild_flag }}
+
+    strategy:
+      matrix:
+        image-name: [bzImage-x64v2, bzImage-x64v3, bzImage-skylake, bzImage-zen3]
+
+    steps:
+      - uses: actions/download-artifact@main
+        with:
+          name: ${{ matrix.image-name }}-raw
+          path: .
+
+      - name: Extract addons vhdx from 7z transit archive
+        shell: pwsh
+        run: |
+          $sevenZip = "C:\Program Files\7-Zip\7z.exe"
+          & $sevenZip x "${{ matrix.image-name }}-addons.vhdx.7z" -y
+          Remove-Item "${{ matrix.image-name }}-addons.vhdx.7z"
+
+      - name: Apply NTFS ACL to addons vhdx
+        shell: pwsh
+        run: |
+          $vhdx = "${{ matrix.image-name }}-addons.vhdx"
+          icacls $vhdx /inheritance:r `
+            /grant:r "*S-1-5-18:(F)" "*S-1-5-32-544:(F)" `
+                     "*S-1-5-32-545:(RX)" `
+                     "*S-1-15-2-1:(RX)" "*S-1-15-2-2:(RX)"
+          icacls $vhdx
+
+      - name: Install WinRAR
+        run: choco install winrar -y --no-progress
+
+      - name: Repack vhdx with rar (preserve NTFS security descriptor)
+        shell: pwsh
+        run: |
+          $rar = "C:\Program Files\WinRAR\Rar.exe"
+          & $rar a -ow -m5 -ep "${{ matrix.image-name }}-addons.vhdx.rar" "${{ matrix.image-name }}-addons.vhdx"
+
+      - name: Upload final artifacts
+        uses: actions/upload-artifact@main
+        with:
+          name: ${{ matrix.image-name }}
+          path: |
+            ${{ matrix.image-name }}
+            ${{ matrix.image-name }}-addons.vhdx.rar
+
   release:
     runs-on: ubuntu-latest
-    needs: build
+    needs: [build, repack]
     permissions:
       contents: write
 
