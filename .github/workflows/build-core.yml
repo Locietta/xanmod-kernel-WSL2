@@ -175,7 +175,7 @@ jobs:
       - name: Upload final artifacts
         uses: actions/upload-artifact@main
         with:
-          name: ${{ matrix.image-name }}
+          name: kernel-release-${{ matrix.image-name }}
           path: |
             ${{ matrix.image-name }}
             ${{ matrix.image-name }}-addons.vhdx.rar
@@ -193,6 +193,9 @@ jobs:
       - uses: actions/checkout@main
       - uses: actions/download-artifact@main
         with:
+          # Only pull the final repacked artifacts (bzImage + .vhdx.rar);
+          # skip the *-raw transit artifacts that still contain .vhdx.7z.
+          pattern: kernel-release-*
           path: release_images/
           merge-multiple: true
 
