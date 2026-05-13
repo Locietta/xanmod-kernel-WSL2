@@ -1,0 +1,61 @@
+From: Hyunwoo Kim <imv4bel@gmail.com>
+Date: Wed, 13 May 2026 20:25:45 +0900
+Subject: [PATCH net] net: skbuff: propagate shared-frag marker through pskb_copy()
+Message-ID: <agRfuVOeMI5pbHhY@v4bel>
+
+__pskb_copy_fclone() shallow-copies the source's frag descriptors and
+bumps each page's refcount via skb_frag_ref(), then defers the rest
+of the shinfo metadata to skb_copy_header().  That helper only carries
+over gso_{size,segs,type} and never touches skb_shinfo()->flags, so
+the destination skb keeps a reference to the same externally-owned or
+page-cache-backed pages while reporting skb_has_shared_frag() as
+false.
+
+The mismatch is harmful in any in-place writer that uses
+skb_has_shared_frag() to decide whether shared pages must be detoured
+through skb_cow_data().  ESP input is one such writer (esp4.c,
+esp6.c), and a single nft 'dup to <local>' rule -- or any other
+nf_dup_ipv4() / xt_TEE caller -- is enough to land a pskb_copy()'d
+skb in esp_input() with the marker stripped, letting an unprivileged
+user write into the page cache of a root-owned read-only file via
+authencesn-ESN stray writes.
+
+Set SKBFL_SHARED_FRAG on the destination whenever frag descriptors
+were actually moved from the source.  skb_copy() and skb_copy_expand()
+share skb_copy_header() too but linearize all paged data into freshly
+allocated head storage and emerge with nr_frags == 0, so
+skb_has_shared_frag() returns false on its own; they need no change.
+
+Fixes: cef401de7be8 ("net: fix possible wrong checksum generation")
+Fixes: f4c50a4034e6 ("xfrm: esp: avoid in-place decrypt on shared skb frags")
+Reported-by: William Bowling <vakzz@zellic.io>
+Reported-by: Hyunwoo Kim <imv4bel@gmail.com>
+Cc: stable@vger.kernel.org
+Signed-off-by: Hyunwoo Kim <imv4bel@gmail.com>
+---
+ net/core/skbuff.c | 3 +++
+ 1 file changed, 3 insertions(+)
+
+diff --git a/net/core/skbuff.c b/net/core/skbuff.c
+index 7dad68e3b518..15bdec53e8d9 100644
+--- a/net/core/skbuff.c
++++ b/net/core/skbuff.c
+@@ -2248,6 +2248,7 @@ struct sk_buff *__pskb_copy_fclone(struct sk_buff *skb, int headroom,
+ 			skb_frag_ref(skb, i);
+ 		}
+ 		skb_shinfo(n)->nr_frags = i;
++		skb_shinfo(n)->flags |= skb_shinfo(skb)->flags & SKBFL_SHARED_FRAG;
+ 	}
+ 
+ 	if (skb_has_frag_list(skb)) {
+@@ -6200,6 +6201,8 @@ bool skb_try_coalesce(struct sk_buff *to, struct sk_buff *from,
+ 	       from_shinfo->frags,
+ 	       from_shinfo->nr_frags * sizeof(skb_frag_t));
+ 	to_shinfo->nr_frags += from_shinfo->nr_frags;
++	if (from_shinfo->nr_frags)
++		to_shinfo->flags |= from_shinfo->flags & SKBFL_SHARED_FRAG;
+ 
+ 	if (!skb_cloned(from))
+ 		from_shinfo->nr_frags = 0;
+-- 
+2.43.0
