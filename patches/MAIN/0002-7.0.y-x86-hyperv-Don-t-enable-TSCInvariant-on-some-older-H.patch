@@ -1,8 +1,8 @@
-From baf11e37da9ae776f5d3421ad23bef02a02dca8c Mon Sep 17 00:00:00 2001
+From 67a55cd7cf622a9526916344a5301bd40889000f Mon Sep 17 00:00:00 2001
 From: Michael Kelley <mhklinux@outlook.com>
 Date: Thu, 6 Feb 2025 10:55:59 -0800
-Subject: [PATCH] =?UTF-8?q?x86/hyperv:=20Don=E2=80=99t=20enable=20TSCInvar?=
- =?UTF-8?q?iant=20on=20some=20older=20Hyper-V=20hosts?=
+Subject: [PATCH] =?UTF-8?q?x86/hyperv:=20Don=E2=80=99t=20enable=20TS?=
+ =?UTF-8?q?CInvariant=20on=20some=20older=20Hyper-V=20hosts?=
 MIME-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 8bit
@@ -33,10 +33,10 @@ Signed-off-by: Mitchell Levy <levymitchell0@gmail.com>
  1 file changed, 14 insertions(+)
 
 diff --git a/arch/x86/kernel/cpu/mshyperv.c b/arch/x86/kernel/cpu/mshyperv.c
-index 9befdc557d9e..a31ed575e94e 100644
+index b5b6a58b67b0..f7de0af610f2 100644
 --- a/arch/x86/kernel/cpu/mshyperv.c
 +++ b/arch/x86/kernel/cpu/mshyperv.c
-@@ -503,6 +503,8 @@ static void hv_reserve_irq_vectors(void)
+@@ -516,6 +516,8 @@ static void hv_reserve_irq_vectors(void)
  
  static void __init ms_hyperv_init_platform(void)
  {
@@ -45,7 +45,7 @@ index 9befdc557d9e..a31ed575e94e 100644
  	int hv_max_functions_eax, eax;
  
  #ifdef CONFIG_PARAVIRT
-@@ -531,6 +533,18 @@ static void __init ms_hyperv_init_platform(void)
+@@ -544,6 +546,18 @@ static void __init ms_hyperv_init_platform(void)
  	pr_debug("Hyper-V: max %u virtual processors, %u logical processors\n",
  		 ms_hyperv.max_vp_index, ms_hyperv.max_lp_index);
  
