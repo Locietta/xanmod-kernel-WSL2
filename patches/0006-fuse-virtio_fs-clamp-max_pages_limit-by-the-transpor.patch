@@ -1,0 +1,51 @@
+From: Ben Hillis <benhill@microsoft.com>
+Date: Tue, 9 Jun 2026 10:24:26 -0700
+Subject: [PATCH] fuse: virtio_fs: clamp max_pages_limit by the transport DMA
+ mapping size
+
+virtio-fs negotiates max_pages (and therefore max_write) without regard
+for the maximum size of a single DMA mapping the transport can perform.
+When the device sits behind a bouncing DMA layer -- e.g. swiotlb=force,
+which WSL enables whenever a virtio-fs device is present -- the effective
+per-mapping limit is IO_TLB_SEGSIZE * IO_TLB_SIZE = 256 KiB. Combined
+with the FUSE default of 256 pages (1 MiB max_write), the guest builds
+read/readdir/write requests whose buffers cannot be DMA-mapped, which
+fails with -EIO and wedges the request virtqueue.
+
+virtio-blk already avoids this class of bug by clamping its transfer
+size with virtio_max_dma_size(). Do the same here: lower the
+connection's max_pages_limit to the transport's per-mapping DMA limit,
+right next to the existing virtqueue-size clamp. process_init_reply()
+then caps the negotiated max_pages (and transitively max_write) to a
+value the guest can always map. When no DMA limit applies,
+virtio_max_dma_size() returns SIZE_MAX and the clamp is a no-op.
+
+Signed-off-by: Ben Hillis <benhill@microsoft.com>
+Co-authored-by: Copilot <223556219+Copilot@users.noreply.github.com>
+---
+ fs/fuse/virtio_fs.c | 9 +++++++++
+ 1 file changed, 9 insertions(+)
+
+diff --git a/fs/fuse/virtio_fs.c b/fs/fuse/virtio_fs.c
+index b2f6486fe1d5..554f1e5dd763 100644
+--- a/fs/fuse/virtio_fs.c
++++ b/fs/fuse/virtio_fs.c
+@@ -1703,6 +1703,15 @@ static int virtio_fs_get_tree(struct fs_context *fsc)
+ 	fc->max_pages_limit = min_t(unsigned int, fc->max_pages_limit,
+ 				    virtqueue_size - FUSE_HEADER_OVERHEAD);
+ 
++	/*
++	 * Also bound requests by the transport's maximum single DMA mapping
++	 * size (e.g. swiotlb's 256 KiB cap) so the guest never builds a
++	 * request whose buffer cannot be DMA-mapped.
++	 */
++	fc->max_pages_limit = min_t(unsigned int, fc->max_pages_limit,
++				    virtio_max_dma_size(fs->vqs[VQ_REQUEST].vq->vdev)
++					>> PAGE_SHIFT);
++
+ 	fsc->s_fs_info = fm;
+ 	sb = sget_fc(fsc, virtio_fs_test_super, set_anon_super_fc);
+ 	if (fsc->s_fs_info)
+-- 
+2.54.0
+
