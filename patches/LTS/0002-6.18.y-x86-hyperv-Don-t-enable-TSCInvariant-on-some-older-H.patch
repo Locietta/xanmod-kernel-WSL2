@@ -1,4 +1,4 @@
-From 894b67ff9e9312e2d78a00f83ba24e4192337c66 Mon Sep 17 00:00:00 2001
+From 01e078d95b9053265e6f434a0fd9e5b5e000a2dd Mon Sep 17 00:00:00 2001
 From: Michael Kelley <mhklinux@outlook.com>
 Date: Thu, 6 Feb 2025 10:55:59 -0800
 Subject: [PATCH] =?UTF-8?q?x86/hyperv:=20Don=E2=80=99t=20enable=20TSCInvar?=
@@ -26,17 +26,17 @@ Closes: https://github.com/microsoft/wsl/issues/6982
 
 Signed-off-by: Michael Kelley <mhklinux@outlook.com>
 Signed-off-by: Mitchell Levy <levymitchell0@gmail.com>
-[Nevuly: Forward port to 6.15]
-Signed-off-by: Yang Jeong Hun <onyxclover9931@gmail.com>
+[ mitchelllevy: Forward port to 6.17 ]
+Signed-off-by: Mitchell Levy <levymitchell0@gmail.com>
 ---
  arch/x86/kernel/cpu/mshyperv.c | 14 ++++++++++++++
  1 file changed, 14 insertions(+)
 
 diff --git a/arch/x86/kernel/cpu/mshyperv.c b/arch/x86/kernel/cpu/mshyperv.c
-index 3e2533954675..d71a2cc11d95 100644
+index c4febdbcfe4d..20c54f36b475 100644
 --- a/arch/x86/kernel/cpu/mshyperv.c
 +++ b/arch/x86/kernel/cpu/mshyperv.c
-@@ -433,6 +433,8 @@ EXPORT_SYMBOL_GPL(hv_get_hypervisor_version);
+@@ -440,6 +440,8 @@ EXPORT_SYMBOL_GPL(hv_get_hypervisor_version);
  
  static void __init ms_hyperv_init_platform(void)
  {
@@ -45,7 +45,7 @@ index 3e2533954675..d71a2cc11d95 100644
  	int hv_max_functions_eax;
  
  #ifdef CONFIG_PARAVIRT
-@@ -461,6 +463,18 @@ static void __init ms_hyperv_init_platform(void)
+@@ -468,6 +470,18 @@ static void __init ms_hyperv_init_platform(void)
  	pr_debug("Hyper-V: max %u virtual processors, %u logical processors\n",
  		 ms_hyperv.max_vp_index, ms_hyperv.max_lp_index);
  
@@ -65,5 +65,5 @@ index 3e2533954675..d71a2cc11d95 100644
  
  	if (ms_hyperv.hints & HV_X64_HYPERV_NESTED) {
 -- 
-2.49.0
+2.54.0
 
