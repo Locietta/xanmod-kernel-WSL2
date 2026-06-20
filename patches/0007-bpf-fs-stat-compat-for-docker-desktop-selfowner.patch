@@ -1,0 +1,54 @@
+From: Locietta <loia@users.noreply.github.com>
+Date: Sat, 20 Jun 2026 22:40:00 +0800
+Subject: [PATCH] bpf,fs: keep Docker Desktop selfowner fexit targets usable
+
+Docker Desktop 4.78 ships a selfowner eBPF object that attaches fexit
+programs to cp_new_stat() and cp_statx(). On this kernel, cp_new_stat()
+can disappear as a distinct BTF/ftrace attach target, causing the load to
+fail with:
+
+  fexit cp_new_stat not supported
+
+Keep cp_new_stat() materialized for tracing.
+
+After that, the same object can be rejected by the verifier when walking
+task->cred->user_ns. task_struct::cred and real_cred are RCU-protected
+credential pointers that are expected to be present for a live task, so
+add them to the same RCU-trusted task_struct field allowlist as cgroups,
+real_parent, and group_leader. This preserves the generic verifier rule
+against pointer arithmetic on nullable RCU pointers while allowing this
+well-known task credential walk.
+---
+ fs/stat.c             | 2 +-
+ kernel/bpf/verifier.c | 2 ++
+ 2 files changed, 3 insertions(+), 1 deletion(-)
+
+diff --git a/fs/stat.c b/fs/stat.c
+index 89909746b..ddcadec22 100644
+--- a/fs/stat.c
++++ b/fs/stat.c
+@@ -463,7 +463,7 @@ SYSCALL_DEFINE2(fstat, unsigned int, fd, struct __old_kernel_stat __user *, stat
+ #  define INIT_STRUCT_STAT_PADDING(st) memset(&st, 0, sizeof(st))
+ #endif
+ 
+-static int cp_new_stat(struct kstat *stat, struct stat __user *statbuf)
++static noinline_for_tracing int cp_new_stat(struct kstat *stat, struct stat __user *statbuf)
+ {
+ 	struct stat tmp;
+ 
+diff --git a/kernel/bpf/verifier.c b/kernel/bpf/verifier.c
+index 77ddd452b..5e1aa1ef6 100644
+--- a/kernel/bpf/verifier.c
++++ b/kernel/bpf/verifier.c
+@@ -7279,6 +7279,8 @@ BTF_TYPE_SAFE_RCU(struct task_struct) {
+ 	struct css_set __rcu *cgroups;
+ 	struct task_struct __rcu *real_parent;
+ 	struct task_struct *group_leader;
++	const struct cred __rcu *real_cred;
++	const struct cred __rcu *cred;
+ };
+ 
+ BTF_TYPE_SAFE_RCU(struct cgroup) {
+-- 
+2.54.0
+
