@@ -85,6 +85,15 @@ kernelModules = the\\path\\to\\bzImage-addons.vhdx ; optional
 
 - Reboot your WSL2 to check your new kernel and enjoy!
 
+When the addon VHDX is configured, WSL exposes the packaged artifacts below
+`/lib/modules/$(uname -r)`:
+
+- `build/` is the prepared kbuild tree for compiling external kernel modules.
+- `build/usr/include/` contains the sanitized userspace API headers exported by
+  `make headers_install`.
+- `build/Documentation/` contains the documentation from the matching kernel
+  sources.
+
 ## Troubleshooting
 
 ### Changes not applied after installation or update?
