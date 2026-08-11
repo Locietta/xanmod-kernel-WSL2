@@ -47,89 +47,79 @@ done
 IMAGE_NAME=${IMAGE_NAME:-bzImage-x64v3}
 
 # Get Kernel Version
-KERNEL_VERSION=$(make -s kernelrelease)
+KERNEL_VERSION=$(make -s LLVM=1 LLVM_IAS=1 kernelrelease)
 
-# Generate Kernel Modules
-mkdir -p $IMAGE_NAME-addons
-make INSTALL_MOD_PATH=$IMAGE_NAME-addons INSTALL_MOD_STRIP=1 modules_install
+# Use isolated staging so repeated builds cannot mix artifacts from different
+# kernel versions.
+ADDONS_BUILD_DIR=$(mktemp -d -p "$PWD" ".${IMAGE_NAME}-addons.XXXXXX")
+trap 'rm -rf "$ADDONS_BUILD_DIR"' EXIT
+MODULES_INSTALL_DIR="$ADDONS_BUILD_DIR/modules"
+MODULES_DIR="$MODULES_INSTALL_DIR/lib/modules/$KERNEL_VERSION"
+HEADERS_DIR="$MODULES_DIR/build"
 
-rm -f "$IMAGE_NAME-addons/lib/modules/$KERNEL_VERSION/build"
+# Generate kernel modules and replace build-time links with a self-contained
+# external-module build tree. This helper is shared by the kernel's native
+# package targets and tracks kbuild's required files as they evolve.
+make LLVM=1 LLVM_IAS=1 \
+    INSTALL_MOD_PATH="$MODULES_INSTALL_DIR" \
+    INSTALL_MOD_STRIP=1 \
+    modules_install
+rm -f "$MODULES_DIR/build" "$MODULES_DIR/source"
+make LLVM=1 LLVM_IAS=1 run-command \
+    KBUILD_RUN_COMMAND='${srctree}/scripts/package/install-extmod-build "'"$HEADERS_DIR"'"'
 
-# Create a directory for kernel headers inside the VHDX
-HEADERS_DIR="$IMAGE_NAME-addons/lib/modules/$KERNEL_VERSION/build"
-mkdir -p "$HEADERS_DIR"
+# Keep the exported userspace API separate from kbuild's internal headers.
+# Consumers can opt in to this kernel-specific UAPI without replacing their
+# distribution's libc headers.
+make LLVM=1 LLVM_IAS=1 INSTALL_HDR_PATH="$HEADERS_DIR/usr" headers_install
 
-# Install kernel headers
-make INSTALL_HDR_PATH="$HEADERS_DIR/usr" headers_install
+# Ship the documentation for the exact kernel sources used by this build.
+cp -a Documentation "$HEADERS_DIR/"
+install -m 644 README COPYING System.map "$HEADERS_DIR/"
+cp .config "$HEADERS_DIR/Documentation/config-$KERNEL_VERSION"
 
-# Copy essential build files
-cp .config Module.symvers System.map Makefile "$HEADERS_DIR/"
+# Validate all three advertised addon interfaces before creating the VHDX.
+test -f "$HEADERS_DIR/Module.symvers"
+test -f "$HEADERS_DIR/usr/include/linux/version.h"
+test -f "$HEADERS_DIR/Documentation/index.rst"
 
-cp -r scripts "$HEADERS_DIR/"
-cp -r include "$HEADERS_DIR/"
+SMOKE_TEST_DIR="$ADDONS_BUILD_DIR/external-module-smoke-test"
+mkdir -p "$SMOKE_TEST_DIR"
+cat >"$SMOKE_TEST_DIR/Makefile" <<'EOF'
+obj-m := wsl_addon_smoke.o
+EOF
+cat >"$SMOKE_TEST_DIR/wsl_addon_smoke.c" <<'EOF'
+#include <linux/init.h>
+#include <linux/module.h>
 
-mkdir -p "$HEADERS_DIR/arch/x86"
-cp -r arch/x86/include "$HEADERS_DIR/arch/x86/"
-cp arch/x86/Makefile* "$HEADERS_DIR/arch/x86/" 2>/dev/null || true
+static int __init wsl_addon_smoke_init(void)
+{
+    return 0;
+}
 
-# Copy module.lds if it exists (needed for module linking)
-if [ -f arch/x86/kernel/module.lds ]; then
-    mkdir -p "$HEADERS_DIR/arch/x86/kernel"
-    cp arch/x86/kernel/module.lds "$HEADERS_DIR/arch/x86/kernel/"
-fi
+static void __exit wsl_addon_smoke_exit(void)
+{
+}
 
-# Copy all Kconfig and Makefile files (needed for kbuild)
-find . -name "Kconfig*" -o -name "Makefile*" | while read file; do
-    target_dir="$HEADERS_DIR/$(dirname $file)"
-    mkdir -p "$target_dir"
-    cp "$file" "$target_dir/"
-done
+module_init(wsl_addon_smoke_init);
+module_exit(wsl_addon_smoke_exit);
+MODULE_DESCRIPTION("WSL addon header smoke test");
+MODULE_LICENSE("GPL");
+EOF
+make -s -C "$HEADERS_DIR" LLVM=1 LLVM_IAS=1 M="$SMOKE_TEST_DIR" modules
+test -f "$SMOKE_TEST_DIR/wsl_addon_smoke.ko"
 
-# Copy tools directory (some modules may need it)
-if [ -d tools/objtool ]; then
-    mkdir -p "$HEADERS_DIR/tools"
-    cp -r tools/objtool "$HEADERS_DIR/tools/"
-    cp -r tools/bpf/resolve_btfids "$HEADERS_DIR/tools/bpf/resolve_btfids"
-fi
+cat >"$SMOKE_TEST_DIR/uapi-smoke.c" <<'EOF'
+#include <linux/version.h>
 
-# Copy security and other kernel directories that may be referenced
-for dir in security fs net kernel; do
-    if [ -d "$dir" ]; then
-        mkdir -p "$HEADERS_DIR/$dir"
-        find "$dir" -name "*.h" -exec cp --parents {} "$HEADERS_DIR/" \;
-    fi
-done
-
-# Copy compiler version info
-if [ -f include/generated/compile.h ]; then
-    mkdir -p "$HEADERS_DIR/include/generated"
-    cp include/generated/compile.h "$HEADERS_DIR/include/generated/"
-fi
-
-# Copy auto-generated files
-if [ -d include/config ]; then
-    mkdir -p "$HEADERS_DIR/include"
-    cp -r include/config "$HEADERS_DIR/include/"
-fi
-if [ -d include/generated ]; then
-    mkdir -p "$HEADERS_DIR/include"
-    cp -r include/generated "$HEADERS_DIR/include/"
-fi
-
-# Copy arch-specific generated files
-if [ -d arch/x86/include/generated ]; then
-    mkdir -p "$HEADERS_DIR/arch/x86/include"
-    cp -r arch/x86/include/generated "$HEADERS_DIR/arch/x86/include/"
-fi
-
-# Copy documentation
-DOC_DIR="$HEADERS_DIR/Documentation"
-mkdir -p "$DOC_DIR"
-cp .config "$DOC_DIR/config-$KERNEL_VERSION"
-cp README COPYING "$DOC_DIR/" 2>/dev/null || true
+int uapi_version = LINUX_VERSION_CODE;
+EOF
+clang -nostdinc -I"$HEADERS_DIR/usr/include" \
+    -c "$SMOKE_TEST_DIR/uapi-smoke.c" \
+    -o "$SMOKE_TEST_DIR/uapi-smoke.o"
 
 # Create VHDX for Kernel Modules
-sudo ../scripts/gen_modules_vhdx.sh "$IMAGE_NAME-addons" "$KERNEL_VERSION" "${IMAGE_NAME}-addons.vhdx"
+../scripts/gen_modules_vhdx.sh "$MODULES_INSTALL_DIR" "$KERNEL_VERSION" "${IMAGE_NAME}-addons.vhdx"
 
 # Compress the addon VHDX to reduce release and install size.
 7z a -mx=9 "${IMAGE_NAME}-addons.vhdx.7z" "${IMAGE_NAME}-addons.vhdx" >/dev/null
