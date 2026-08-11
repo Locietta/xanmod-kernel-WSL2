@@ -33,7 +33,7 @@ Signed-off-by: Mitchell Levy <levymitchell0@gmail.com>
  1 file changed, 14 insertions(+)
 
 diff --git a/arch/x86/kernel/cpu/mshyperv.c b/arch/x86/kernel/cpu/mshyperv.c
-index c4febdbcfe4d..20c54f36b475 100644
+index cae0dcd9006b..42b018ce2ed6 100644
 --- a/arch/x86/kernel/cpu/mshyperv.c
 +++ b/arch/x86/kernel/cpu/mshyperv.c
 @@ -440,6 +440,8 @@ EXPORT_SYMBOL_GPL(hv_get_hypervisor_version);
@@ -42,7 +42,7 @@ index c4febdbcfe4d..20c54f36b475 100644
  {
 +	union hv_hypervisor_version_info version;
 +	unsigned int build = 0;
- 	int hv_max_functions_eax;
+ 	int hv_max_functions_eax, eax;
  
  #ifdef CONFIG_PARAVIRT
 @@ -468,6 +470,18 @@ static void __init ms_hyperv_init_platform(void)
@@ -66,4 +66,3 @@ index c4febdbcfe4d..20c54f36b475 100644
  	if (ms_hyperv.hints & HV_X64_HYPERV_NESTED) {
 -- 
 2.54.0
-
