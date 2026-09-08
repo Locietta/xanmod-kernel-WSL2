@@ -18,7 +18,6 @@ jobs:
     runs-on: ubuntu-latest
     container:
       image: cachyos/cachyos-v3:latest
-      options: --privileged
     outputs:
       current_version: ${{ steps.out.outputs.current_version }}
       release_version: ${{ steps.out.outputs.release_version }}
