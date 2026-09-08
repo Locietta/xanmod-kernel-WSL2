@@ -34,6 +34,8 @@ scoop install xanmod-WSL2-addons
 wsl --shutdown
 ```
 
+**That's it!** Scoop automatically configures everything for you.
+
 <details>
 <summary>Expand all other builds</summary>
 
@@ -50,8 +52,6 @@ wsl --shutdown
 ```
 
 </details>
-
-**That's it!** Scoop automatically configures everything for you.
 
 #### Update kernel
 
@@ -109,21 +109,6 @@ wsl --list --running  # Should show "no running distributions"
 
 Modules VHDX support is only available with WSL version **2.5.1** or later. Try running `wsl --version` to check your WSL version and use `wsl --update` to update WSL if needed.
 
-### WSL fails to boot with `E_ACCESSDENIED` after configuring `kernelModules`?
-
-If WSL fails to start with `Wsl/Service/CreateInstance/CreateVm/HCS/E_ACCESSDENIED`, your `kernelModules` vhdx is missing NTFS ACL entries that WSL **2.7.1+** requires (see [#153](https://github.com/Locietta/xanmod-kernel-WSL2/issues/153)). This commonly happens when the vhdx lives under your user profile (e.g. `C:\Users\<you>\...`), where the default DACL doesn't grant access to the AppContainer principals WSL uses.
-
-Scoop handles this automatically. For **manual installation**, after extracting the vhdx run the following PowerShell command to grant the necessary permissions:
-
-```powershell
-icacls "path\to\bzImage-addons.vhdx" /grant `
-    "*S-1-5-32-545:(RX)" `
-    "*S-1-15-2-1:(RX)" `
-    "*S-1-15-2-2:(RX)"
-```
-
-This grants `BUILTIN\Users`, `ALL APPLICATION PACKAGES`, and `ALL RESTRICTED APPLICATION PACKAGES` read-and-execute on the vhdx.
-
 ### Can't find `.wslconfig` file?
 
 It doesn't exist by default. Just create it manually in your user profile folder (e.g. `C:\Users\YourName\.wslconfig`).
@@ -151,6 +136,6 @@ You can also get a [checking script](https://dl.xanmod.org/check_x86-64_psabi.sh
 
 We welcome contributions! You can:
 
-* 🐛 Report bugs by opening an [issue](https://github.com/Locietta/xanmod-kernel-WSL2/issues/new?template=bug_report.yml)
-* 💡 Suggest features via [issues](https://github.com/Locietta/xanmod-kernel-WSL2/issues/new?template=feature-request.yml)
-* 🔧 Submit improvements through [pull requests](https://github.com/Locietta/xanmod-kernel-WSL2/pulls)
+- 🐛 Report bugs by opening an [issue](https://github.com/Locietta/xanmod-kernel-WSL2/issues/new?template=bug_report.yml)
+- 💡 Suggest features via [issues](https://github.com/Locietta/xanmod-kernel-WSL2/issues/new?template=feature-request.yml)
+- 🔧 Submit improvements through [pull requests](https://github.com/Locietta/xanmod-kernel-WSL2/pulls)
