@@ -1,0 +1,33 @@
+From 19d79786d4a114edc921797b2f996205d6b1fda8 Mon Sep 17 00:00:00 2001
+From: Yang Jeong Hun <onyxclover9931@gmail.com>
+Date: Tue, 15 Sep 2026 10:32:12 +0900
+Subject: [PATCH] swiotlb: Fix "Add dedicated swiotlb pool for Hyper-V VPCI
+ devices"
+
+ * In c1f4d7763cdf1b9e0d35c14aa6f52d0512a36319, swiotlb_init_io_tlb_pool() function has been modified
+   to pass the virtual address returned from the allocation path.
+ * Since the swiotlb_create_pool() function takes a physical address as an argument via phys_addr_t,
+   it is modified to pass the returned virtual address using phys_to_virt().
+ * This fixes commit 2a8abbcce79a42102d5d86d4ebc5b0bbcd2c918a.
+
+Signed-off-by: Yang Jeong Hun <onyxclover9931@gmail.com>
+---
+ kernel/dma/swiotlb.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/kernel/dma/swiotlb.c b/kernel/dma/swiotlb.c
+index 432bbbae9ea5..6f5d4617be42 100644
+--- a/kernel/dma/swiotlb.c
++++ b/kernel/dma/swiotlb.c
+@@ -1955,7 +1955,7 @@ struct io_tlb_mem *swiotlb_create_pool(phys_addr_t base, size_t size,
+ 
+ 	set_memory_decrypted((unsigned long)phys_to_virt(base),
+ 			     size >> PAGE_SHIFT);
+-	swiotlb_init_io_tlb_pool(pool, base, nslabs, false, nareas);
++	swiotlb_init_io_tlb_pool(pool, base, phys_to_virt(base), nslabs, false, nareas);
+ 	mem->force_bounce = true;
+ 	mem->for_alloc = false;
+ #ifdef CONFIG_SWIOTLB_DYNAMIC
+-- 
+2.55.0
+
