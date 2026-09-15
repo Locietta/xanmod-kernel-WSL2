@@ -1,4 +1,4 @@
-From dea0611bf9f3f6971bc890f27e7b426fe8bdc84d Mon Sep 17 00:00:00 2001
+From 9270a90ce6ca1852f235aeb9ab555ff108e7eb72 Mon Sep 17 00:00:00 2001
 From: Sergio Lopez <slp@redhat.com>
 Date: Mon, 19 Jan 2026 00:24:11 +0100
 Subject: [PATCH] fuse: mark DAX inode releases as blocking
@@ -50,12 +50,12 @@ Reviewed-by: Darrick J. Wong <djwong@kernel.org>
  1 file changed, 6 insertions(+)
 
 diff --git a/fs/fuse/file.c b/fs/fuse/file.c
-index 3b2a171e652f..a65c5d32a34b 100644
+index ecb03dfef159..ce6de453ad4d 100644
 --- a/fs/fuse/file.c
 +++ b/fs/fuse/file.c
-@@ -117,6 +117,12 @@ static void fuse_file_put(struct fuse_file *ff, bool sync)
+@@ -116,6 +116,12 @@ static void fuse_file_put(struct fuse_file *ff, bool sync)
  			fuse_simple_request(ff->fm, args);
- 			fuse_release_end(ff->fm, args, 0);
+ 			fuse_release_end(args, 0);
  		} else {
 +			/*
 +			 * DAX inodes may need to issue a number of synchronous
@@ -67,5 +67,5 @@ index 3b2a171e652f..a65c5d32a34b 100644
  			if (fuse_simple_background(ff->fm, args,
  						   GFP_KERNEL | __GFP_NOFAIL))
 -- 
-2.53.0
+2.55.0
 
