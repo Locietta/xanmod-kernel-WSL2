@@ -1,0 +1,46 @@
+From: Locietta <loia@users.noreply.github.com>
+Date: Wed, 30 Sep 2026 21:45:00 +0800
+Subject: [PATCH] kbuild: btf: don't emit BTF layout section for Docker Desktop
+
+Since Linux 7.1, pahole >= 1.31 is asked to encode the BTF layout
+section. Its offset and length are stored in the layout_off/layout_len
+fields appended to struct btf_header, which are then non-zero for
+vmlinux and module BTF.
+
+Docker Desktop (seen on 4.80 and 4.93) embeds a cilium/ebpf older than
+v0.22, which treats header bytes past the 24 it knows about as padding
+that must be zero. Loading its oom tracer and mutagen selfowner objects
+then fails with:
+
+  parsing .BTF header: header padding: encountered non-zero byte
+
+and Docker Desktop refuses to start.
+
+Stop requesting the layout section. pahole still writes the 32-byte
+header, but layout_off/layout_len stay zero, which older parsers accept.
+The section only helps tools parse BTF kinds they don't know about, so
+nothing in the WSL setup depends on it. Drop this once Docker ships
+cilium/ebpf v0.22 or newer.
+
+Link: https://github.com/Locietta/xanmod-kernel-WSL2/issues/174
+---
+ scripts/Makefile.btf | 4 +++-
+ 1 file changed, 3 insertions(+), 1 deletion(-)
+
+diff --git a/scripts/Makefile.btf b/scripts/Makefile.btf
+index e66e13e79..3de432d88 100644
+--- a/scripts/Makefile.btf
++++ b/scripts/Makefile.btf
+@@ -18,7 +18,9 @@ pahole-flags-$(call test-ge, $(pahole-ver), 126)  = -j$(JOBS) --btf_features=enc
+ 
+ pahole-flags-$(call test-ge, $(pahole-ver), 130) += --btf_features=attributes
+ 
+-pahole-flags-$(call test-ge, $(pahole-ver), 131) += --btf_features=layout
++# Docker Desktop's eBPF loaders (cilium/ebpf < v0.22) reject non-zero
++# layout fields in the BTF header, so don't emit the layout section.
++# pahole-flags-$(call test-ge, $(pahole-ver), 131) += --btf_features=layout
+ 
+ endif
+ 
+-- 
+2.55.0
