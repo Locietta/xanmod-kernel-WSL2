@@ -1,4 +1,4 @@
-From 75c3a97a3dff88f241fd3742356da20389514640 Mon Sep 17 00:00:00 2001
+From 0ac50413b3ee6227ff9a641b0e9668ecd035d9db Mon Sep 17 00:00:00 2001
 From: Asher Kariv <askariv@microsoft.com>
 Date: Thu, 30 Apr 2026 15:59:50 -0700
 Subject: [PATCH 1/2] swiotlb, hyperv: add dedicated swiotlb pool for Hyper-V
@@ -28,29 +28,25 @@ This reserves 64MB at the 4GB mark and directs the Hyper-V PCI driver
 to create a swiotlb pool there.  All VPCI devices will then bounce
 their streaming DMA through that region.  Coherent DMA allocations
 (dma_alloc_coherent) are not affected and continue to use normal memory.
+
+[ Forward port to 6.18.52 ]
+Signed-off-by: Mitchell Levy <levymitchell0@gmail.com>
 ---
- drivers/pci/controller/pci-hyperv.c | 50 ++++++++++++++++++++++
+ drivers/pci/controller/pci-hyperv.c | 51 ++++++++++++++++++++++
  include/linux/swiotlb.h             |  2 +
- kernel/dma/swiotlb.c                | 66 ++++++++++++++++++++++++++++-
- 3 files changed, 117 insertions(+), 1 deletion(-)
+ kernel/dma/swiotlb.c                | 65 +++++++++++++++++++++++++++++
+ 3 files changed, 118 insertions(+)
 
 diff --git a/drivers/pci/controller/pci-hyperv.c b/drivers/pci/controller/pci-hyperv.c
-index cfc8fa403..2a1fdccc3 100644
+index fff5df771d5b..f519182cb89c 100644
 --- a/drivers/pci/controller/pci-hyperv.c
 +++ b/drivers/pci/controller/pci-hyperv.c
-@@ -45,6 +45,7 @@
- #include <linux/semaphore.h>
- #include <linux/irq.h>
- #include <linux/irqchip/irq-msi-lib.h>
-+#include <linux/memblock.h>
- #include <linux/msi.h>
- #include <linux/hyperv.h>
- #include <linux/refcount.h>
-@@ -52,6 +53,7 @@
+@@ -52,6 +52,8 @@
  #include <linux/acpi.h>
  #include <linux/sizes.h>
  #include <linux/of_irq.h>
 +#include <linux/swiotlb.h>
++#include <linux/memblock.h>
  #include <asm/mshyperv.h>
  
  /*
@@ -63,12 +59,12 @@ index cfc8fa403..2a1fdccc3 100644
 +
 +static int __init early_hv_pci_swiotlb(char *p)
 +{
-+	hv_pci_swiotlb_base = memparse(p, &p);
-+	if (*p == ',')
-+		hv_pci_swiotlb_size = memparse(p + 1, NULL);
-+	if (hv_pci_swiotlb_base && hv_pci_swiotlb_size)
-+		memblock_reserve(hv_pci_swiotlb_base, hv_pci_swiotlb_size);
-+	return 0;
++    hv_pci_swiotlb_base = memparse(p, &p);
++    if (*p == ',')
++        hv_pci_swiotlb_size = memparse(p + 1, NULL);
++    if (hv_pci_swiotlb_base && hv_pci_swiotlb_size)
++        memblock_reserve(hv_pci_swiotlb_base, hv_pci_swiotlb_size);
++    return 0;
 +}
 +early_param("hv_pci_swiotlb", early_hv_pci_swiotlb);
 +
@@ -77,7 +73,7 @@ index cfc8fa403..2a1fdccc3 100644
  /*
   * Driver specific state.
   */
-@@ -2509,6 +2527,25 @@ static void hv_pci_assign_numa_node(struct hv_pcibus_device *hbus)
+@@ -2511,6 +2529,25 @@ static void hv_pci_assign_numa_node(struct hv_pcibus_device *hbus)
  	}
  }
  
@@ -103,7 +99,7 @@ index cfc8fa403..2a1fdccc3 100644
  /**
   * create_root_hv_pci_bus() - Expose a new root PCI bus
   * @hbus:	Root PCI bus, as understood by this driver
-@@ -2532,6 +2569,7 @@ static int create_root_hv_pci_bus(struct hv_pcibus_device *hbus)
+@@ -2534,6 +2571,7 @@ static int create_root_hv_pci_bus(struct hv_pcibus_device *hbus)
  	hv_pci_assign_numa_node(hbus);
  	pci_bus_assign_resources(bridge->bus);
  	hv_pci_assign_slots(hbus);
@@ -111,7 +107,7 @@ index cfc8fa403..2a1fdccc3 100644
  	pci_bus_add_devices(bridge->bus);
  	pci_unlock_rescan_remove();
  	hbus->state = hv_pcibus_installed;
-@@ -2802,6 +2840,7 @@ static void pci_devices_present_work(struct work_struct *work)
+@@ -2804,6 +2842,7 @@ static void pci_devices_present_work(struct work_struct *work)
  		pci_scan_child_bus(hbus->bridge->bus);
  		hv_pci_assign_numa_node(hbus);
  		hv_pci_assign_slots(hbus);
@@ -119,12 +115,13 @@ index cfc8fa403..2a1fdccc3 100644
  		pci_unlock_rescan_remove();
  		break;
  
-@@ -4175,6 +4214,17 @@ static int __init init_hv_pci_drv(void)
- 	if (!hv_vmbus_exists())
+@@ -4222,6 +4261,18 @@ static int __init init_hv_pci_drv(void)
+ 	if (hv_root_partition() && !hv_nested)
  		return -ENODEV;
  
 +	if (hv_pci_swiotlb_base && hv_pci_swiotlb_size) {
 +		hv_pci_swiotlb_pool = swiotlb_create_pool(hv_pci_swiotlb_base,
++				                           phys_to_virt(hv_pci_swiotlb_base),
 +							   hv_pci_swiotlb_size,
 +							   "hv-pci-swiotlb");
 +		if (IS_ERR(hv_pci_swiotlb_pool)) {
@@ -138,46 +135,31 @@ index cfc8fa403..2a1fdccc3 100644
  	if (ret)
  		return ret;
 diff --git a/include/linux/swiotlb.h b/include/linux/swiotlb.h
-index 3dae0f592..b5aff198c 100644
+index 3dae0f592063..31508f6efd18 100644
 --- a/include/linux/swiotlb.h
 +++ b/include/linux/swiotlb.h
 @@ -185,6 +185,8 @@ bool is_swiotlb_active(struct device *dev);
  void __init swiotlb_adjust_size(unsigned long size);
  phys_addr_t default_swiotlb_base(void);
  phys_addr_t default_swiotlb_limit(void);
-+struct io_tlb_mem *swiotlb_create_pool(phys_addr_t base, size_t size,
-+				       const char *name);
++struct io_tlb_mem *swiotlb_create_pool(phys_addr_t base, void* vaddr,
++		                       size_t size, const char *name);
  #else
  static inline void swiotlb_init(bool addressing_limited, unsigned int flags)
  {
 diff --git a/kernel/dma/swiotlb.c b/kernel/dma/swiotlb.c
-index 1abd3e614..a22a119ae 100644
+index 4593064c2ada..e22ec724bf08 100644
 --- a/kernel/dma/swiotlb.c
 +++ b/kernel/dma/swiotlb.c
-@@ -39,6 +39,7 @@
- #include <linux/rculist.h>
- #include <linux/scatterlist.h>
- #include <linux/set_memory.h>
-+#include <linux/slab.h>
- #include <linux/spinlock.h>
- #include <linux/string.h>
- #include <linux/swiotlb.h>
-@@ -47,7 +48,6 @@
- #include <linux/of.h>
- #include <linux/of_fdt.h>
- #include <linux/of_reserved_mem.h>
--#include <linux/slab.h>
- #endif
+@@ -1905,3 +1905,68 @@ static int __init rmem_swiotlb_setup(struct reserved_mem *rmem)
  
- #define CREATE_TRACE_POINTS
-@@ -1899,3 +1899,67 @@ static const struct reserved_mem_ops rmem_swiotlb_ops = {
- 
- RESERVEDMEM_OF_DECLARE(dma, "restricted-dma-pool", &rmem_swiotlb_ops);
+ RESERVEDMEM_OF_DECLARE(dma, "restricted-dma-pool", rmem_swiotlb_setup);
  #endif /* CONFIG_DMA_RESTRICTED_POOL */
 +
 +/**
 + * swiotlb_create_pool() - create a swiotlb pool from a physical memory region
 + * @base:	Physical base address of the region.
++ * @vaddr:	Virtual base address of the region.
 + * @size:	Size of the region in bytes.
 + * @name:	Name for debugfs (may be NULL).
 + *
@@ -192,8 +174,8 @@ index 1abd3e614..a22a119ae 100644
 + *
 + * Return: pointer to a new io_tlb_mem on success, ERR_PTR on failure.
 + */
-+struct io_tlb_mem *swiotlb_create_pool(phys_addr_t base, size_t size,
-+				       const char *name)
++struct io_tlb_mem *swiotlb_create_pool(phys_addr_t base, void *vaddr,
++				       size_t size, const char *name)
 +{
 +	struct io_tlb_mem *mem;
 +	struct io_tlb_pool *pool;
@@ -203,18 +185,18 @@ index 1abd3e614..a22a119ae 100644
 +	if (PageHighMem(pfn_to_page(PHYS_PFN(base))))
 +		return ERR_PTR(-EINVAL);
 +
-+	mem = kzalloc_obj(*mem);
++	mem = kzalloc(sizeof(*mem), GFP_KERNEL);
 +	if (!mem)
 +		return ERR_PTR(-ENOMEM);
 +	pool = &mem->defpool;
 +
-+	pool->slots = kzalloc_objs(*pool->slots, nslabs);
++	pool->slots = kcalloc(nslabs, sizeof(*pool->slots), GFP_KERNEL);
 +	if (!pool->slots) {
 +		kfree(mem);
 +		return ERR_PTR(-ENOMEM);
 +	}
 +
-+	pool->areas = kzalloc_objs(*pool->areas, nareas);
++	pool->areas = kcalloc(nareas, sizeof(*pool->areas), GFP_KERNEL);
 +	if (!pool->areas) {
 +		kfree(pool->slots);
 +		kfree(mem);
@@ -223,7 +205,7 @@ index 1abd3e614..a22a119ae 100644
 +
 +	set_memory_decrypted((unsigned long)phys_to_virt(base),
 +			     size >> PAGE_SHIFT);
-+	swiotlb_init_io_tlb_pool(pool, base, nslabs, false, nareas);
++	swiotlb_init_io_tlb_pool(pool, base, vaddr, nslabs, false, nareas);
 +	mem->force_bounce = true;
 +	mem->for_alloc = false;
 +#ifdef CONFIG_SWIOTLB_DYNAMIC
@@ -239,10 +221,10 @@ index 1abd3e614..a22a119ae 100644
 +}
 +EXPORT_SYMBOL_GPL(swiotlb_create_pool);
 -- 
-2.55.0
+2.56.0
 
 
-From a21c6c7ea2a27d578be955c9647d7658c37dd492 Mon Sep 17 00:00:00 2001
+From bc0cc632e6aa84686cab28a7b1aa6550eeb18cfc Mon Sep 17 00:00:00 2001
 From: Ben Hillis <benhillis@microsoft.com>
 Date: Tue, 26 May 2026 13:27:18 -0700
 Subject: [PATCH 2/2] PCI: hv: Reserve hv_pci swiotlb from buddy and publish
@@ -274,30 +256,25 @@ swiotlb has no destroy_pool() counterpart, so the pages are leaked on
 driver unload; hv_pci is rarely hot-replaced and the pool is bounded.
 
 Signed-off-by: Ben Hillis <benhillis@microsoft.com>
+[ Forward port to 6.18.52 ]
+Signed-off-by: Mitchell Levy <levymitchell0@gmail.com>
 ---
- drivers/pci/controller/pci-hyperv.c | 164 +++++++++++++++++++++++++---
- 1 file changed, 146 insertions(+), 18 deletions(-)
+ drivers/pci/controller/pci-hyperv.c | 166 ++++++++++++++++++++++++----
+ 1 file changed, 146 insertions(+), 20 deletions(-)
 
 diff --git a/drivers/pci/controller/pci-hyperv.c b/drivers/pci/controller/pci-hyperv.c
-index 2a1fdccc3..cf51cbe92 100644
+index f519182cb89c..6bd695ace658 100644
 --- a/drivers/pci/controller/pci-hyperv.c
 +++ b/drivers/pci/controller/pci-hyperv.c
-@@ -42,11 +42,13 @@
- #include <linux/pci.h>
- #include <linux/pci-ecam.h>
- #include <linux/delay.h>
-+#include <linux/gfp.h>
- #include <linux/semaphore.h>
- #include <linux/irq.h>
- #include <linux/irqchip/irq-msi-lib.h>
+@@ -53,7 +53,6 @@
+ #include <linux/sizes.h>
+ #include <linux/of_irq.h>
+ #include <linux/swiotlb.h>
 -#include <linux/memblock.h>
-+#include <linux/mm.h>
- #include <linux/msi.h>
-+#include <linux/nodemask.h>
- #include <linux/hyperv.h>
- #include <linux/refcount.h>
- #include <linux/irqdomain.h>
-@@ -472,17 +474,37 @@ static int pci_ring_size = VMBUS_RING_SIZE(SZ_16K);
+ #include <asm/mshyperv.h>
+ 
+ /*
+@@ -472,17 +471,37 @@ static int pci_ring_size = VMBUS_RING_SIZE(SZ_16K);
  
  static phys_addr_t hv_pci_swiotlb_base;
  static size_t hv_pci_swiotlb_size;
@@ -312,11 +289,12 @@ index 2a1fdccc3..cf51cbe92 100644
 + */
  static int __init early_hv_pci_swiotlb(char *p)
  {
--	hv_pci_swiotlb_base = memparse(p, &p);
--	if (*p == ',')
--		hv_pci_swiotlb_size = memparse(p + 1, NULL);
--	if (hv_pci_swiotlb_base && hv_pci_swiotlb_size)
--		memblock_reserve(hv_pci_swiotlb_base, hv_pci_swiotlb_size);
+-    hv_pci_swiotlb_base = memparse(p, &p);
+-    if (*p == ',')
+-        hv_pci_swiotlb_size = memparse(p + 1, NULL);
+-    if (hv_pci_swiotlb_base && hv_pci_swiotlb_size)
+-        memblock_reserve(hv_pci_swiotlb_base, hv_pci_swiotlb_size);
+-    return 0;
 +	char *end;
 +
 +	if (!*p)
@@ -333,14 +311,14 @@ index 2a1fdccc3..cf51cbe92 100644
 +	if (hv_pci_swiotlb_size)
 +		hv_pci_swiotlb_size = ALIGN(hv_pci_swiotlb_size, SZ_2M);
 +
- 	return 0;
++	return 0;
  }
  early_param("hv_pci_swiotlb", early_hv_pci_swiotlb);
 +#endif /* !MODULE */
  
  static struct io_tlb_mem *hv_pci_swiotlb_pool;
  
-@@ -4195,10 +4217,52 @@ static struct hv_driver hv_pci_drv = {
+@@ -4242,10 +4261,52 @@ static struct hv_driver hv_pci_drv = {
  	.resume		= hv_pci_resume,
  };
  
@@ -393,12 +371,13 @@ index 2a1fdccc3..cf51cbe92 100644
  	hvpci_block_ops.read_block = NULL;
  	hvpci_block_ops.write_block = NULL;
  	hvpci_block_ops.reg_blk_invalidate = NULL;
-@@ -4214,17 +4278,6 @@ static int __init init_hv_pci_drv(void)
- 	if (!hv_vmbus_exists())
+@@ -4261,18 +4322,6 @@ static int __init init_hv_pci_drv(void)
+ 	if (hv_root_partition() && !hv_nested)
  		return -ENODEV;
  
 -	if (hv_pci_swiotlb_base && hv_pci_swiotlb_size) {
 -		hv_pci_swiotlb_pool = swiotlb_create_pool(hv_pci_swiotlb_base,
+-				                           phys_to_virt(hv_pci_swiotlb_base),
 -							   hv_pci_swiotlb_size,
 -							   "hv-pci-swiotlb");
 -		if (IS_ERR(hv_pci_swiotlb_pool)) {
@@ -411,7 +390,7 @@ index 2a1fdccc3..cf51cbe92 100644
  	ret = hv_pci_irqchip_init();
  	if (ret)
  		return ret;
-@@ -4234,8 +4287,83 @@ static int __init init_hv_pci_drv(void)
+@@ -4285,8 +4334,85 @@ static int __init init_hv_pci_drv(void)
  	hvpci_block_ops.write_block = hv_write_config_block;
  	hvpci_block_ops.reg_blk_invalidate = hv_register_block_invalidate;
  
@@ -469,9 +448,11 @@ index 2a1fdccc3..cf51cbe92 100644
 +	pr_info("hv_pci: reserved swiotlb pool [%pa..%pa)\n",
 +		&hv_pci_swiotlb_base, &end);
 +
-+	hv_pci_swiotlb_pool = swiotlb_create_pool(hv_pci_swiotlb_base,
-+						  hv_pci_swiotlb_size,
-+						  "hv-pci-swiotlb");
++	hv_pci_swiotlb_pool =
++		swiotlb_create_pool(hv_pci_swiotlb_base,
++				    phys_to_virt(hv_pci_swiotlb_base),
++				    hv_pci_swiotlb_size,
++				    "hv-pci-swiotlb");
 +	if (IS_ERR(hv_pci_swiotlb_pool)) {
 +		pr_err("hv_pci: failed to create swiotlb pool: %ld\n",
 +		       PTR_ERR(hv_pci_swiotlb_pool));
@@ -497,5 +478,5 @@ index 2a1fdccc3..cf51cbe92 100644
  module_init(init_hv_pci_drv);
  module_exit(exit_hv_pci_drv);
 -- 
-2.55.0
+2.56.0
 
