@@ -1,7 +1,7 @@
-From 5c8bf1cf31688371051b5e87796478bb7ed67953 Mon Sep 17 00:00:00 2001
+From 43a949c5cff1bbb634683b38723387b5b9b9186a Mon Sep 17 00:00:00 2001
 From: Iouri Tarassov <iourit@linux.microsoft.com>
 Date: Tue, 15 Feb 2022 18:11:52 -0800
-Subject: [PATCH 01/63] drivers: hv: dxgkrnl: Add virtual compute device VMBus
+Subject: [PATCH 01/66] drivers: hv: dxgkrnl: Add virtual compute device VMBus
  channel guids
 
 Add VMBus channel guids, which are used by hyper-v virtual compute
@@ -15,10 +15,10 @@ Signed-off-by: Kelsey Steele <kelseysteele@microsoft.com>
  1 file changed, 16 insertions(+)
 
 diff --git a/include/linux/hyperv.h b/include/linux/hyperv.h
-index 734b7ef98f4d..920a60092ad8 100644
+index a2b484679eb4..ba1a705368ea 100644
 --- a/include/linux/hyperv.h
 +++ b/include/linux/hyperv.h
-@@ -1441,6 +1441,22 @@ void vmbus_set_skip_unload(bool skip);
+@@ -1436,6 +1436,22 @@ void vmbus_set_skip_unload(bool skip);
  	.guid = GUID_INIT(0xda0a7802, 0xe377, 0x4aac, 0x8e, 0x77, \
  			  0x05, 0x58, 0xeb, 0x10, 0x73, 0xf8)
  
@@ -42,13 +42,13 @@ index 734b7ef98f4d..920a60092ad8 100644
   * Synthetic FC GUID
   * {2f9bcc4a-0069-4af3-b76b-6fd0be528cda}
 -- 
-2.54.0
+2.56.0
 
 
-From d80ecff0c2f8bb1a30b6518991a3ffa5549a5ee7 Mon Sep 17 00:00:00 2001
+From 919f774ab4d84e3314507b693a728e242c986934 Mon Sep 17 00:00:00 2001
 From: Iouri Tarassov <iourit@linux.microsoft.com>
 Date: Wed, 24 Mar 2021 11:10:28 -0700
-Subject: [PATCH 02/63] drivers: hv: dxgkrnl: Driver initialization and loading
+Subject: [PATCH 02/66] drivers: hv: dxgkrnl: Driver initialization and loading
 
 - Create skeleton and add basic functionality for the Hyper-V
 compute device driver (dxgkrnl).
@@ -105,10 +105,10 @@ Signed-off-by: Mitchell Levy <levymitchell0@gmail.com>
  create mode 100644 include/uapi/misc/d3dkmthk.h
 
 diff --git a/MAINTAINERS b/MAINTAINERS
-index c8d4b913f26c..8697447cb8f0 100644
+index 95cd976a068c..ca96bad350a5 100644
 --- a/MAINTAINERS
 +++ b/MAINTAINERS
-@@ -12022,6 +12022,13 @@ F:	Documentation/devicetree/bindings/mtd/ti,am654-hbmc.yaml
+@@ -12130,6 +12130,13 @@ F:	Documentation/devicetree/bindings/mtd/ti,am654-hbmc.yaml
  F:	drivers/mtd/hyperbus/
  F:	include/linux/mtd/hyperbus.h
  
@@ -1018,13 +1018,13 @@ index 000000000000..5d973604400c
 +
 +#endif /* _D3DKMTHK_H */
 -- 
-2.54.0
+2.56.0
 
 
-From c80d2366da1acdf2d883a62f3858847d1ca1a33d Mon Sep 17 00:00:00 2001
+From 2286c2922b540fd58531743dc2a7a830e045d6e1 Mon Sep 17 00:00:00 2001
 From: Iouri Tarassov <iourit@linux.microsoft.com>
 Date: Tue, 15 Feb 2022 18:53:07 -0800
-Subject: [PATCH 03/63] drivers: hv: dxgkrnl: Add VMBus message support,
+Subject: [PATCH 03/66] drivers: hv: dxgkrnl: Add VMBus message support,
  initialize VMBus channels.
 
 Implement support for sending/receiving VMBus messages between
@@ -1681,13 +1681,13 @@ index 5d973604400c..2ea04cc02a1f 100644
   * Matches the Windows LUID definition.
   * LUID is a locally unique identifier (similar to GUID, but not global),
 -- 
-2.54.0
+2.56.0
 
 
-From ce7a8f495077d2485934e2ce5c4408ced0a90d63 Mon Sep 17 00:00:00 2001
+From ea21e56f3a23723b90723029fd14658b55d06f08 Mon Sep 17 00:00:00 2001
 From: Iouri Tarassov <iourit@linux.microsoft.com>
 Date: Tue, 15 Feb 2022 19:00:38 -0800
-Subject: [PATCH 04/63] drivers: hv: dxgkrnl: Creation of dxgadapter object
+Subject: [PATCH 04/66] drivers: hv: dxgkrnl: Creation of dxgadapter object
 
 Handle creation and destruction of dxgadapter object, which
 represents a virtual compute device, projected to the VM by
@@ -2844,13 +2844,13 @@ index 4c6047c32a20..d292e9a9bb7f 100644
   * Some of the Windows return codes, which needs to be translated to Linux
   * IOCTL return codes. Positive values are success codes and need to be
 -- 
-2.54.0
+2.56.0
 
 
-From e9a9fac95bb0a9c5832c78adb89719c031bebe37 Mon Sep 17 00:00:00 2001
+From 2224ae8d60cda0f1d7c28c85db0fb3b5955a6005 Mon Sep 17 00:00:00 2001
 From: Iouri Tarassov <iourit@linux.microsoft.com>
 Date: Tue, 15 Feb 2022 19:12:48 -0800
-Subject: [PATCH 05/63] drivers: hv: dxgkrnl: Opening of /dev/dxg device and
+Subject: [PATCH 05/66] drivers: hv: dxgkrnl: Opening of /dev/dxg device and
  dxgprocess creation
 
 - Implement opening of the device (/dev/dxg) file object and creation of
@@ -4695,13 +4695,13 @@ index 2ea04cc02a1f..c675d5827ed5 100644
 +
  #endif /* _D3DKMTHK_H */
 -- 
-2.54.0
+2.56.0
 
 
-From 120ad15871b5c1c6ede9e1948cecc103ecb11b99 Mon Sep 17 00:00:00 2001
+From 58671d322c4c0f2c694715924ab73b348c99e160 Mon Sep 17 00:00:00 2001
 From: Iouri Tarassov <iourit@linux.microsoft.com>
 Date: Mon, 21 Mar 2022 19:18:50 -0700
-Subject: [PATCH 06/63] drivers: hv: dxgkrnl: Enumerate and open dxgadapter
+Subject: [PATCH 06/66] drivers: hv: dxgkrnl: Enumerate and open dxgadapter
  objects
 
 Implement ioctls to enumerate dxgadapter objects:
@@ -5251,13 +5251,13 @@ index 60e38d104517..b08ea9430093 100644
 +}
 +#endif
 -- 
-2.54.0
+2.56.0
 
 
-From e35f22fb5f7592cf5ac370011630983a3aeffcea Mon Sep 17 00:00:00 2001
+From 6889fe82da283925a12ea907e0491fb353331ddc Mon Sep 17 00:00:00 2001
 From: Iouri Tarassov <iourit@linux.microsoft.com>
 Date: Tue, 1 Feb 2022 17:23:58 -0800
-Subject: [PATCH 07/63] drivers: hv: dxgkrnl: Creation of dxgdevice objects
+Subject: [PATCH 07/66] drivers: hv: dxgkrnl: Creation of dxgdevice objects
 
 Implement ioctls for creation and destruction of dxgdevice
 objects:
@@ -6080,13 +6080,13 @@ index c675d5827ed5..7414f0f5ce8e 100644
  	_IOWR(0x47, 0x3e, struct d3dkmt_enumadapters3)
  
 -- 
-2.54.0
+2.56.0
 
 
-From d85aba0b59864e8e841a6f3b3cb3abbb8ab45b0c Mon Sep 17 00:00:00 2001
+From 5898e6b9190388eae446615148a5fb6952c6bf85 Mon Sep 17 00:00:00 2001
 From: Iouri Tarassov <iourit@linux.microsoft.com>
 Date: Tue, 1 Feb 2022 17:03:47 -0800
-Subject: [PATCH 08/63] drivers: hv: dxgkrnl: Creation of dxgcontext objects
+Subject: [PATCH 08/66] drivers: hv: dxgkrnl: Creation of dxgcontext objects
 
 Implement ioctls for creation/destruction of dxgcontext
 objects:
@@ -6749,13 +6749,13 @@ index 7414f0f5ce8e..4ba0070b061f 100644
  	_IOWR(0x47, 0x09, struct d3dkmt_queryadapterinfo)
  #define LX_DXENUMADAPTERS2		\
 -- 
-2.54.0
+2.56.0
 
 
-From 4b7a5a1467af31fda8f94d1b8c3ecb68e8c3a6b9 Mon Sep 17 00:00:00 2001
+From cfba6c83fdef25b44ab27cb5506d64b7c23be239 Mon Sep 17 00:00:00 2001
 From: Iouri Tarassov <iourit@linux.microsoft.com>
 Date: Tue, 1 Feb 2022 15:37:52 -0800
-Subject: [PATCH 09/63] drivers: hv: dxgkrnl: Creation of compute device
+Subject: [PATCH 09/66] drivers: hv: dxgkrnl: Creation of compute device
  allocations and resources
 
 Implemented ioctls to create and destroy virtual compute device
@@ -9013,13 +9013,13 @@ index 4ba0070b061f..cf670b9c4dc2 100644
  	_IOWR(0x47, 0x14, struct d3dkmt_enumadapters2)
  #define LX_DXCLOSEADAPTER		\
 -- 
-2.54.0
+2.56.0
 
 
-From ed559c2034131a2201cc9696536edb19c765eccd Mon Sep 17 00:00:00 2001
+From 93f4cd1dd25b289630391189f6e21bc69b5e0bbc Mon Sep 17 00:00:00 2001
 From: Iouri Tarassov <iourit@linux.microsoft.com>
 Date: Tue, 1 Feb 2022 14:38:32 -0800
-Subject: [PATCH 10/63] drivers: hv: dxgkrnl: Creation of compute device sync
+Subject: [PATCH 10/66] drivers: hv: dxgkrnl: Creation of compute device sync
  objects
 
 Implement ioctls to create and destroy compute devicesync objects:
@@ -10031,13 +10031,13 @@ index cf670b9c4dc2..4e1069f41d76 100644
  	_IOWR(0x47, 0x3e, struct d3dkmt_enumadapters3)
  
 -- 
-2.54.0
+2.56.0
 
 
-From 04a014b6a536fbbd66808e2628ec8e49362e4ee1 Mon Sep 17 00:00:00 2001
+From e319e199b76d63d5c68582ba0e5f74fa466903a4 Mon Sep 17 00:00:00 2001
 From: Iouri Tarassov <iourit@linux.microsoft.com>
 Date: Tue, 1 Feb 2022 13:59:23 -0800
-Subject: [PATCH 11/63] drivers: hv: dxgkrnl: Operations using sync objects
+Subject: [PATCH 11/66] drivers: hv: dxgkrnl: Operations using sync objects
 
 Implement ioctls to submit operations with compute device
 sync objects:
@@ -11721,13 +11721,13 @@ index 4e1069f41d76..39055b0c1069 100644
  	_IOWR(0x47, 0x3e, struct d3dkmt_enumadapters3)
  
 -- 
-2.54.0
+2.56.0
 
 
-From 0b28942c8e6f4f76099a0a7256d6005eb28b2289 Mon Sep 17 00:00:00 2001
+From 33c8971012f79e4e290522ca96f9f48c5bdd932b Mon Sep 17 00:00:00 2001
 From: Iouri Tarassov <iourit@linux.microsoft.com>
 Date: Mon, 31 Jan 2022 17:52:31 -0800
-Subject: [PATCH 12/63] drivers: hv: dxgkrnl: Sharing of dxgresource objects
+Subject: [PATCH 12/66] drivers: hv: dxgkrnl: Sharing of dxgresource objects
 
 Implement creation of shared resources and ioctls for sharing
 dxgresource objects between processes in the virtual machine.
@@ -13186,13 +13186,13 @@ index 39055b0c1069..f74564cf7ee9 100644
  
  #endif /* _D3DKMTHK_H */
 -- 
-2.54.0
+2.56.0
 
 
-From b08999cba33567b32a38ed415e2713c7ff81b43a Mon Sep 17 00:00:00 2001
+From 0ee90d4277bfdaf2801705abb070a4604276c610 Mon Sep 17 00:00:00 2001
 From: Iouri Tarassov <iourit@linux.microsoft.com>
 Date: Mon, 31 Jan 2022 16:41:28 -0800
-Subject: [PATCH 13/63] drivers: hv: dxgkrnl: Sharing of sync objects
+Subject: [PATCH 13/66] drivers: hv: dxgkrnl: Sharing of sync objects
 
 Implement creation of a shared sync objects and the ioctl for sharing
 dxgsyncobject objects between processes in the virtual machine.
@@ -14742,13 +14742,13 @@ index f74564cf7ee9..a78252901c8d 100644
  	_IOWR(0x47, 0x3a, struct d3dkmt_waitforsynchronizationobjectfromcpu)
  #define LX_DXWAITFORSYNCHRONIZATIONOBJECTFROMGPU \
 -- 
-2.54.0
+2.56.0
 
 
-From ea86ab29e68beaa9cb7e833649cf3b742e94d128 Mon Sep 17 00:00:00 2001
+From 6cf578f6d9815a595205d9b8753b88ab9670ce52 Mon Sep 17 00:00:00 2001
 From: Iouri Tarassov <iourit@linux.microsoft.com>
 Date: Thu, 20 Jan 2022 15:15:18 -0800
-Subject: [PATCH 14/63] drivers: hv: dxgkrnl: Creation of paging queue objects.
+Subject: [PATCH 14/66] drivers: hv: dxgkrnl: Creation of paging queue objects.
 
 Implement ioctls for creation/destruction of the paging queue objects:
   - LX_DXCREATEPAGINGQUEUE,
@@ -15383,13 +15383,13 @@ index a78252901c8d..6ec70852de6e 100644
  	_IOWR(0x47, 0x19, struct d3dkmt_destroydevice)
  #define LX_DXDESTROYSYNCHRONIZATIONOBJECT \
 -- 
-2.54.0
+2.56.0
 
 
-From 7954c26702456e20db2ef88825af8b978af3068b Mon Sep 17 00:00:00 2001
+From d8cce8eab15cd19e7362af269a5e5b91d25cd671 Mon Sep 17 00:00:00 2001
 From: Iouri Tarassov <iourit@linux.microsoft.com>
 Date: Wed, 19 Jan 2022 18:02:09 -0800
-Subject: [PATCH 15/63] drivers: hv: dxgkrnl: Submit execution commands to the
+Subject: [PATCH 15/66] drivers: hv: dxgkrnl: Submit execution commands to the
  compute device
 
 Implements ioctls for submission of compute device buffers for execution:
@@ -15835,13 +15835,13 @@ index 6ec70852de6e..9238115d165d 100644
  	_IOWR(0x47, 0x35, struct d3dkmt_submitsignalsyncobjectstohwqueue)
  #define LX_DXSUBMITWAITFORSYNCOBJECTSTOHWQUEUE \
 -- 
-2.54.0
+2.56.0
 
 
-From d3bc913b306d29b0395f49310461e39b5311b084 Mon Sep 17 00:00:00 2001
+From b875d63988204d653718ea2b34fe01ac88c798f6 Mon Sep 17 00:00:00 2001
 From: Iouri Tarassov <iourit@linux.microsoft.com>
 Date: Sat, 7 Aug 2021 18:11:34 -0700
-Subject: [PATCH 16/63] drivers: hv: dxgkrnl: Share objects with the host
+Subject: [PATCH 16/66] drivers: hv: dxgkrnl: Share objects with the host
 
 Implement the LX_DXSHAREOBJECTWITHHOST ioctl.
 This ioctl is used to create a Windows NT handle on the host
@@ -16107,13 +16107,13 @@ index 9238115d165d..895861505e6e 100644
  
  #endif /* _D3DKMTHK_H */
 -- 
-2.54.0
+2.56.0
 
 
-From ccfc9bc30821e1016b1a885abfd05c86c385a330 Mon Sep 17 00:00:00 2001
+From 3b9f85ca366da09b1df63df6f1a86d4d1c029ba9 Mon Sep 17 00:00:00 2001
 From: Iouri Tarassov <iourit@linux.microsoft.com>
 Date: Wed, 19 Jan 2022 16:53:47 -0800
-Subject: [PATCH 17/63] drivers: hv: dxgkrnl: Query the dxgdevice state
+Subject: [PATCH 17/66] drivers: hv: dxgkrnl: Query the dxgdevice state
 
 Implement the ioctl to query the dxgdevice state - LX_DXGETDEVICESTATE.
 The IOCTL is used to query the state of the given dxgdevice object (active,
@@ -16562,13 +16562,13 @@ index 895861505e6e..8a013b07e88a 100644
  	_IOWR(0x47, 0x0f, struct d3dkmt_submitcommand)
  #define LX_DXCREATESYNCHRONIZATIONOBJECT \
 -- 
-2.54.0
+2.56.0
 
 
-From 543c2c6f1d7a587de9adb7aa3a063bb4e929358c Mon Sep 17 00:00:00 2001
+From 8440be10bdf461c025e02d6eac4f8db4da552b27 Mon Sep 17 00:00:00 2001
 From: Iouri Tarassov <iourit@linux.microsoft.com>
 Date: Wed, 19 Jan 2022 13:58:28 -0800
-Subject: [PATCH 18/63] drivers: hv: dxgkrnl: Map(unmap) CPU address to device
+Subject: [PATCH 18/66] drivers: hv: dxgkrnl: Map(unmap) CPU address to device
  allocation
 
 Implement ioctls to map/unmap CPU virtual addresses to compute device
@@ -17062,13 +17062,13 @@ index 8a013b07e88a..b498f09e694d 100644
  	_IOWR(0x47, 0x3a, struct d3dkmt_waitforsynchronizationobjectfromcpu)
  #define LX_DXWAITFORSYNCHRONIZATIONOBJECTFROMGPU \
 -- 
-2.54.0
+2.56.0
 
 
-From 8581198bd12645202ddf6ec3066d4fb8a1c84f0c Mon Sep 17 00:00:00 2001
+From 044ab836c89e3ae168a3c609cb9ab6bf42ae5337 Mon Sep 17 00:00:00 2001
 From: Iouri Tarassov <iourit@linux.microsoft.com>
 Date: Wed, 19 Jan 2022 11:14:22 -0800
-Subject: [PATCH 19/63] drivers: hv: dxgkrnl: Manage device allocation
+Subject: [PATCH 19/66] drivers: hv: dxgkrnl: Manage device allocation
  properties
 
 Implement ioctls to manage properties of a compute device allocation:
@@ -17976,13 +17976,13 @@ index b498f09e694d..af381101fd90 100644
  	_IOWR(0x47, 0x3e, struct d3dkmt_enumadapters3)
  #define LX_DXSHAREOBJECTS		\
 -- 
-2.54.0
+2.56.0
 
 
-From 5edfe3c54258e0983113ab7b0562fca3a8303b56 Mon Sep 17 00:00:00 2001
+From 5780a6e14601bfce48c504c82878bfde66e97c46 Mon Sep 17 00:00:00 2001
 From: Iouri Tarassov <iourit@linux.microsoft.com>
 Date: Tue, 18 Jan 2022 17:25:37 -0800
-Subject: [PATCH 20/63] drivers: hv: dxgkrnl: Flush heap transitions
+Subject: [PATCH 20/66] drivers: hv: dxgkrnl: Flush heap transitions
 
 Implement the ioctl to flush heap transitions
 (LX_DXFLUSHHEAPTRANSITIONS).
@@ -18171,13 +18171,13 @@ index af381101fd90..873feb951129 100644
  	_IOWR(0x47, 0x25, struct d3dkmt_lock2)
  #define LX_DXQUERYALLOCATIONRESIDENCY	\
 -- 
-2.54.0
+2.56.0
 
 
-From bafcb534b6962ecedd7788e18f5ef3142982fc00 Mon Sep 17 00:00:00 2001
+From a0f5fdb3d117c2979b1dc1df11d4f423092626c2 Mon Sep 17 00:00:00 2001
 From: Iouri Tarassov <iourit@linux.microsoft.com>
 Date: Tue, 8 Feb 2022 18:34:07 -0800
-Subject: [PATCH 21/63] drivers: hv: dxgkrnl: Query video memory information
+Subject: [PATCH 21/66] drivers: hv: dxgkrnl: Query video memory information
 
 Implement the ioctl to query video memory information from the host
 (LX_DXQUERYVIDEOMEMORYINFO).
@@ -18409,13 +18409,13 @@ index 873feb951129..b7d8b1d91cfc 100644
  	_IOWR(0x47, 0x0e, struct d3dkmt_getdevicestate)
  #define LX_DXSUBMITCOMMAND		\
 -- 
-2.54.0
+2.56.0
 
 
-From 2dd4947c415ed13b3adc8c1cca77b2a4a8316a86 Mon Sep 17 00:00:00 2001
+From a9217139621d9f861659597c730ddc5c09b8be09 Mon Sep 17 00:00:00 2001
 From: Iouri Tarassov <iourit@linux.microsoft.com>
 Date: Tue, 18 Jan 2022 15:50:30 -0800
-Subject: [PATCH 22/63] drivers: hv: dxgkrnl: The escape ioctl
+Subject: [PATCH 22/66] drivers: hv: dxgkrnl: The escape ioctl
 
 Implement the escape ioctl (LX_DXESCAPE).
 
@@ -18715,13 +18715,13 @@ index b7d8b1d91cfc..749edf28bd43 100644
  	_IOWR(0x47, 0x0e, struct d3dkmt_getdevicestate)
  #define LX_DXSUBMITCOMMAND		\
 -- 
-2.54.0
+2.56.0
 
 
-From 576e23eba35c90b4c53c52fbce822a9177d9de19 Mon Sep 17 00:00:00 2001
+From 8d46b4fef1270f8936a57f02b55cf684f98b72bc Mon Sep 17 00:00:00 2001
 From: Iouri Tarassov <iourit@linux.microsoft.com>
 Date: Wed, 9 Feb 2022 10:57:57 -0800
-Subject: [PATCH 23/63] drivers: hv: dxgkrnl: Ioctl to put device to error
+Subject: [PATCH 23/66] drivers: hv: dxgkrnl: Ioctl to put device to error
  state
 
 Implement the ioctl to put the virtual compute device to the error
@@ -18897,13 +18897,13 @@ index 749edf28bd43..ce5a638a886d 100644
  	_IOWR(0x47, 0x2a, struct d3dkmt_queryallocationresidency)
  #define LX_DXSETALLOCATIONPRIORITY	\
 -- 
-2.54.0
+2.56.0
 
 
-From d61759fcd74fb05de015c4652ec6861e17e07b8c Mon Sep 17 00:00:00 2001
+From 0f26e2c86ea8b33e75c1e95e95f1167d6a16797d Mon Sep 17 00:00:00 2001
 From: Iouri Tarassov <iourit@linux.microsoft.com>
 Date: Wed, 9 Feb 2022 11:01:57 -0800
-Subject: [PATCH 24/63] drivers: hv: dxgkrnl: Ioctls to query statistics and
+Subject: [PATCH 24/66] drivers: hv: dxgkrnl: Ioctls to query statistics and
  clock calibration
 
 Implement ioctls to query statistics from the VGPU device
@@ -19321,13 +19321,13 @@ index ce5a638a886d..ea18242ceb83 100644
  	_IOWR(0x47, 0x44, struct d3dkmt_shareobjectwithhost)
  
 -- 
-2.54.0
+2.56.0
 
 
-From 29158c14a43e70e9786ee839e30b2c00182c4ce3 Mon Sep 17 00:00:00 2001
+From 4d33c39c339069536c2895f5049e25679a6ba1b0 Mon Sep 17 00:00:00 2001
 From: Iouri Tarassov <iourit@linux.microsoft.com>
 Date: Tue, 18 Jan 2022 15:01:55 -0800
-Subject: [PATCH 25/63] drivers: hv: dxgkrnl: Offer and reclaim allocations
+Subject: [PATCH 25/66] drivers: hv: dxgkrnl: Offer and reclaim allocations
 
 Implement ioctls to offer and reclaim compute device allocations:
   - LX_DXOFFERALLOCATIONS,
@@ -19788,13 +19788,13 @@ index ea18242ceb83..46b9f6d303bf 100644
  	_IOWR(0x47, 0x2e, struct d3dkmt_setallocationpriority)
  #define LX_DXSIGNALSYNCHRONIZATIONOBJECTFROMCPU \
 -- 
-2.54.0
+2.56.0
 
 
-From 8d84bbd0d1d8063e2d64305e324ef92bf5a736cc Mon Sep 17 00:00:00 2001
+From df0fe2156db015ff79bcdca8c3df1aa4f89bf171 Mon Sep 17 00:00:00 2001
 From: Iouri Tarassov <iourit@linux.microsoft.com>
 Date: Fri, 14 Jan 2022 17:57:41 -0800
-Subject: [PATCH 26/63] drivers: hv: dxgkrnl: Ioctls to manage scheduling
+Subject: [PATCH 26/66] drivers: hv: dxgkrnl: Ioctls to manage scheduling
  priority
 
 Implement iocts to manage compute device scheduling priority:
@@ -20217,13 +20217,13 @@ index 46b9f6d303bf..a9bafab97c18 100644
  	_IOWR(0x47, 0x31, struct d3dkmt_signalsynchronizationobjectfromcpu)
  #define LX_DXSIGNALSYNCHRONIZATIONOBJECTFROMGPU \
 -- 
-2.54.0
+2.56.0
 
 
-From c42727b1df6edf12e13b1c26c552ef67b12480f1 Mon Sep 17 00:00:00 2001
+From 558620b18161f93ea892b7c2a4b099a73f251e32 Mon Sep 17 00:00:00 2001
 From: Iouri Tarassov <iourit@linux.microsoft.com>
 Date: Fri, 14 Jan 2022 17:33:52 -0800
-Subject: [PATCH 27/63] drivers: hv: dxgkrnl: Manage residency of allocations
+Subject: [PATCH 27/66] drivers: hv: dxgkrnl: Manage residency of allocations
 
 Implement ioctls to manage residency of compute device allocations:
   - LX_DXMAKERESIDENT,
@@ -20665,13 +20665,13 @@ index a9bafab97c18..944f9d1e73d6 100644
  	_IOWR(0x47, 0x1f, struct d3dkmt_flushheaptransitions)
  #define LX_DXGETCONTEXTINPROCESSSCHEDULINGPRIORITY \
 -- 
-2.54.0
+2.56.0
 
 
-From 52f75bec230fe9ed12dd1bca2faed9d76cf137da Mon Sep 17 00:00:00 2001
+From dd5969b4060263e5c8ff4de17dbae0a605c6741b Mon Sep 17 00:00:00 2001
 From: Iouri Tarassov <iourit@linux.microsoft.com>
 Date: Fri, 14 Jan 2022 17:13:04 -0800
-Subject: [PATCH 28/63] drivers: hv: dxgkrnl: Manage compute device virtual
+Subject: [PATCH 28/66] drivers: hv: dxgkrnl: Manage compute device virtual
  addresses
 
 Implement ioctls to manage compute device virtual addresses (VA):
@@ -21370,13 +21370,13 @@ index 944f9d1e73d6..1f60f5120e1d 100644
  	_IOWR(0x47, 0x3a, struct d3dkmt_waitforsynchronizationobjectfromcpu)
  #define LX_DXWAITFORSYNCHRONIZATIONOBJECTFROMGPU \
 -- 
-2.54.0
+2.56.0
 
 
-From de510d2d823f5995deaa04f11dfa2dde25d3ef8d Mon Sep 17 00:00:00 2001
+From 247b9187c58ad25138b251dad006789db2f4467e Mon Sep 17 00:00:00 2001
 From: Iouri Tarassov <iourit@linux.microsoft.com>
 Date: Fri, 8 Oct 2021 14:17:39 -0700
-Subject: [PATCH 29/63] drivers: hv: dxgkrnl: Add support to map guest pages by
+Subject: [PATCH 29/66] drivers: hv: dxgkrnl: Add support to map guest pages by
  host
 
 Implement support for mapping guest memory pages by the host.
@@ -21685,13 +21685,13 @@ index cb1e0635bebc..4a1309d80ee5 100644
  }
 +
 -- 
-2.54.0
+2.56.0
 
 
-From 78dedd91f54d0158c14521dcef52ed5790389c92 Mon Sep 17 00:00:00 2001
+From df7e62e44d38abcc1acd5a83f262cf703f7a266b Mon Sep 17 00:00:00 2001
 From: Iouri Tarassov <iourit@linux.microsoft.com>
 Date: Mon, 21 Mar 2022 20:32:44 -0700
-Subject: [PATCH 30/63] drivers: hv: dxgkrnl: Removed struct vmbus_gpadl, which
+Subject: [PATCH 30/66] drivers: hv: dxgkrnl: Removed struct vmbus_gpadl, which
  was defined in the main linux branch
 
 Signed-off-by: Iouri Tarassov <iourit@linux.microsoft.com>
@@ -21715,13 +21715,13 @@ index 6f763e326a65..236febbc6fca 100644
  		DXG_TRACE("Teardown gpadl %d", alloc->gpadl);
  		vmbus_teardown_gpadl(dxgglobal_get_vmbus(), alloc->gpadl);
 -- 
-2.54.0
+2.56.0
 
 
-From ee9472de485b4c913301f68b93cc299cc9e59adb Mon Sep 17 00:00:00 2001
+From 55bfb5e9181f5e5e508dedd6e46bef10d7e1167f Mon Sep 17 00:00:00 2001
 From: Iouri Tarassov <iourit@linux.microsoft.com>
 Date: Tue, 22 Mar 2022 10:32:54 -0700
-Subject: [PATCH 31/63] drivers: hv: dxgkrnl: Remove dxgk_init_ioctls
+Subject: [PATCH 31/66] drivers: hv: dxgkrnl: Remove dxgk_init_ioctls
 
 The array of ioctls is initialized statically to remove the unnecessary
 function.
@@ -21816,13 +21816,13 @@ index f6700e974f25..8732a66040a0 100644
  		 LX_DXSUBMITWAITFORSYNCOBJECTSTOHWQUEUE},
  /* 0x37 */	{dxgkio_unlock2, LX_DXUNLOCK2},
 -- 
-2.54.0
+2.56.0
 
 
-From 10a85fc9298d5c784a61f46726c17f37418856e9 Mon Sep 17 00:00:00 2001
+From a9ae3cd5575c7255955eba1fdfc5303e24cb985e Mon Sep 17 00:00:00 2001
 From: Iouri Tarassov <iourit@linux.microsoft.com>
 Date: Tue, 22 Mar 2022 11:02:49 -0700
-Subject: [PATCH 32/63] drivers: hv: dxgkrnl: Creation of dxgsyncfile objects
+Subject: [PATCH 32/66] drivers: hv: dxgkrnl: Creation of dxgsyncfile objects
 
 Implement the ioctl to create a dxgsyncfile object
 (LX_DXCREATESYNCFILE). This object is a wrapper around a monitored
@@ -22301,13 +22301,13 @@ index 1f60f5120e1d..c7f168425dc7 100644
  
  #endif /* _D3DKMTHK_H */
 -- 
-2.54.0
+2.56.0
 
 
-From 0d386aa3bd50c55b787affba2ce9190fd6597f2c Mon Sep 17 00:00:00 2001
+From a4e53182765d4cb063605388cb0558681ad73b7f Mon Sep 17 00:00:00 2001
 From: Iouri Tarassov <iourit@linux.microsoft.com>
 Date: Thu, 24 Mar 2022 15:03:41 -0700
-Subject: [PATCH 33/63] drivers: hv: dxgkrnl: Use tracing instead of dev_dbg
+Subject: [PATCH 33/66] drivers: hv: dxgkrnl: Use tracing instead of dev_dbg
 
 Signed-off-by: Iouri Tarassov <iourit@linux.microsoft.com>
 [kms: forward port to 6.6 from 6.1. No code changes made.]
@@ -22507,13 +22507,13 @@ index 4a1309d80ee5..4bf6fe80d22a 100644
  u16 *wcsncpy(u16 *dest, const u16 *src, size_t n)
  {
 -- 
-2.54.0
+2.56.0
 
 
-From 6ac41323f0df82e55fd6ad84ae37f899ee82ebe3 Mon Sep 17 00:00:00 2001
+From a1969296f904e98383e1cc464558929432575a6e Mon Sep 17 00:00:00 2001
 From: Iouri Tarassov <iourit@linux.microsoft.com>
 Date: Mon, 2 May 2022 11:46:48 -0700
-Subject: [PATCH 34/63] drivers: hv: dxgkrnl: Implement D3DKMTWaitSyncFile
+Subject: [PATCH 34/66] drivers: hv: dxgkrnl: Implement D3DKMTWaitSyncFile
 
 Signed-off-by: Iouri Tarassov <iourit@linux.microsoft.com>
 [kms: forward port to 6.6 from 6.1. No code changes made.]
@@ -23166,13 +23166,13 @@ index c7f168425dc7..1eaa3f038322 100644
  
  #endif /* _D3DKMTHK_H */
 -- 
-2.54.0
+2.56.0
 
 
-From ed8f2a4a23517b018ba630030e4d9c26b5def7c9 Mon Sep 17 00:00:00 2001
+From b6edd07ab246f48f4ab9fa0471d55fa4013490f6 Mon Sep 17 00:00:00 2001
 From: Iouri Tarassov <iourit@linux.microsoft.com>
 Date: Fri, 6 May 2022 19:19:09 -0700
-Subject: [PATCH 35/63] drivers: hv: dxgkrnl: Improve tracing and return values
+Subject: [PATCH 35/66] drivers: hv: dxgkrnl: Improve tracing and return values
  from copy from user
 
 Signed-off-by: Iouri Tarassov <iourit@linux.microsoft.com>
@@ -25167,13 +25167,13 @@ index 622904d5c3a9..3dc9e76f4f3d 100644
  }
  
 -- 
-2.54.0
+2.56.0
 
 
-From cf18cfb23945ae07a06020dad7467a3122f3ed76 Mon Sep 17 00:00:00 2001
+From 93e1aa4fd608c6b028e2e600525e814f8014ea8c Mon Sep 17 00:00:00 2001
 From: Iouri Tarassov <iourit@linux.microsoft.com>
 Date: Mon, 13 Jun 2022 14:18:10 -0700
-Subject: [PATCH 36/63] drivers: hv: dxgkrnl: Fix synchronization locks
+Subject: [PATCH 36/66] drivers: hv: dxgkrnl: Fix synchronization locks
 
 Signed-off-by: Iouri Tarassov <iourit@linux.microsoft.com>
 [kms: forward port to 6.6 from 6.1. No code changes made.]
@@ -25559,13 +25559,13 @@ index ee2ebfdd1c13..9fcab4ae2c0c 100644
   * device_mutex (dxgglobal mutex)
   */
 -- 
-2.54.0
+2.56.0
 
 
-From 00fe8e2171929ab3a7799b8443cd2ea330370ad4 Mon Sep 17 00:00:00 2001
+From 469e7dae9e538d563f1db1ed1d1daac831eec59a Mon Sep 17 00:00:00 2001
 From: Iouri Tarassov <iourit@linux.microsoft.com>
 Date: Tue, 28 Jun 2022 17:26:11 -0700
-Subject: [PATCH 37/63] drivers: hv: dxgkrnl: Close shared file objects in case
+Subject: [PATCH 37/66] drivers: hv: dxgkrnl: Close shared file objects in case
  of a failure
 
 Signed-off-by: Iouri Tarassov <iourit@linux.microsoft.com>
@@ -25641,13 +25641,13 @@ index 7c72790f917f..69324510c9e2 100644
  			put_unused_fd(object_fd);
  	}
 -- 
-2.54.0
+2.56.0
 
 
-From 76ddd3effb73d514df03f8b5dd3bb878aa14cd96 Mon Sep 17 00:00:00 2001
+From 010fed947075b5a1902bee4da7e39bca0a5d9365 Mon Sep 17 00:00:00 2001
 From: Iouri Tarassov <iourit@linux.microsoft.com>
 Date: Wed, 29 Jun 2022 10:04:23 -0700
-Subject: [PATCH 38/63] drivers: hv: dxgkrnl: Added missed NULL check for
+Subject: [PATCH 38/66] drivers: hv: dxgkrnl: Added missed NULL check for
  resource object
 
 Signed-off-by: Iouri Tarassov <iourit@linux.microsoft.com>
@@ -25694,13 +25694,13 @@ index 69324510c9e2..98350583943e 100644
  		dxgdevice_release_lock_shared(device);
  		kref_put(&device->device_kref, dxgdevice_release);
 -- 
-2.54.0
+2.56.0
 
 
-From aff821a06525c78f937c1536639cf8e1ca9374dc Mon Sep 17 00:00:00 2001
+From a02e8dc0e5dbd4e05b2c0f02a7875e5ffb29b596 Mon Sep 17 00:00:00 2001
 From: Iouri Tarassov <iourit@linux.microsoft.com>
 Date: Thu, 26 Jan 2023 10:49:41 -0800
-Subject: [PATCH 39/63] drivers: hv: dxgkrnl: Fixed dxgkrnl to build for the
+Subject: [PATCH 39/66] drivers: hv: dxgkrnl: Fixed dxgkrnl to build for the
  6.1 kernel
 
 Definition for GPADL was changed from u32 to struct vmbus_gpadl.
@@ -25782,13 +25782,13 @@ index 8c99f141482e..eb3f4c5153a6 100644
  						    msg.size);
  		if (ret < 0)
 -- 
-2.54.0
+2.56.0
 
 
-From fb68dbd967ade308e31a9ae03fae1424f596bd45 Mon Sep 17 00:00:00 2001
+From 36c035a2883727ccff13e18a6c509c9bd764ef6c Mon Sep 17 00:00:00 2001
 From: Iouri Tarassov <iourit@linux.microsoft.com>
 Date: Thu, 22 Dec 2022 14:54:28 -0800
-Subject: [PATCH 40/63] drivers: hv: dxgkrnl: Added support for compute only
+Subject: [PATCH 40/66] drivers: hv: dxgkrnl: Added support for compute only
  adapters
 
 Signed-off-by: Iouri Tarassov <iourit@linux.microsoft.com>
@@ -25888,13 +25888,13 @@ index 98350583943e..f735b18fcc14 100644
  			struct d3dkmt_adapterinfo *inf = &info[adapter_count];
  
 -- 
-2.54.0
+2.56.0
 
 
-From d974775652a1009d979e7299c73e99be906f9407 Mon Sep 17 00:00:00 2001
+From 9995938bbc256abc22bf93b2c6ea67a13fde9fdf Mon Sep 17 00:00:00 2001
 From: Iouri Tarassov <iourit@linux.microsoft.com>
 Date: Wed, 15 Feb 2023 16:56:35 -0800
-Subject: [PATCH 41/63] drivers: hv: dxgkrnl: Added implementation for
+Subject: [PATCH 41/66] drivers: hv: dxgkrnl: Added implementation for
  D3DKMTInvalidateCache
 
 D3DKMTInvalidateCache is called by user mode drivers when the device
@@ -26103,13 +26103,13 @@ index 1eaa3f038322..84fa07a46d3c 100644
  	_IOWR(0x47, 0x25, struct d3dkmt_lock2)
  #define LX_DXMARKDEVICEASERROR		\
 -- 
-2.54.0
+2.56.0
 
 
-From 372a50707048a01fbfbb151b0792ff564f10ddfe Mon Sep 17 00:00:00 2001
+From fdfb8af066c71e2e9cb61a2defd5552299c5209f Mon Sep 17 00:00:00 2001
 From: Iouri Tarassov <iourit@linux.microsoft.com>
 Date: Wed, 15 Feb 2023 17:13:48 -0800
-Subject: [PATCH 42/63] drivers: hv: dxgkrnl: Handle process ID in
+Subject: [PATCH 42/66] drivers: hv: dxgkrnl: Handle process ID in
  D3DKMTQueryStatistics
 
 When D3DKMTQueryStatistics specifies a non-zero process ID, it needs to be
@@ -26877,13 +26877,13 @@ index 56b838a87f09..466bef6c14b3 100644
  		ret = copy_to_user(adapter_count_out,
  				   &dxgglobal->num_adapters, sizeof(u32));
 -- 
-2.54.0
+2.56.0
 
 
-From d50f4cf9651ae3ea9d5b8a33582ce1dc4ce969ca Mon Sep 17 00:00:00 2001
+From 4502f690ca2dafd175d3d375c6a3723416e07db6 Mon Sep 17 00:00:00 2001
 From: Iouri Tarassov <iourit@linux.microsoft.com>
 Date: Mon, 10 Apr 2023 09:27:37 -0700
-Subject: [PATCH 43/63] drivers: hv: dxgkrnl: Implement the D3DKMTEnumProcesses
+Subject: [PATCH 43/66] drivers: hv: dxgkrnl: Implement the D3DKMTEnumProcesses
  API
 
 D3DKMTEnumProcesses is used to enumerate PIDs for all processes,
@@ -27067,13 +27067,13 @@ index 84fa07a46d3c..f9f817060fa9 100644
  
  #endif /* _D3DKMTHK_H */
 -- 
-2.54.0
+2.56.0
 
 
-From b8f4d4715724f7e068adf64324519288dcc885ba Mon Sep 17 00:00:00 2001
+From 07139ea2e1269439e390a9be18f7dbdb606cf95a Mon Sep 17 00:00:00 2001
 From: Iouri Tarassov <iourit@linux.microsoft.com>
 Date: Mon, 10 Apr 2023 09:30:11 -0700
-Subject: [PATCH 44/63] drivers: hv: dxgkrnl: Implement D3DDKMTIsFeatureEnabled
+Subject: [PATCH 44/66] drivers: hv: dxgkrnl: Implement D3DDKMTIsFeatureEnabled
  API
 
 D3DKMTIsFeatureEnabled is used to query if a particular feature is
@@ -27360,13 +27360,13 @@ index f9f817060fa9..5b345ddaf66e 100644
  
  #endif /* _D3DKMTHK_H */
 -- 
-2.54.0
+2.56.0
 
 
-From f2d1c691466b8028a0f1b3501c73f8d7465f5b94 Mon Sep 17 00:00:00 2001
+From 4b84c9527c9616d682dfcd214ce6450b835942f4 Mon Sep 17 00:00:00 2001
 From: Iouri Tarassov <iourit@linux.microsoft.com>
 Date: Tue, 11 Apr 2023 16:44:36 -0700
-Subject: [PATCH 45/63] drivers: hv: dxgkrnl: Implement known escapes
+Subject: [PATCH 45/66] drivers: hv: dxgkrnl: Implement known escapes
 
 Implement an escape to build test command buffer.
 Implement other known escapes.
@@ -27752,13 +27752,13 @@ index 5b345ddaf66e..db40e8ff40b0 100644
  	_D3DKMT_ESCAPE_DRIVERPRIVATE	= 0,
  	_D3DKMT_ESCAPE_VIDMM		= 1,
 -- 
-2.54.0
+2.56.0
 
 
-From 8c29f61997fe1352618841732eda58dd87f13b64 Mon Sep 17 00:00:00 2001
+From d6d7da5fe8130fe22ff60fc51f5866c087935286 Mon Sep 17 00:00:00 2001
 From: Iouri Tarassov <iourit@linux.microsoft.com>
 Date: Wed, 12 Apr 2023 10:35:39 -0700
-Subject: [PATCH 46/63] drivers: hv: dxgkrnl: Fixed coding style issues
+Subject: [PATCH 46/66] drivers: hv: dxgkrnl: Fixed coding style issues
 
 Signed-off-by: Iouri Tarassov <iourit@linux.microsoft.com>
 [kms: forward port to 6.6 from 6.1. No code changes made.]
@@ -27905,13 +27905,13 @@ index f8ca79d098f3..5ac6dd1f09b9 100644
  			DXGKRNL_ASSERT(0);
  		}
 -- 
-2.54.0
+2.56.0
 
 
-From a9a7aa1486428ceb38d77cab0edf7605abbf559b Mon Sep 17 00:00:00 2001
+From e57367ba1c5286bcec70216b1fef6f8027ad710f Mon Sep 17 00:00:00 2001
 From: Iouri Tarassov <iourit@linux.microsoft.com>
 Date: Mon, 17 Apr 2023 10:57:23 -0700
-Subject: [PATCH 47/63] drivers: hv: dxgkrnl: Fixed the implementation of
+Subject: [PATCH 47/66] drivers: hv: dxgkrnl: Fixed the implementation of
  D3DKMTQueryClockCalibration
 
 The result of a VM bus call was not copied to the user output structure.
@@ -27991,13 +27991,13 @@ index 5ac6dd1f09b9..d91af2e176e9 100644
  cleanup:
  
 -- 
-2.54.0
+2.56.0
 
 
-From c1990d32bee3044e5510373f10f19c5be821f601 Mon Sep 17 00:00:00 2001
+From 9b22dd29a615eac4d6621b4cde653fc768fb1fce Mon Sep 17 00:00:00 2001
 From: Iouri Tarassov <iourit@linux.microsoft.com>
 Date: Mon, 15 May 2023 11:15:17 -0700
-Subject: [PATCH 48/63] drivers: hv: dxgkrnl: Retry sending a VM bus packet
+Subject: [PATCH 48/66] drivers: hv: dxgkrnl: Retry sending a VM bus packet
  when there is no place in the ring buffer
 
 When D3DKMT requests are sent too quickly, the VM bus ring buffer could be
@@ -28047,13 +28047,13 @@ index 67f55f4bf41d..467e7707c8c7 100644
  		DXG_ERR("vmbus_sendpacket failed: %x", ret);
  		spin_lock_irq(&channel->packet_list_mutex);
 -- 
-2.54.0
+2.56.0
 
 
-From 19f310f95deeb757828c3441c17803548d87902d Mon Sep 17 00:00:00 2001
+From d408071d283e7ac79f5bc90d9f82d8ce7b6d2c03 Mon Sep 17 00:00:00 2001
 From: Iouri Tarassov <iourit@linux.microsoft.com>
 Date: Fri, 26 May 2023 14:03:11 -0700
-Subject: [PATCH 49/63] drivers: hv: dxgkrnl: Add support for locking a shared
+Subject: [PATCH 49/66] drivers: hv: dxgkrnl: Add support for locking a shared
  allocation by not the owner
 
 WDDM has a restriction that an allocation of a shared resource can be
@@ -28183,13 +28183,13 @@ index d91af2e176e9..f8f116a7f87f 100644
  		total_priv_data_size += open_alloc_info.priv_drv_data_size;
  		open_alloc_info.priv_drv_data = cur_priv_data;
 -- 
-2.54.0
+2.56.0
 
 
-From a34046f2fdc5ede93d4131c979b1ebb6873f9f51 Mon Sep 17 00:00:00 2001
+From 879f738816305b669e7ef5d73d03cf85b56ced41 Mon Sep 17 00:00:00 2001
 From: Iouri Tarassov <iourit@linux.microsoft.com>
 Date: Wed, 6 Dec 2023 15:45:30 -0800
-Subject: [PATCH 50/63] drivers: hv: dxgkrnl: Fix build breaks when switching
+Subject: [PATCH 50/66] drivers: hv: dxgkrnl: Fix build breaks when switching
  to 6.6 kernel due to hv_driver remove callback change.
 
 The hv_driver remove callback has been updated to return void instead of int.
@@ -28231,13 +28231,13 @@ index 0fafb6167229..5459bd9b82fb 100644
  
  MODULE_DEVICE_TABLE(vmbus, dxg_vmbus_id_table);
 -- 
-2.54.0
+2.56.0
 
 
-From 3eab0072b868cede3326611844e9a68b4f80a111 Mon Sep 17 00:00:00 2001
+From fee2a8d2d4dfeea9846d78b406ce4e0f854c06e9 Mon Sep 17 00:00:00 2001
 From: Iouri Tarassov <iourit@linux.microsoft.com>
 Date: Wed, 6 Dec 2023 15:52:11 -0800
-Subject: [PATCH 51/63] drivers: hv: dxgkrnl: Fix build breaks when switching
+Subject: [PATCH 51/66] drivers: hv: dxgkrnl: Fix build breaks when switching
  to 6.6 kernel due to removed uuid_le_cmp
 
 uuid_le_cmp was removed and needs to be replaced by guid_equal. The
@@ -28294,13 +28294,13 @@ index 5459bd9b82fb..e3ac70df1b6f 100644
  		dxgglobal_destroy_global_channel();
  	} else {
 -- 
-2.54.0
+2.56.0
 
 
-From fdc35948a4dee22dab4e0b4e51b6696bf64659c0 Mon Sep 17 00:00:00 2001
+From 326eb95d1718c7e0e10f86733a01e6251ec8d734 Mon Sep 17 00:00:00 2001
 From: Iouri Tarassov <iourit@linux.microsoft.com>
 Date: Thu, 7 Mar 2024 09:34:05 -0800
-Subject: [PATCH 52/63] drivers: hv: dxgkrnl: Implement D3DKMTEnumProcesses to
+Subject: [PATCH 52/66] drivers: hv: dxgkrnl: Implement D3DKMTEnumProcesses to
  match the Windows implementation
 
 The behavior of D3DKMTEnumProcesses on Windows is that when buffer_count is 0 or
@@ -28385,13 +28385,13 @@ index f8f116a7f87f..42f3de31a63c 100644
  
  cleanup:
 -- 
-2.54.0
+2.56.0
 
 
-From 6e47fa6daa5d7ba865a0650ed51aea8d94d47a03 Mon Sep 17 00:00:00 2001
+From a0d5bcaa36ae7cd4f919453f4a52f2a4a9a3445a Mon Sep 17 00:00:00 2001
 From: Iouri Tarassov <iourit@linux.microsoft.com>
 Date: Thu, 7 Mar 2024 15:09:03 -0800
-Subject: [PATCH 53/63] drivers: hv: dxgkrnl: Use pin_user_pages instead of
+Subject: [PATCH 53/66] drivers: hv: dxgkrnl: Use pin_user_pages instead of
  get_user_pages for DMA accessible memory
 
 Pages, which are obtained by calling get_user_pages(), can be evicted from memory.
@@ -28449,13 +28449,13 @@ index 467e7707c8c7..abb6d2af89ac 100644
  		dxgalloc->pages = NULL;
  		ret = -ENOMEM;
 -- 
-2.54.0
+2.56.0
 
 
-From 2422b6d630784662b32c00c5829c89713528938a Mon Sep 17 00:00:00 2001
+From 3a947a05812f11ce2d3a3920a3528a9849c6ed8d Mon Sep 17 00:00:00 2001
 From: Iouri Tarassov <iourit@linux.microsoft.com>
 Date: Thu, 11 Apr 2024 17:10:28 -0700
-Subject: [PATCH 54/63] drivers: hv: dxgkrnl: Do not print error messages when
+Subject: [PATCH 54/66] drivers: hv: dxgkrnl: Do not print error messages when
  virtual GPU is not present
 
 Dxgkrnl prints the error message "Failed to acquire global channel lock"
@@ -28505,13 +28505,13 @@ index 8f5d6db256a3..c2a4a2a2136f 100644
  	} else {
  		return 0;
 -- 
-2.54.0
+2.56.0
 
 
-From 06ca6932b5729d9b27699d8b1e6dc4a248ae66df Mon Sep 17 00:00:00 2001
+From d8b3c213580f41c98599d96a9f5359ab7975508d Mon Sep 17 00:00:00 2001
 From: Hideyuki Nagase <hideyukn@microsoft.com>
 Date: Fri, 21 Feb 2025 18:16:53 +0000
-Subject: [PATCH 55/63] drivers: hv: dxgkrnl: Fix crash at
+Subject: [PATCH 55/66] drivers: hv: dxgkrnl: Fix crash at
  hmgrtable_free_handle
 
 ---
@@ -28540,13 +28540,13 @@ index 24101d0091ab..059f94307a0e 100644
  		DXG_ERR("Invalid handle to free: %d %x", i, h.v);
  	}
 -- 
-2.54.0
+2.56.0
 
 
-From 8d526bc9a0e6362cc1ccbfaab9e629f7e6497312 Mon Sep 17 00:00:00 2001
+From eb18184e7d583c9172b1839c5528f673c26256a8 Mon Sep 17 00:00:00 2001
 From: Mitchell Levy <levymitchell0@gmail.com>
 Date: Tue, 6 Jan 2026 13:42:37 -0800
-Subject: [PATCH 56/63] drivers: hv: dxgkrnl: Use new signature of
+Subject: [PATCH 56/66] drivers: hv: dxgkrnl: Use new signature of
  eventfd_signal
 
 See 3652117f8548 ("eventfd: simplify eventfd_signal()")
@@ -28570,13 +28570,13 @@ index c2a4a2a2136f..cac6198977cb 100644
  			eventfd_ctx_put(event->cpu_event);
  	} else {
 -- 
-2.54.0
+2.56.0
 
 
-From 0c5e9988ef2b29c5b5bbd1257239ab31ded5b229 Mon Sep 17 00:00:00 2001
+From ed3ecb529311bff378924a250fcf67446fa7a31e Mon Sep 17 00:00:00 2001
 From: Mitchell Levy <levymitchell0@gmail.com>
 Date: Wed, 7 Jan 2026 15:58:34 -0800
-Subject: [PATCH 57/63] drivers: hv: dxgkrnl: Include linux/vmalloc.h
+Subject: [PATCH 57/66] drivers: hv: dxgkrnl: Include linux/vmalloc.h
 
 Signed-off-by: Mitchell Levy <levymitchell0@gmail.com>
 ---
@@ -28635,13 +28635,13 @@ index 42f3de31a63c..d70a4b9153bc 100644
  #include "dxgkrnl.h"
  #include "dxgvmbus.h"
 -- 
-2.54.0
+2.56.0
 
 
-From 08a8e50893c9a5e4c66a5da9eafc0c4f0e9d5023 Mon Sep 17 00:00:00 2001
+From ad4758db8d523efbbf5a6ec6d78fd859279887b5 Mon Sep 17 00:00:00 2001
 From: Mitchell Levy <levymitchell0@gmail.com>
 Date: Wed, 7 Jan 2026 15:59:08 -0800
-Subject: [PATCH 58/63] drivers: hv: dxgkrnl: Update dma_fence_ops
+Subject: [PATCH 58/66] drivers: hv: dxgkrnl: Update dma_fence_ops
 
 See 2ce07fea3cc8 ("dma-buf/dma-fence: remove unnecessary callbacks")
 
@@ -28683,13 +28683,13 @@ index f3b3e8dd4568..d4aef69095be 100644
 -	.timeline_value_str = dxgdmafence_timeline_value_str,
  };
 -- 
-2.54.0
+2.56.0
 
 
-From b34b1f06c9a2d455f7cda42130fc24a3af804895 Mon Sep 17 00:00:00 2001
+From a3d2a858d0c2ebec142440e34816deb633a03b0b Mon Sep 17 00:00:00 2001
 From: Mitchell Levy <levymitchell0@gmail.com>
 Date: Wed, 7 Jan 2026 16:12:45 -0800
-Subject: [PATCH 59/63] drivers: hv: dxgkrnl: Remove usage of `__get_task_comm`
+Subject: [PATCH 59/66] drivers: hv: dxgkrnl: Remove usage of `__get_task_comm`
 
 See 4cc0473d7754 ("get rid of __get_task_comm()")
 
@@ -28712,13 +28712,13 @@ index 59149b2969a4..59a0cfe1abd8 100644
  		command->process_name[i] = s[i];
  		if (s[i] == 0)
 -- 
-2.54.0
+2.56.0
 
 
-From 3e593a64f84a1561800c63d83718c69b384847fc Mon Sep 17 00:00:00 2001
+From 378cae7d7dd04fc37a81614d4828243d13f708a3 Mon Sep 17 00:00:00 2001
 From: Mitchell Levy <levymitchell0@gmail.com>
 Date: Wed, 7 Jan 2026 16:13:19 -0800
-Subject: [PATCH 60/63] drivers: hv: dxgkrnl: Add body to macro to silence
+Subject: [PATCH 60/66] drivers: hv: dxgkrnl: Add body to macro to silence
  warnings
 
 If `DXG_TRACE` is configured to be empty and is used from a conditional
@@ -28750,13 +28750,13 @@ index d816a875d5ab..615fcfed1a34 100644
  	dev_err(DXGDEV, "%s: " fmt, __func__, ##__VA_ARGS__);	\
  } while (0)
 -- 
-2.54.0
+2.56.0
 
 
-From 03320781b3974a5c65b91212573b36360b7c46e4 Mon Sep 17 00:00:00 2001
+From 2f45f10b49e67216e6ae95b7e4dd174e571940ce Mon Sep 17 00:00:00 2001
 From: Mitchell Levy <levymitchell0@gmail.com>
 Date: Thu, 5 Mar 2026 13:23:23 -0800
-Subject: [PATCH 61/63] drivers: hv: dxgkrnl: Hold proper lock
+Subject: [PATCH 61/66] drivers: hv: dxgkrnl: Hold proper lock
 
 `io_remap_pfn_range` changes flags, and so hold the `write` lock when
 it's called rather than the `read` lock.
@@ -28789,13 +28789,13 @@ index 59a0cfe1abd8..21e782e79ef3 100644
  	if (ret) {
  		dxg_unmap_iospace((void *)va, size);
 -- 
-2.54.0
+2.56.0
 
 
-From 0436892e0e28bfe38c6f2812809a403a3c0d4021 Mon Sep 17 00:00:00 2001
+From 72f3087d8873fc69c32c67f361cbbb912fc78dbe Mon Sep 17 00:00:00 2001
 From: Mitchell Levy <levymitchell0@gmail.com>
 Date: Thu, 16 Apr 2026 12:44:29 -0700
-Subject: [PATCH 62/63] hv: dxgkrnl: Port to new dma_fence API
+Subject: [PATCH 62/66] hv: dxgkrnl: Port to new dma_fence API
 
 Signed-off-by: Mitchell Levy <levymitchell0@gmail.com>
 ---
@@ -28818,13 +28818,13 @@ index d4aef69095be..d65cb8586fda 100644
  
  static bool dxgdmafence_enable_signaling(struct dma_fence *fence)
 -- 
-2.54.0
+2.56.0
 
 
-From 971456ac79e26ae44e209f1ba569b72ff2872f50 Mon Sep 17 00:00:00 2001
+From c51a64971713a5c15ab01898b3475655387ae79c Mon Sep 17 00:00:00 2001
 From: Hideyuki Nagase <hideyukn@microsoft.com>
 Date: Wed, 27 May 2026 21:24:59 +0000
-Subject: [PATCH 63/63] Fix accessing syncobj after freed
+Subject: [PATCH 63/66] Fix accessing syncobj after freed
 
 ---
  drivers/hv/dxgkrnl/dxgsyncfile.c | 4 +---
@@ -28847,5 +28847,1540 @@ index d65cb8586fda..4cd6ee47f782 100644
  	if (adapter)
  		dxgadapter_release_lock_shared(adapter);
 -- 
-2.54.0
+2.56.0
+
+
+From d166a5be79f9096638159b2aeafb1849642b4750 Mon Sep 17 00:00:00 2001
+From: Mitchell Levy <levymitchell0@gmail.com>
+Date: Fri, 19 Jun 2026 18:31:07 -0700
+Subject: [PATCH 64/66] dxgkrnl: Use a VLA rather than 1-length array
+
+The dxgkvmb_command_waitforsyncobjectfromgpu struct's last member
+fence_values is treated as being a VLA, though it is declared with size
+one. This results in a warning from memcpy when CONFIG_FORTIFY_SOURCE is
+enabled, since it thinks that the member has a fixed size. Instead, use
+a VLA to silence the warning.
+
+Signed-off-by: Mitchell Levy <levymitchell0@gmail.com>
+---
+ drivers/hv/dxgkrnl/dxgvmbus.c | 2 +-
+ drivers/hv/dxgkrnl/dxgvmbus.h | 2 +-
+ 2 files changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/drivers/hv/dxgkrnl/dxgvmbus.c b/drivers/hv/dxgkrnl/dxgvmbus.c
+index 21e782e79ef3..2dafc00bc7b9 100644
+--- a/drivers/hv/dxgkrnl/dxgvmbus.c
++++ b/drivers/hv/dxgkrnl/dxgvmbus.c
+@@ -3069,7 +3069,7 @@ int dxgvmb_send_wait_sync_object_gpu(struct dxgprocess *process,
+ 	u32 fence_size = object_count * sizeof(u64);
+ 	u32 object_size = object_count * sizeof(struct d3dkmthandle);
+ 	u8 *current_pos;
+-	u32 cmd_size = object_size + fence_size - sizeof(u64) +
++	u32 cmd_size = object_size + fence_size +
+ 	    sizeof(struct dxgkvmb_command_waitforsyncobjectfromgpu);
+ 	struct dxgvmbusmsg msg = {.hdr = NULL};
+ 	struct dxgglobal *dxgglobal = dxggbl();
+diff --git a/drivers/hv/dxgkrnl/dxgvmbus.h b/drivers/hv/dxgkrnl/dxgvmbus.h
+index a7e625b2f896..d914efdbeb54 100644
+--- a/drivers/hv/dxgkrnl/dxgvmbus.h
++++ b/drivers/hv/dxgkrnl/dxgvmbus.h
+@@ -722,7 +722,7 @@ struct dxgkvmb_command_waitforsyncobjectfromgpu {
+ 	/* Must be 1 when bLegacyFenceObject is TRUE */
+ 	u32				object_count;
+ 	bool				legacy_fence_object;
+-	u64				fence_values[1];
++	u64				fence_values[];
+ 	/* struct d3dkmthandle ObjectHandles[object_count] */
+ };
+ 
+-- 
+2.56.0
+
+
+From acbc75fc026dd824ca1e320af9a740fe0ea64720 Mon Sep 17 00:00:00 2001
+From: Hideyuki Nagase <hideyukn@microsoft.com>
+Date: Thu, 11 Jun 2026 16:02:20 +0000
+Subject: [PATCH 65/66] Fix leaking syncobj
+
+---
+ drivers/hv/dxgkrnl/dxgsyncfile.c | 9 +++++++--
+ 1 file changed, 7 insertions(+), 2 deletions(-)
+
+diff --git a/drivers/hv/dxgkrnl/dxgsyncfile.c b/drivers/hv/dxgkrnl/dxgsyncfile.c
+index 4cd6ee47f782..587be6fbee8a 100644
+--- a/drivers/hv/dxgkrnl/dxgsyncfile.c
++++ b/drivers/hv/dxgkrnl/dxgsyncfile.c
+@@ -297,9 +297,14 @@ int dxgkio_open_syncobj_from_syncfile(struct dxgprocess *process,
+ cleanup:
+ 	if (dmafence)
+ 		dma_fence_put(dmafence);
+-	if (ret) {
+-		if (syncobj) 
++	if (syncobj) {
++		if (ret) {
+ 			dxgsyncobject_destroy(process, syncobj);
++			if (openargs.sync_object.v)
++				dxgvmb_send_destroy_sync_object(process, openargs.sync_object);
++		} else {
++			kref_put(&syncobj->syncobj_kref, dxgsyncobject_release);
++		}
+ 	}
+ 	if (adapter)
+ 		dxgadapter_release_lock_shared(adapter);
+-- 
+2.56.0
+
+
+From e554af1268938875e42c1db7e9a0fcabe6af2966 Mon Sep 17 00:00:00 2001
+From: Karthikeyan Singaram <kasingaram@microsoft.com>
+Date: Sun, 13 Sep 2026 23:37:29 -0700
+Subject: [PATCH 66/66] dxgkrnl: native fence sharing support
+
+Native fence create/open now use the global vmbus channel with the
+channel lock held, and return the host global sync object via an
+explicit out-parameter instead of overloading device_handle, so the
+guest device handle is preserved for later open. Copy results to
+user-mode before publishing the handle so a failed copy_to_user cannot
+leave a handle user-mode can still see. Drop the extra kref_get after
+hmgrtable_assign_handle to match dxgkio_create_sync_object refcounting.
+
+Mirror monitored-fence handling for native fences in
+dxgsyncobject_destroy/stop (device-list removal and iospace unmap), and
+guard to_syncpoint() against NULL in the sync-file paths.
+
+Review fixes folded in:
+- Split the overloaded DXGK_VMBUS_INTERFACE_VERSION: keep it at 40 as the
+  v40 feature baseline and add DXGK_VMBUS_INTERFACE_VERSION_LATEST (46)
+  for the advertised negotiation ceiling, so hosts on 40-45 keep the ext
+  header and native-fence-create works on a v45 host.
+- Check the host NTSTATUS on the native fence create path
+  (ntstatus2int on createnativefence_return.status) to mirror the open
+  path, and fix the associated trace.
+- Force the GLOBAL vmbus channel for native fence create/open via a
+  single force_global_channel flag; remove the never-true
+  force_gpu_channel param and collapse the duplicate global-channel
+  branch. Rename init_message_gpu to init_message_global accordingly.
+- Guard the diagnostic OpenNF value read-back behind #ifdef DEBUG so
+  release builds skip a copy_from_user that only fed DXG_TRACE.
+- Fix stale create_native_fence header comments: the shared handle is
+  returned via the global_sync_object out-parameter, not stored in
+  syncobj->device_handle.
+- Convert logging to DXG_TRACE (remove the DXG_INFO macro), drop the
+  dead post-init free_message path, and stop logging handle=0 before the
+  handle is assigned.
+
+Signed-off-by: Karthikeyan Singaram <kasingaram@microsoft.com>
+---
+ drivers/hv/dxgkrnl/dxgadapter.c  |  17 +-
+ drivers/hv/dxgkrnl/dxgkrnl.h     |  39 ++-
+ drivers/hv/dxgkrnl/dxgmodule.c   |   8 +-
+ drivers/hv/dxgkrnl/dxgsyncfile.c |  10 +
+ drivers/hv/dxgkrnl/dxgvmbus.c    | 410 +++++++++++++++++++++++++-
+ drivers/hv/dxgkrnl/dxgvmbus.h    |  45 +++
+ drivers/hv/dxgkrnl/ioctl.c       | 488 ++++++++++++++++++++++++++++++-
+ include/uapi/misc/d3dkmthk.h     |  84 ++++++
+ 8 files changed, 1079 insertions(+), 22 deletions(-)
+
+diff --git a/drivers/hv/dxgkrnl/dxgadapter.c b/drivers/hv/dxgkrnl/dxgadapter.c
+index 0844ef064a4e..7b44d5b5f86a 100644
+--- a/drivers/hv/dxgkrnl/dxgadapter.c
++++ b/drivers/hv/dxgkrnl/dxgadapter.c
+@@ -1125,6 +1125,8 @@ struct dxgsharedsyncobject *dxgsharedsyncobj_create(struct dxgadapter *adapter,
+ 		syncobj->adapter = adapter;
+ 		syncobj->type = so->type;
+ 		syncobj->monitored_fence = so->monitored_fence;
++		syncobj->native_fence = so->native_fence;
++		syncobj->native_fence_type = so->native_fence_type;
+ 		dxgadapter_add_shared_syncobj(adapter, syncobj);
+ 		kref_get(&adapter->adapter_kref);
+ 		init_rwsem(&syncobj->syncobj_list_lock);
+@@ -1198,6 +1200,9 @@ struct dxgsyncobject *dxgsyncobject_create(struct dxgprocess *process,
+ 		if (syncobj->host_event == NULL)
+ 			goto cleanup;
+ 		break;
++	case _D3DDDI_NATIVE_FENCE:
++		syncobj->native_fence = 1;
++		break;
+ 	default:
+ 		break;
+ 	}
+@@ -1211,7 +1216,7 @@ struct dxgsyncobject *dxgsyncobject_create(struct dxgprocess *process,
+ 
+ 	kref_init(&syncobj->syncobj_kref);
+ 
+-	if (syncobj->monitored_fence) {
++	if (syncobj->monitored_fence || syncobj->native_fence) {
+ 		syncobj->device = device;
+ 		syncobj->device_handle = device->handle;
+ 		kref_get(&device->device_kref);
+@@ -1225,8 +1230,10 @@ struct dxgsyncobject *dxgsyncobject_create(struct dxgprocess *process,
+ 	DXG_TRACE("Syncobj created: %p", syncobj);
+ 	return syncobj;
+ cleanup:
+-	kfree(syncobj->host_event);
+-	kfree(syncobj);
++	if (syncobj) {
++		kfree(syncobj->host_event);
++		kfree(syncobj);
++	}
+ 	return NULL;
+ }
+ 
+@@ -1263,7 +1270,7 @@ void dxgsyncobject_destroy(struct dxgprocess *process,
+ 				host_event->cpu_event = NULL;
+ 			}
+ 		}
+-		if (syncobj->monitored_fence)
++		if (syncobj->monitored_fence || syncobj->native_fence)
+ 			dxgdevice_remove_syncobj(syncobj);
+ 		else
+ 			dxgadapter_remove_syncobj(syncobj);
+@@ -1283,7 +1290,7 @@ void dxgsyncobject_stop(struct dxgsyncobject *syncobj)
+ 
+ 	if (!stopped) {
+ 		DXG_TRACE("Stopping syncobj");
+-		if (syncobj->monitored_fence) {
++		if (syncobj->monitored_fence || syncobj->native_fence) {
+ 			if (syncobj->mapped_address) {
+ 				ret = dxg_unmap_iospace(syncobj->mapped_address,
+ 							PAGE_SIZE);
+diff --git a/drivers/hv/dxgkrnl/dxgkrnl.h b/drivers/hv/dxgkrnl/dxgkrnl.h
+index 615fcfed1a34..09d54bbea93a 100644
+--- a/drivers/hv/dxgkrnl/dxgkrnl.h
++++ b/drivers/hv/dxgkrnl/dxgkrnl.h
+@@ -144,16 +144,21 @@ void dxgpagingqueue_stop(struct dxgpagingqueue *pqueue);
+ 
+ /*
+  * This is GPU synchronization object, which is used to synchronize execution
+- * between GPU contextx/hardware queues or for tracking GPU execution progress.
++ * between GPU context/hardware queues or for tracking GPU execution progress.
+  * A dxgsyncobject is created when somebody creates a syncobject or opens a
+  * shared syncobject.
+  * A syncobject belongs to an adapter, unless it is a cross-adapter object.
+  * Cross adapter syncobjects are currently not implemented.
+  *
+  * D3DDDI_MONITORED_FENCE and D3DDDI_PERIODIC_MONITORED_FENCE are called
+- * "device" syncobject, because the belong to a device (dxgdevice).
++ * "device" syncobject, because they belong to a device (dxgdevice).
+  * Device syncobjects are inserted to a list in dxgdevice.
+  *
++ * Native fence objects (D3DDDI_NATIVE_FENCE) are another type of
++ * synchronization object that provide a lightweight synchronization
++ * mechanism. They can be shared across processes and are typically
++ * used for efficient GPU-to-GPU and GPU-to-CPU synchronization.
++ *
+  * A syncobject can be "shared", meaning that it could be opened by many
+  * processes.
+  *
+@@ -161,9 +166,9 @@ void dxgpagingqueue_stop(struct dxgpagingqueue *pqueue);
+  * (dxgsharedsyncobject).
+  * A syncobject can be shared by using a global handle or by using
+  * "NT security handle".
+- * When global handle sharing is used, the handle is created durinig object
++ * When global handle sharing is used, the handle is created during object
+  * creation.
+- * When "NT security" is used, the handle for sharing is create be calling
++ * When "NT security" is used, the handle for sharing is created by calling
+  * dxgk_share_objects. On Linux "NT handle" is represented by a file
+  * descriptor. FD points to dxgsharedsyncobject.
+  */
+@@ -205,10 +210,13 @@ struct dxgsyncobject {
+ 			u32		monitored_fence:1;
+ 			u32		cpu_event:1;
+ 			u32		shared:1;
+-			u32		reserved:27;
++			u32		native_fence:1;
++			u32		reserved:26;
+ 		};
+ 		long			flags;
+ 	};
++	/* Native fence type: D3DDDI_NATIVEFENCE_TYPE_DEFAULT or INTRA_GPU */
++	enum d3dddi_nativefence_type	native_fence_type;
+ };
+ 
+ /*
+@@ -244,8 +252,18 @@ struct dxgsharedsyncobject {
+ 	struct dxgadapter		*adapter;
+ 	enum d3dddi_synchronizationobject_type type;
+ 	u32				monitored_fence:1;
++	u32				native_fence:1;
++	/* Native fence type: D3DDDI_NATIVEFENCE_TYPE_DEFAULT or INTRA_GPU */
++	enum d3dddi_nativefence_type	native_fence_type;
+ };
+ 
++static inline const char *
++dxg_nativefence_type_name(enum d3dddi_nativefence_type type)
++{
++	return type == _D3DDDI_NATIVEFENCE_TYPE_INTRA_GPU ?
++		"INTRA_GPU" : "DEFAULT";
++}
++
+ struct dxgsharedsyncobject *dxgsharedsyncobj_create(struct dxgadapter *adapter,
+ 						    struct dxgsyncobject
+ 						    *syncobj);
+@@ -792,7 +810,10 @@ static inline void guid_to_luid(guid_t *guid, struct winluid *luid)
+  */
+ #define DXGK_VMBUS_INTERFACE_VERSION_OLD		27
+ #define DXGK_VMBUS_INTERFACE_VERSION			40
++#define DXGK_VMBUS_INTERFACE_VERSION_LATEST		46
+ #define DXGK_VMBUS_LAST_COMPATIBLE_INTERFACE_VERSION	16
++#define DXGK_VMBUS_VERSION_CREATENATIVEFENCE		45
++#define DXGK_VMBUS_VERSION_OPENNATIVEFENCE_NT		46
+ 
+ void dxgvmb_initialize(void);
+ int dxgvmb_send_set_iospace_region(u64 start, u64 len);
+@@ -855,6 +876,11 @@ int dxgvmb_send_create_sync_object(struct dxgprocess *pr,
+ 				   struct dxgadapter *adapter,
+ 				   struct d3dkmt_createsynchronizationobject2
+ 				   *args, struct dxgsyncobject *so);
++int dxgvmb_send_create_native_fence(struct dxgprocess *process,
++				    struct dxgadapter *adapter,
++				    struct d3dkmt_createnativefence *args,
++				    struct dxgsyncobject *syncobj,
++				    struct d3dkmthandle *global_sync_object);
+ int dxgvmb_send_destroy_sync_object(struct dxgprocess *pr,
+ 				    struct d3dkmthandle h);
+ int dxgvmb_send_signal_sync_object(struct dxgprocess *process,
+@@ -954,6 +980,9 @@ int dxgvmb_send_open_sync_object_nt(struct dxgprocess *process,
+ 				    struct d3dkmt_opensyncobjectfromnthandle2
+ 				    *args,
+ 				    struct dxgsyncobject *syncobj);
++int dxgvmb_send_open_native_fence_object_nt(struct dxgprocess *process,
++				    struct d3dkmt_opennativefencefromnthandle *args,
++				    struct dxgsyncobject *syncobj);
+ int dxgvmb_send_open_sync_object(struct dxgprocess *process,
+ 				struct d3dkmthandle device,
+ 				struct d3dkmthandle host_shared_syncobj,
+diff --git a/drivers/hv/dxgkrnl/dxgmodule.c b/drivers/hv/dxgkrnl/dxgmodule.c
+index cac6198977cb..9ab63b2a9cef 100644
+--- a/drivers/hv/dxgkrnl/dxgmodule.c
++++ b/drivers/hv/dxgkrnl/dxgmodule.c
+@@ -518,7 +518,7 @@ static int dxg_pci_probe_device(struct pci_dev *dev,
+ {
+ 	int ret;
+ 	guid_t guid;
+-	u32 vmbus_interface_ver = DXGK_VMBUS_INTERFACE_VERSION;
++	u32 vmbus_interface_ver = DXGK_VMBUS_INTERFACE_VERSION_LATEST;
+ 	struct winluid vgpu_luid = {};
+ 	struct dxgk_vmbus_guestcaps guest_caps = {.wsl2 = 1};
+ 	struct dxgglobal *dxgglobal = dxggbl();
+@@ -547,7 +547,7 @@ static int dxg_pci_probe_device(struct pci_dev *dev,
+ 			goto read_channel_id;
+ 
+ 		ret = pci_write_config_dword(dev, DXGK_VMBUS_VERSION_OFFSET,
+-					DXGK_VMBUS_INTERFACE_VERSION);
++					DXGK_VMBUS_INTERFACE_VERSION_LATEST);
+ 		if (ret)
+ 			goto cleanup;
+ 
+@@ -558,8 +558,8 @@ static int dxg_pci_probe_device(struct pci_dev *dev,
+ 				dxgglobal->map_guest_pages_enabled = true;
+ 		}
+ 
+-		if (dxgglobal->vmbus_ver > DXGK_VMBUS_INTERFACE_VERSION)
+-			dxgglobal->vmbus_ver = DXGK_VMBUS_INTERFACE_VERSION;
++		if (dxgglobal->vmbus_ver > DXGK_VMBUS_INTERFACE_VERSION_LATEST)
++			dxgglobal->vmbus_ver = DXGK_VMBUS_INTERFACE_VERSION_LATEST;
+ 	}
+ 
+ read_channel_id:
+diff --git a/drivers/hv/dxgkrnl/dxgsyncfile.c b/drivers/hv/dxgkrnl/dxgsyncfile.c
+index 587be6fbee8a..1e7fe3e070ea 100644
+--- a/drivers/hv/dxgkrnl/dxgsyncfile.c
++++ b/drivers/hv/dxgkrnl/dxgsyncfile.c
+@@ -219,6 +219,11 @@ int dxgkio_open_syncobj_from_syncfile(struct dxgprocess *process,
+ 		goto cleanup;
+ 	}
+ 	pt = to_syncpoint(dmafence);
++	if (pt == NULL) {
++		DXG_ERR("failed to get syncpoint from dmafence");
++		ret = -EINVAL;
++		goto cleanup;
++	}
+ 	if (pt->shared_syncobj == NULL) {
+ 		DXG_ERR("Sync object is not shared");
+ 		goto cleanup;
+@@ -343,6 +348,11 @@ int dxgkio_wait_sync_file(struct dxgprocess *process, void *__user inargs)
+ 		goto cleanup;
+ 	}
+ 	pt = to_syncpoint(dmafence);
++	if (pt == NULL) {
++		DXG_ERR("failed to get syncpoint from dmafence");
++		ret = -EINVAL;
++		goto cleanup;
++	}
+ 
+ 	device = dxgprocess_device_by_object_handle(process,
+ 						    HMGRENTRY_TYPE_DXGCONTEXT,
+diff --git a/drivers/hv/dxgkrnl/dxgvmbus.c b/drivers/hv/dxgkrnl/dxgvmbus.c
+index 2dafc00bc7b9..5a699a61d8f1 100644
+--- a/drivers/hv/dxgkrnl/dxgvmbus.c
++++ b/drivers/hv/dxgkrnl/dxgvmbus.c
+@@ -80,8 +80,9 @@ struct dxgvmbusmsgres {
+ 	void				*res;
+ };
+ 
+-static int init_message(struct dxgvmbusmsg *msg, struct dxgadapter *adapter,
+-			struct dxgprocess *process, u32 size)
++static int init_message_impl(struct dxgvmbusmsg *msg, struct dxgadapter *adapter,
++			     struct dxgprocess *process, u32 size,
++			     bool force_global_channel)
+ {
+ 	struct dxgglobal *dxgglobal = dxggbl();
+ 
+@@ -107,13 +108,25 @@ static int init_message(struct dxgvmbusmsg *msg, struct dxgadapter *adapter,
+ 	} else {
+ 		msg->msg = (char *)msg->hdr;
+ 	}
+-	if (adapter && !dxgglobal->async_msg_enabled)
++	if (!force_global_channel && adapter && !dxgglobal->async_msg_enabled)
+ 		msg->channel = &adapter->channel;
+ 	else
+ 		msg->channel = &dxgglobal->channel;
+ 	return 0;
+ }
+ 
++/* Default wrapper - maintains backward compatibility */
++#define init_message(msg, adapter, process, size) \
++	init_message_impl(msg, adapter, process, size, false)
++
++/*
++ * Native fence create/open must use the GLOBAL vmbus channel (per graphics
++ * kernel guidance). The host still performs adapter-specific handling via the
++ * vgpu_luid carried in the ext header. Used ONLY by native fence create/open.
++ */
++#define init_message_global(msg, adapter, process, size) \
++	init_message_impl(msg, adapter, process, size, true)
++
+ static int init_message_res(struct dxgvmbusmsgres *msg,
+ 			    struct dxgadapter *adapter,
+ 			    u32 size,
+@@ -747,6 +760,213 @@ int dxgvmb_send_destroy_process(struct d3dkmthandle process)
+ 	return ret;
+ }
+ 
++/*
++ * Start of dxgvmb_send_open_native_fence_object_nt
++ *
++ * FUNCTION SUMMARY:
++ * Opens a native fence synchronization object from an NT handle via VMBus and sets up
++ * CPU memory mappings based on fence type (DEFAULT or INTRA_GPU) per D3DKMT spec 9.2.
++ *
++ * OPERATION FLOW:
++ *
++ * 1. INPUT VALIDATION:
++ *    - Validates sync object is a native fence type
++ *    - Ensures shared_owner and host_shared_handle_nt are valid
++ *    - Validates process, channel, args, and syncobj parameters
++ *
++ * 2. MESSAGE PREPARATION:
++ *    - Initializes VMBus message with DXGK_VMBCOMMAND_OPENNATIVEFENCEFROMNTHANDLE
++ *    - Sets NT shared handle from shared_owner
++ *    - Sends open request to host and receives result
++ *
++ * 3. CPU MEMORY MAPPING (based on fence type per D3DKMT spec 9.2):
++ *    - DEFAULT type (0): Creates ReadOnly CPU mapping for current_value_physical_address
++ *    - INTRA_GPU type (1): No CPU mapping (CPU VA = NULL, no user mode access)
++ *
++ * 4. RESULT PROCESSING:
++ *    - Stores sync_object handle from host
++ *    - Sets GPU virtual addresses for current_value and monitored_value
++ *    - Sets CPU virtual address (NULL for INTRA_GPU, mapped address for DEFAULT)
++ *    - Copies private driver data from host response
++ *
++ * KEY NOTES:
++ * - INTRA_GPU fences have no CPU access (spec requirement)
++ * - DEFAULT fences get ReadOnly CPU mapping for monitoring
++ * - Uses host_shared_handle_nt for cross-process sharing
++ */
++int dxgvmb_send_open_native_fence_object_nt(struct dxgprocess *process,
++				    struct d3dkmt_opennativefencefromnthandle *args,
++				    struct dxgsyncobject *syncobj)
++{
++	struct dxgkvmb_command_opennativefencefromnthandle *command;
++	struct dxgkvmb_command_opennativefencefromnthandle_return result = { };
++	int ret;
++	struct dxgvmbusmsg msg = {.hdr = NULL};
++	struct dxgadapter *adapter;
++	bool mapping_created = false;
++
++	/* Validate input arguments */
++	if (!process || !args || !syncobj) {
++		DXG_ERR("VALIDATION FAILED: Invalid input arguments");
++		return -EINVAL;
++	}
++
++	if (!syncobj->shared_owner) {
++		DXG_ERR("VALIDATION FAILED: syncobj->shared_owner is NULL");
++		return -EINVAL;
++	}
++
++	if (!syncobj->shared_owner->host_shared_handle.v) {
++		DXG_ERR("VALIDATION FAILED: shared_owner host_shared_handle is invalid: 0x%08x",
++			syncobj->shared_owner->host_shared_handle.v);
++		return -EINVAL;
++	}
++
++	/* Validate that this is a native fence sync object */
++	if (syncobj->type != _D3DDDI_NATIVE_FENCE) {
++		DXG_ERR("VALIDATION FAILED: syncobj is not a native fence: type=%d (expected %d)",
++			syncobj->type, _D3DDDI_NATIVE_FENCE);
++		return -EINVAL;
++	}
++
++	/* Log every parameter we send to the host for this open request */
++	DXG_TRACE("SEND OpenNativeFence - Type=%s(%d), NTHandle=0x%x, Device=0x%x, Adapter=%p",
++		dxg_nativefence_type_name(syncobj->native_fence_type),
++		syncobj->native_fence_type, syncobj->shared_owner->host_shared_handle_nt.v,
++		syncobj->device_handle.v, syncobj->adapter);
++
++	/* Get adapter from the sync object */
++	adapter = syncobj->adapter;
++	if (!adapter) {
++		DXG_ERR("VALIDATION FAILED: syncobj adapter is NULL");
++		return -EINVAL;
++	}
++
++	ret = init_message_global(&msg, adapter, process, sizeof(*command));
++	if (ret) {
++		DXG_ERR("MESSAGE INIT FAILED: %d", ret);
++		return ret;
++	}
++
++	command = (void *)msg.msg;
++
++	command_vgpu_to_host_init2(&command->hdr, DXGK_VMBCOMMAND_OPENNATIVEFENCEFROMNTHANDLE,
++				   process->host_handle);
++	command->args = *args;
++	/* Use the NT shared handle for NT-based native fence opening */
++	command->hglobalshare = syncobj->shared_owner->host_shared_handle_nt;
++	/*
++	 * The userspace device handle can be 0 on the open path, but the host
++	 * requires a valid handle; use the one recorded on the syncobj at
++	 * creation time.
++	 */
++	command->args.device = syncobj->device_handle;
++
++	ret = dxgglobal_acquire_channel_lock();
++	if (ret < 0)
++		goto cleanup;
++
++	ret = dxgvmb_send_sync_msg(msg.channel, msg.hdr, msg.size,
++				   &result, sizeof(result));
++
++	dxgglobal_release_channel_lock();
++
++	if (ret < 0) {
++		DXG_ERR("VMBUS COMMUNICATION ERROR - Send Failed: %d", ret);
++		goto cleanup;
++	}
++
++	ret = ntstatus2int(result.status);
++	if (ret < 0) {
++		DXG_ERR("HOST REJECTED NATIVE FENCE OPEN: NTSTATUS=0x%08x, error=%d",
++			result.status.v, ret);
++		goto cleanup;
++	}
++
++	/* Copy result back to args */
++	args->sync_object = result.hsyncobject;
++
++	/* Map native fence memory with correct access permissions per specification:
++	 * DEFAULT: CPU VA should be ReadOnly for user mode
++	 * INTRA_GPU: CPU VA should be NA (No Access) for user mode
++	 */
++	void *va = NULL;
++
++	if (syncobj->native_fence_type == _D3DDDI_NATIVEFENCE_TYPE_INTRA_GPU) {
++		/* INTRA_GPU: No CPU access for user mode - map as NULL */
++		DXG_TRACE("INTRA_GPU fence: No CPU mapping provided to user mode");
++		args->native_fence_mapping.current_value_cpu_va = NULL;
++	} else {
++		/* DEFAULT: ReadOnly CPU access */
++		DXG_TRACE("DEFAULT fence: Creating ReadOnly CPU mapping");
++		va = dxg_map_iospace(result.current_value_physical_address,
++				     PAGE_SIZE, PROT_READ, true);
++		if (va == NULL) {
++			DXG_ERR("MEMORY MAPPING FAILED: Physical Address = 0x%016llx",
++				result.current_value_physical_address);
++			ret = -ENOMEM;
++			goto cleanup;
++		}
++		mapping_created = true;
++		args->native_fence_mapping.current_value_cpu_va = va;
++	}
++	args->native_fence_mapping.current_value_gpu_va = result.current_value_gpu_va;
++	args->native_fence_mapping.monitored_value_gpu_va = result.monitored_value_gpu_va;
++	syncobj->mapped_address = va;
++
++	/*
++	 * Log every field the host returned for this open response. For DEFAULT
++	 * fences we also best-effort read the current value back from the mapped
++	 * page; that read is diagnostic only, so a failed copy_from_user() must
++	 * NOT tear down a valid fence - we simply report the value as unavailable.
++	 */
++#ifdef DEBUG
++	{
++		u64 fence_value = 0;
++		bool have_value = mapping_created &&
++			copy_from_user(&fence_value, va, sizeof(u64)) == 0;
++
++		if (have_value)
++			DXG_TRACE("RCV OpenNF S=%x O=%x V=%llx GV=%llx MV=%llx PA=%llx Of=%d VA=%p",
++				result.status.v, result.hsyncobject.v, fence_value,
++				result.current_value_gpu_va, result.monitored_value_gpu_va,
++				result.current_value_physical_address,
++				result.current_value_offset, va);
++		else
++			DXG_TRACE("RCV OpenNF S=%x O=%x V=NA GV=%llx MV=%llx PA=%llx Of=%d VA=%p",
++				result.status.v, result.hsyncobject.v,
++				result.current_value_gpu_va, result.monitored_value_gpu_va,
++				result.current_value_physical_address,
++				result.current_value_offset, va);
++	}
++#endif
++
++	/* Copy private driver data from host response back to userspace */
++	memcpy(args->private_driver_data, result.private_driver_data,
++	       D3DDDI_NATIVE_FENCE_PDD_SIZE);
++
++	/* Success - don't cleanup the mapping */
++	free_message(&msg);
++	return 0;
++
++cleanup:
++	/* Cleanup resources in reverse order */
++	if (mapping_created) {
++		DXG_TRACE("Native fence open cleanup: Unmapping VA=0x%p, PhysAddr=0x%016llx",
++			va, result.current_value_physical_address);
++		/* Unmap memory if it was mapped */
++		dxg_unmap_iospace(va, PAGE_SIZE);
++		syncobj->mapped_address = NULL;
++		/* Clear user-facing pointers */
++		args->native_fence_mapping.current_value_cpu_va = NULL;
++		DXG_TRACE("Native fence open cleanup: Memory unmapped successfully");
++	}
++	free_message(&msg);
++	DXG_ERR("Native fence open failed: error %d, NT_Handle=0x%x", ret,
++		syncobj->shared_owner->host_shared_handle_nt.v);
++	return ret;
++}
++
+ int dxgvmb_send_open_sync_object_nt(struct dxgprocess *process,
+ 				    struct dxgvmbuschannel *channel,
+ 				    struct d3dkmt_opensyncobjectfromnthandle2
+@@ -2824,6 +3044,190 @@ static void set_result(struct d3dkmt_createsynchronizationobject2 *args,
+ 	args->info.periodic_monitored_fence.fence_cpu_virtual_address = va;
+ }
+ 
++/*
++ * Start of dxgvmb_send_create_native_fence
++ *
++ * FUNCTION SUMMARY:
++ * Sends a native fence creation request to the host via VMBus and sets up CPU
++ * memory mappings based on fence type (DEFAULT or INTRA_GPU) per D3DKMT spec 9.2.
++ *
++ * OPERATION FLOW:
++ *
++ * 1. MESSAGE PREPARATION:
++ *    - Initializes VMBus message with DXGK_VMBCOMMAND_CREATENATIVEFENCE
++ *    - Sends creation request to host and receives result
++ *
++ * 2. CPU MEMORY MAPPING (based on fence type):
++ *    - DEFAULT type: Creates ReadOnly CPU mapping for current_value_physical_address
++ *    - INTRA_GPU type: No CPU mapping (CPU VA = NULL, no user mode access)
++ *
++ * 3. RESULT PROCESSING:
++ *    - Stores sync_object handle from host
++ *    - For shared fences: returns global_sync_object to the caller via the
++ *      global_sync_object out-parameter
++ *    - Sets GPU virtual addresses for current_value and monitored_value
++ *    - Sets CPU virtual address (NULL for INTRA_GPU, mapped address for DEFAULT)
++ *
++ * 4. PRIVATE DRIVER DATA:
++ *    - Copies private driver data from host response to user args
++ *
++ * KEY NOTES:
++ * - INTRA_GPU fences have no CPU access (spec requirement)
++ * - DEFAULT fences get ReadOnly CPU mapping for monitoring
++ * - Shared fence's host handle is returned via the global_sync_object
++ *   out-parameter; syncobj->device_handle stays the guest device handle
++ */
++int dxgvmb_send_create_native_fence(struct dxgprocess *process,
++				    struct dxgadapter *adapter,
++				    struct d3dkmt_createnativefence *args,
++				    struct dxgsyncobject *syncobj,
++				    struct d3dkmthandle *global_sync_object)
++{
++	u8 *va = NULL;
++	int ret;
++	struct dxgvmbusmsg msg = {.hdr = NULL};
++	struct dxgkvmb_command_createnativefence *command = NULL;
++	struct dxgkvmb_command_createnativefence_return result = {};
++	bool mapping_created = false;
++
++	/* Validate input arguments */
++	if (!process || !adapter || !args || !syncobj) {
++		DXG_ERR("VALIDATION FAILED: Invalid input arguments");
++		return -EINVAL;
++	}
++
++	/* Log every parameter we send to the host for this create request */
++	DXG_TRACE("SEND CreateNativeFence - Type=%s(%d), InitVal=0x%llx, Shared=%d, Device=0x%x",
++		dxg_nativefence_type_name(syncobj->native_fence_type),
++		syncobj->native_fence_type, args->info.initial_fence_value,
++		syncobj->shared, syncobj->device_handle.v);
++
++	ret = init_message_global(&msg, adapter, process, sizeof(*command));
++	if (ret) {
++		DXG_ERR("MESSAGE INIT FAILED: %d", ret);
++		return ret;
++	}
++
++	command = (void *)msg.msg;
++
++	command_vgpu_to_host_init2(&command->hdr,
++				   DXGK_VMBCOMMAND_CREATENATIVEFENCE,
++				   process->host_handle);
++	command->args = *args;
++
++	ret = dxgglobal_acquire_channel_lock();
++	if (ret < 0)
++		goto cleanup;
++
++	ret = dxgvmb_send_sync_msg(msg.channel, msg.hdr, msg.size, &result,
++				   sizeof(result));
++
++	dxgglobal_release_channel_lock();
++
++	if (ret < 0) {
++		DXG_ERR("VMBUS COMMUNICATION ERROR - Send Failed: %d", ret);
++		goto cleanup;
++	}
++
++	ret = ntstatus2int(result.status);
++	if (ret < 0) {
++		DXG_ERR("HOST REJECTED NATIVE FENCE CREATE: NTSTATUS=0x%08x, error=%d",
++			result.status.v, ret);
++		goto cleanup;
++	}
++
++	/*
++	 * Record the host sync object handle immediately after the send succeeds
++	 * and before any mapping. If dxg_map_iospace() below fails (e.g. out of
++	 * memory), the caller still holds the handle and can destroy the host-side
++	 * native fence during ioctl cleanup rather than leaking it.
++	 */
++	args->sync_object = result.sync_object;
++
++	/* Map native fence memory with correct access permissions per specification:
++	 * DEFAULT: CPU VA should be ReadOnly for user mode
++	 * INTRA_GPU: CPU VA should be NA (No Access) for user mode
++	 */
++	if (syncobj->native_fence_type == _D3DDDI_NATIVEFENCE_TYPE_INTRA_GPU) {
++		/* INTRA_GPU: No CPU access for user mode */
++		DXG_TRACE("INTRA_GPU fence: No CPU mapping provided to user mode");
++		va = NULL;
++	} else {
++		/* DEFAULT: ReadOnly CPU access */
++		DXG_TRACE("DEFAULT fence: Creating ReadOnly CPU mapping");
++		va = dxg_map_iospace(result.current_value_physical_address, PAGE_SIZE,
++				     PROT_READ, true);
++		if (va == NULL) {
++			DXG_ERR("MEMORY MAPPING FAILED: Physical Address = 0x%016llx",
++				result.current_value_physical_address);
++			ret = -ENOMEM;
++			goto cleanup;
++		}
++		mapping_created = true;
++	}
++
++	if (syncobj->shared) {
++		if (result.global_sync_object.v == 0) {
++			ret = -EINVAL;
++			goto cleanup;
++		}
++		if (global_sync_object)
++			*global_sync_object = result.global_sync_object;
++	}
++
++	args->info.native_fence_mapping.current_value_gpu_va = result.current_value_gpu_va;
++	args->info.native_fence_mapping.monitored_value_gpu_va = result.monitored_value_gpu_va;
++	args->info.native_fence_mapping.current_value_cpu_va = va;
++
++	syncobj->mapped_address = va;
++
++	/* Log every field the host returned for this create response */
++	DXG_TRACE("RCV CreateNF S=0x%x O=0x%x G=0x%x GVa=0x%llx MVa=0x%llx PA=0x%llx Off=%d VA=%p",
++		result.status.v, result.sync_object.v, result.global_sync_object.v,
++		result.current_value_gpu_va, result.monitored_value_gpu_va,
++		result.current_value_physical_address, result.current_value_offset, va);
++
++	/*
++	 * Coherency check: the freshly mapped fence must read back the initial
++	 * value we requested. The fence is already created and mapped, so a failed
++	 * copy_from_user() is non-fatal and left unlogged; only a genuine value
++	 * mismatch is reported, and that is a real error worth surfacing.
++	 */
++	if (mapping_created) {
++		u64 value = 0;
++
++		if (copy_from_user(&value, va, sizeof(u64)) == 0 &&
++		    value != args->info.initial_fence_value) {
++			DXG_ERR("Native fence value mismatch: expected 0x%llx, read 0x%llx",
++				args->info.initial_fence_value, value);
++		}
++	}
++
++	/* Copy private driver data from host response back to userspace */
++	memcpy(args->private_driver_data,
++	       result.private_driver_data, D3DDDI_NATIVE_FENCE_PDD_SIZE);
++
++	/* Success - don't cleanup the mapping */
++	free_message(&msg);
++	return 0;
++
++cleanup:
++	/* Cleanup resources in reverse order */
++	if (mapping_created) {
++		DXG_TRACE("Native fence create cleanup: Unmapping VA=0x%p, PhysAddr=0x%016llx",
++			va, result.current_value_physical_address);
++		/* Unmap memory if it was mapped */
++		dxg_unmap_iospace(va, PAGE_SIZE);
++		syncobj->mapped_address = NULL;
++		/* Clear user-facing pointers */
++		args->info.native_fence_mapping.current_value_cpu_va = NULL;
++		DXG_TRACE("Native fence create cleanup: Memory unmapped successfully");
++	}
++	free_message(&msg);
++	DXG_ERR("Native fence create failed: error %d, Device=0x%x", ret, args->device.v);
++	return ret;
++}
++
+ int
+ dxgvmb_send_create_sync_object(struct dxgprocess *process,
+ 			       struct dxgadapter *adapter,
+diff --git a/drivers/hv/dxgkrnl/dxgvmbus.h b/drivers/hv/dxgkrnl/dxgvmbus.h
+index d914efdbeb54..8b3db2947b40 100644
+--- a/drivers/hv/dxgkrnl/dxgvmbus.h
++++ b/drivers/hv/dxgkrnl/dxgvmbus.h
+@@ -128,6 +128,8 @@ enum dxgkvmb_commandtype {
+ 	DXGK_VMBCOMMAND_SETEXISTINGSYSMEMPAGES	= 66,
+ 	DXGK_VMBCOMMAND_INVALIDATECACHE		= 67,
+ 	DXGK_VMBCOMMAND_ISFEATUREENABLED	= 68,
++	DXGK_VMBCOMMAND_CREATENATIVEFENCE	= 69,
++	DXGK_VMBCOMMAND_OPENNATIVEFENCEFROMNTHANDLE = 70,
+ 	DXGK_VMBCOMMAND_INVALID
+ };
+ 
+@@ -191,6 +193,24 @@ struct dxgkvmb_command_setguestdata {
+ 	u32	data_type	: 4;
+ };
+ 
++struct dxgkvmb_command_opennativefencefromnthandle {
++	struct dxgkvmb_command_vgpu_to_host hdr;
++	struct d3dkmthandle hglobalshare;  /* Shared object handle for lookup */
++	struct d3dkmt_opennativefencefromnthandle args;
++};
++
++struct dxgkvmb_command_opennativefencefromnthandle_return {
++	struct ntstatus status;
++	struct d3dkmthandle hsyncobject;
++	__u32 reserved_padding;                /* Match Windows UINT Reserved field */
++	__u64 current_value_gpu_va;
++	__u64 monitored_value_gpu_va;
++	__u64 current_value_physical_address;
++	__u32 current_value_offset;
++	__u32 reserved2;                       /* Match Windows UINT Reserved2 field */
++	__u8 private_driver_data[D3DDDI_NATIVE_FENCE_PDD_SIZE];
++};
++
+ struct dxgkvmb_command_opensyncobject {
+ 	struct dxgkvmb_command_vm_to_host hdr;
+ 	struct d3dkmthandle		device;
+@@ -679,6 +699,31 @@ struct dxgkvmb_command_createsyncobject_return {
+ 	u32			fence_storage_offset;
+ };
+ 
++struct dxgkvmb_command_createnativefence {
++	struct dxgkvmb_command_vgpu_to_host hdr;
++	struct d3dkmt_createnativefence args;
++	u32 flags;
++};
++
++struct dxgkvmb_command_createnativefence_return {
++	struct ntstatus status;
++	struct d3dkmthandle sync_object;
++	struct d3dkmthandle global_sync_object;
++	u32 reserved;		/* Padding */
++	u64 current_value_gpu_va;
++	u64 monitored_value_gpu_va;
++	/*
++	 * Physical address of the fence storage page in IO space.
++	 * Currently each monitored value is placed in its own page.
++	 */
++	u64 current_value_physical_address;
++	/* Reserved to handle packing of values in a storage page */
++	u32 current_value_offset;
++	u32 reserved2;		/* Padding */
++	/* Private driver data returned back by KMD in DdiCreateNativeFence call */
++	u8 private_driver_data[D3DDDI_NATIVE_FENCE_PDD_SIZE];
++};
++
+ /* The command returns ntstatus */
+ struct dxgkvmb_command_destroysyncobject {
+ 	struct dxgkvmb_command_vm_to_host hdr;
+diff --git a/drivers/hv/dxgkrnl/ioctl.c b/drivers/hv/dxgkrnl/ioctl.c
+index d70a4b9153bc..31bfdcd40c5d 100644
+--- a/drivers/hv/dxgkrnl/ioctl.c
++++ b/drivers/hv/dxgkrnl/ioctl.c
+@@ -2764,6 +2764,244 @@ dxgkio_update_gpu_va(struct dxgprocess *process, void *__user inargs)
+ 	return ret;
+ }
+ 
++static
++int validate_create_native_fence_args(struct d3dkmt_createnativefence *args)
++{
++	if (args->info.flags.reserved != 0) {
++		DXG_ERR("Reserved flags should not be used");
++		return -EINVAL;
++	}
++
++	if (args->info.flags.nt_security_sharing && !(args->info.flags.shared)) {
++		DXG_ERR("NtSecuritySharing requires the sync object to be shared too.");
++		return -EINVAL;
++	}
++
++	if ((args->info.flags.shared) && !(args->info.flags.nt_security_sharing)) {
++		DXG_ERR("Native fence sync objects only support NT handle based sharing");
++		return -EINVAL;
++	}
++
++	if (args->info.flags.no_signal && args->info.flags.no_wait) {
++		DXG_ERR("Cannot set both NoSignal and NoWait for native fences.");
++		return -EINVAL;
++	}
++
++	return 0;
++}
++
++/* Start of dxgkio_create_native_fence
++ *
++ * FUNCTION SUMMARY:
++ * Creates a native fence synchronization object for GPU-to-GPU synchronization with
++ * type-specific sharing capabilities as defined in D3DKMT specification section 9.2.
++ *
++ * OPERATION FLOW:
++ *
++ * 1. INPUT VALIDATION:
++ *    - Validates device handle and acquires device/adapter locks
++ *    - Validates native fence creation arguments (flags, fence type)
++ *
++ * 2. NATIVE FENCE TYPE HANDLING (per D3DKMT spec 9.2):
++ *    - DEFAULT type (0): Allows cross-process AND cross-adapter sharing
++ *    - INTRA_GPU type (1): Allows cross-process sharing ONLY (no cross-adapter)
++ *    - Stores subtype in native_fence_type enum (D3DDDI_NATIVEFENCE_TYPE)
++ *
++ * 3. LOCAL SYNC OBJECT CREATION:
++ *    - Creates dxgsyncobject with _D3DDDI_NATIVE_FENCE type
++ *    - Sets native_fence_type enum based on user-specified subtype
++ *
++ * 4. HOST COMMUNICATION:
++ *    - Sends create native fence request to host via VMBus
++ *    - Host returns global_sync_object handle
++ *
++ * 5. SHARED FENCE HANDLING (if flags.shared is set):
++ *    - Creates dxgsharedsyncobject for cross-process sharing
++ *    - Copies native_fence_type from local to shared sync object
++ *    - Extracts host_shared_handle from device_handle
++ *    - Links local sync object to shared sync object
++ *    - Preserves INTRA_GPU vs DEFAULT type across processes
++ *
++ * 6. HANDLE ASSIGNMENT:
++ *    - Assigns handle in process handle table and returns to user space
++ *
++ * KEY NOTES:
++ * - native_fence_type preserved across process boundaries for correct sharing behavior
++ * - INTRA_GPU fences validated during opening to reject cross-adapter sharing
++ */
++static int
++dxgkio_create_native_fence(struct dxgprocess *process, void *__user inargs)
++{
++	int ret = 0;
++	bool device_lock_acquired = false;
++	bool adapter_lock_acquired = false;
++	enum d3dddi_synchronizationobject_type native_fence_type;
++	struct d3dkmt_createnativefence args;
++	struct dxgdevice *device = NULL;
++	struct dxgadapter *adapter = NULL;
++	struct dxgsyncobject *syncobj = NULL;
++	struct dxgsharedsyncobject *syncobjgbl = NULL;
++	struct d3dkmthandle global_sync_object = {};
++
++	if (dxggbl()->vmbus_ver < DXGK_VMBUS_VERSION_CREATENATIVEFENCE) {
++		DXG_ERR("Native fence not supported (vmbus ver %d < %d)",
++			dxggbl()->vmbus_ver,
++			DXGK_VMBUS_VERSION_CREATENATIVEFENCE);
++		return -EOPNOTSUPP;
++	}
++
++	ret = copy_from_user(&args, inargs, sizeof(args));
++	if (ret) {
++		DXG_ERR("failed to copy input args");
++		ret = -EFAULT;
++		goto cleanup;
++	}
++
++	device = dxgprocess_device_by_handle(process, args.device);
++	if (device == NULL) {
++		DXG_ERR("Invalid device handle: 0x%x", args.device.v);
++		ret = -EINVAL;
++		goto cleanup;
++	}
++
++	ret = dxgdevice_acquire_lock_shared(device);
++	if (ret < 0) {
++		DXG_ERR("dxgdevice_acquire_lock_shared failed");
++		goto cleanup;
++	}
++	device_lock_acquired = true;
++
++	adapter = device->adapter;
++	ret = dxgadapter_acquire_lock_shared(adapter);
++	if (ret < 0) {
++		DXG_ERR("dxgadapter_acquire_lock_shared failed");
++		goto cleanup;
++	}
++	adapter_lock_acquired = true;
++
++	ret = validate_create_native_fence_args(&args);
++	if (ret < 0) {
++		DXG_ERR("validate_create_native_fence_args failed");
++		goto cleanup;
++	}
++
++	/* Validate native fence type
++	 * DEFAULT: Supports cross-process and cross-adapter sharing
++	 * INTRA_GPU: Supports cross-process sharing, NO cross-adapter sharing
++	 */
++	if (args.info.type == _D3DDDI_NATIVEFENCE_TYPE_DEFAULT ||
++	    args.info.type == _D3DDDI_NATIVEFENCE_TYPE_INTRA_GPU) {
++		native_fence_type = _D3DDDI_NATIVE_FENCE;
++	} else {
++		DXG_ERR("Invalid native fence type: %d (only DEFAULT=0 and INTRA_GPU=1 supported)",
++			args.info.type);
++		ret = -EINVAL;
++		goto cleanup;
++	}
++
++	/* create the native fence sync object */
++	syncobj = dxgsyncobject_create(process, device, adapter,
++			native_fence_type, args.info.flags);
++	if (syncobj == NULL) {
++		DXG_ERR("dxgsyncobject_create failed");
++		ret = -ENOMEM;
++		goto cleanup;
++	}
++
++	/* Store the native fence subtype for later validation */
++	if (args.info.type == _D3DDDI_NATIVEFENCE_TYPE_INTRA_GPU)
++		syncobj->native_fence_type = _D3DDDI_NATIVEFENCE_TYPE_INTRA_GPU;
++	else
++		syncobj->native_fence_type = _D3DDDI_NATIVEFENCE_TYPE_DEFAULT;
++
++	/* send create native fence request to the host */
++	ret = dxgvmb_send_create_native_fence(process, adapter, &args, syncobj,
++					      &global_sync_object);
++	if (ret < 0) {
++		DXG_ERR("dxgvmb_send_create_native_fence failed: %d", ret);
++		goto cleanup;
++	}
++
++	if (args.info.flags.shared) {
++		syncobjgbl = dxgsharedsyncobj_create(device->adapter, syncobj);
++		if (syncobjgbl == NULL) {
++			DXG_ERR("dxgsharedsyncobj_create failed");
++			ret = -ENOMEM;
++			goto cleanup;
++		}
++		/* Host global sync object handle, returned via out-parameter */
++		syncobjgbl->host_shared_handle = global_sync_object;
++
++		/* Link the local sync object to the global shared sync object */
++		dxgsharedsyncobj_add_syncobj(syncobjgbl, syncobj);
++	}
++
++	/*
++	 * Copy the result to user-mode first, then publish the handle in the
++	 * handle table as the final step. Doing it in this order means that if
++	 * copy_to_user fails, cleanup runs while the handle is not yet assigned,
++	 * so destroy cannot tear down a handle that user-mode can still see.
++	 */
++	ret = copy_to_user(inargs, &args, sizeof(args));
++	if (ret) {
++		DXG_ERR("failed to copy output args");
++		ret = -EFAULT;
++		goto cleanup;
++	}
++
++	hmgrtable_lock(&process->handle_table, DXGLOCK_EXCL);
++	ret = hmgrtable_assign_handle(&process->handle_table, syncobj,
++			HMGRENTRY_TYPE_DXGSYNCOBJECT,
++			args.sync_object);
++	if (ret >= 0)
++		/*
++		 * No kref_get here: the handle table holds a weak reference,
++		 * like dxgkio_create_sync_object. The single create reference is
++		 * released by the matching destroy, so no extra ref is needed
++		 * (taking one here would leak the object on normal teardown).
++		 */
++		syncobj->handle = args.sync_object;
++	hmgrtable_unlock(&process->handle_table, DXGLOCK_EXCL);
++
++	if (ret < 0) {
++		DXG_ERR("handle assignment failed");
++		goto cleanup;
++	}
++
++	/*
++	 * Emit the created confirmation only now, after the guest handle has been
++	 * assigned - logging it earlier would always print handle=0 because the
++	 * handle table entry did not exist yet.
++	 */
++	DXG_TRACE("Created %s native fence: handle=0x%x (shareable %s)",
++		dxg_nativefence_type_name(syncobj->native_fence_type),
++		syncobj->handle.v,
++		syncobj->native_fence_type == _D3DDDI_NATIVEFENCE_TYPE_INTRA_GPU ?
++			"across processes, same adapter only" : "across processes and adapters");
++
++cleanup:
++	if (ret < 0) {
++		if (syncobj) {
++			dxgsyncobject_destroy(process, syncobj);
++			syncobj = NULL;
++			if (args.sync_object.v)
++				dxgvmb_send_destroy_sync_object(process, args.sync_object);
++		}
++	}
++	if (syncobjgbl)
++		kref_put(&syncobjgbl->ssyncobj_kref, dxgsharedsyncobj_release);
++
++	if (adapter_lock_acquired)
++		dxgadapter_release_lock_shared(adapter);
++	if (device_lock_acquired && device)
++		dxgdevice_release_lock_shared(device);
++	if (device)
++		kref_put(&device->device_kref, dxgdevice_release);
++
++	DXG_TRACE_IOCTL_END(ret);
++	return ret;
++}
++
+ static int
+ dxgkio_create_sync_object(struct dxgprocess *process, void *__user inargs)
+ {
+@@ -2935,6 +3173,233 @@ dxgkio_destroy_sync_object(struct dxgprocess *process, void *__user inargs)
+ 	return ret;
+ }
+ 
++/*
++ * Start of dxgkio_open_native_fence_object_nt
++ *
++ * FUNCTION SUMMARY:
++ * Opens a native fence synchronization object from an NT handle for cross-process sharing
++ * with type-specific validation as defined in D3DKMT specification section 9.2.
++ *
++ * OPERATION FLOW:
++ *
++ * 1. NT HANDLE VALIDATION:
++ *    - Retrieves file descriptor from NT handle
++ *    - Validates it's a native fence sync object (type = _D3DDDI_NATIVE_FENCE)
++ *    - Accesses shared sync object containing fence metadata
++ *
++ * 2. CROSS-ADAPTER VALIDATION (per D3DKMT spec 9.2):
++ *    - DEFAULT type (0): Allows cross-process AND cross-adapter sharing
++ *    - INTRA_GPU type (1): Allows cross-process sharing ONLY (no cross-adapter)
++ *    - Rejects INTRA_GPU fences if source and target adapters differ
++ *
++ * 3. LOCAL SYNC OBJECT CREATION:
++ *    - Creates new local sync object in the opening process
++ *    - Restores native_fence_type from shared sync object
++ *    - Preserves fence subtype for correct behavior
++ *
++ * 4. HOST COMMUNICATION:
++ *    - Sends open request to host via VMBus
++ *    - Links local sync object to shared sync object
++ *
++ * 5. HANDLE ASSIGNMENT:
++ *    - Assigns handle in process handle table and returns to user space
++ *
++ * KEY NOTES:
++ * - native_fence_type restored from shared sync object to preserve type
++ * - INTRA_GPU cross-adapter validation enforces spec requirements
++ */
++static int
++dxgkio_open_native_fence_object_nt(struct dxgprocess *process, void *__user inargs)
++{
++	struct d3dkmt_opennativefencefromnthandle args;
++	struct dxgsyncobject *syncobj = NULL;
++	struct dxgsharedsyncobject *syncobj_fd = NULL;
++	struct file *file = NULL;
++	struct dxgdevice *device = NULL;
++	struct dxgadapter *adapter = NULL;
++	struct d3dddi_synchronizationobject_flags flags = { };
++	int ret;
++	bool device_lock_acquired = false;
++	bool adapter_lock_acquired = false;
++
++	if (dxggbl()->vmbus_ver < DXGK_VMBUS_VERSION_OPENNATIVEFENCE_NT) {
++		DXG_ERR("Open native fence not supported (vmbus ver %d < %d)",
++			dxggbl()->vmbus_ver,
++			DXGK_VMBUS_VERSION_OPENNATIVEFENCE_NT);
++		return -EOPNOTSUPP;
++	}
++
++	ret = copy_from_user(&args, inargs, sizeof(args));
++	if (ret) {
++		DXG_ERR("failed to copy input args");
++		ret = -EFAULT;
++		goto cleanup;
++	}
++
++	DXG_TRACE("Opening native fence from NT handle: %p", args.nt_handle);
++
++	args.sync_object.v = 0;
++
++	/* Validate input parameters */
++	if (!args.nt_handle) {
++		DXG_ERR("Missing NT handle");
++		ret = -EINVAL;
++		goto cleanup;
++	}
++
++	if (!args.engine_affinity) {
++		DXG_ERR("Missing engine affinity for native fence");
++		ret = -EINVAL;
++		goto cleanup;
++	}
++
++	if (args.device.v) {
++		device = dxgprocess_device_by_handle(process, args.device);
++		if (device == NULL) {
++			ret = -EINVAL;
++			goto cleanup;
++		}
++	} else {
++		DXG_ERR("device handle is missing");
++		ret = -EINVAL;
++		goto cleanup;
++	}
++
++	ret = dxgdevice_acquire_lock_shared(device);
++	if (ret < 0)
++		goto cleanup;
++	device_lock_acquired = true;
++
++	adapter = device->adapter;
++	ret = dxgadapter_acquire_lock_shared(adapter);
++	if (ret < 0) {
++		DXG_ERR("dxgadapter_acquire_lock_shared failed");
++		goto cleanup;
++	}
++	adapter_lock_acquired = true;
++
++	file = fget((unsigned int)(uintptr_t)args.nt_handle);
++	if (!file) {
++		DXG_ERR("failed to get file from handle: %p",
++			args.nt_handle);
++		ret = -EINVAL;
++		goto cleanup;
++	}
++
++	if (file->f_op != &dxg_syncobj_fops) {
++		DXG_ERR("invalid fd: %p", args.nt_handle);
++		ret = -EINVAL;
++		goto cleanup;
++	}
++
++	syncobj_fd = file->private_data;
++	if (syncobj_fd == NULL) {
++		DXG_ERR("invalid private data: %p", args.nt_handle);
++		ret = -EINVAL;
++		goto cleanup;
++	}
++
++	/* Validate that we're opening a native fence object */
++	if (syncobj_fd->type != _D3DDDI_NATIVE_FENCE) {
++		DXG_ERR("Opening non-native fence as native fence: type=%d (expected %d)",
++			syncobj_fd->type, _D3DDDI_NATIVE_FENCE);
++		ret = -EINVAL;
++		goto cleanup;
++	}
++
++	/* INTRA_GPU fences cannot be shared across adapters */
++	if (syncobj_fd->native_fence &&
++	    syncobj_fd->native_fence_type == _D3DDDI_NATIVEFENCE_TYPE_INTRA_GPU &&
++	    syncobj_fd->adapter != adapter) {
++		DXG_ERR("INTRA_GPU fences cannot be shared cross-adapter: src=%p target=%p",
++			syncobj_fd->adapter, adapter);
++		ret = -EINVAL;
++		goto cleanup;
++	}
++
++	/* Use flags from user space arguments */
++	flags = args.flags;
++	syncobj = dxgsyncobject_create(process, device, adapter,
++				       syncobj_fd->type, flags);
++	if (syncobj == NULL) {
++		DXG_ERR("failed to create sync object");
++		ret = -ENOMEM;
++		goto cleanup;
++	}
++
++	/* Copy the native fence subtype from the shared sync object */
++	if (syncobj->native_fence) {
++		syncobj->native_fence_type = syncobj_fd->native_fence_type;
++		DXG_TRACE("Opening %s native fence",
++			dxg_nativefence_type_name(syncobj->native_fence_type));
++	}
++
++	dxgsharedsyncobj_add_syncobj(syncobj_fd, syncobj);
++
++	ret = dxgvmb_send_open_native_fence_object_nt(process,
++						      &args, syncobj);
++	if (ret < 0) {
++		DXG_ERR("failed to open sync object on host: %x",
++			syncobj_fd->host_shared_handle.v);
++		goto cleanup;
++	}
++
++	/*
++	 * Copy the result to user-mode first, then publish the handle in the
++	 * handle table as the final step. Doing it in this order means that if
++	 * copy_to_user fails, cleanup runs while the handle is not yet assigned,
++	 * so destroy cannot tear down a handle that user-mode can still see.
++	 */
++	ret = copy_to_user(inargs, &args, sizeof(args));
++	if (ret) {
++		DXG_ERR("failed to copy output args");
++		ret = -EFAULT;
++		goto cleanup;
++	}
++
++	hmgrtable_lock(&process->handle_table, DXGLOCK_EXCL);
++	ret = hmgrtable_assign_handle(&process->handle_table, syncobj,
++				      HMGRENTRY_TYPE_DXGSYNCOBJECT,
++				      args.sync_object);
++	if (ret >= 0) {
++		/*
++		 * No kref_get here: the handle table holds a weak reference,
++		 * like dxgkio_create_sync_object. The single create reference is
++		 * released by the matching destroy, so no extra ref is needed
++		 * (taking one here would leak the object on normal teardown).
++		 */
++		syncobj->handle = args.sync_object;
++		DXG_TRACE("Native fence opened successfully: handle=%x", args.sync_object.v);
++	}
++	hmgrtable_unlock(&process->handle_table, DXGLOCK_EXCL);
++
++	if (ret < 0)
++		goto cleanup;
++
++cleanup:
++	if (ret < 0) {
++		if (syncobj) {
++			dxgsyncobject_destroy(process, syncobj);
++			if (args.sync_object.v)
++				dxgvmb_send_destroy_sync_object(process, args.sync_object);
++			syncobj = NULL;
++		}
++	}
++
++	if (file)
++		fput(file);
++	if (adapter_lock_acquired)
++		dxgadapter_release_lock_shared(adapter);
++	if (device_lock_acquired)
++		dxgdevice_release_lock_shared(device);
++	if (device)
++		kref_put(&device->device_kref, dxgdevice_release);
++
++	DXG_TRACE_IOCTL_END(ret);
++	return ret;
++}
++/* End of dxgkio_open_native_fence_object_nt */
++
+ static int
+ dxgkio_open_sync_object_nt(struct dxgprocess *process, void *__user inargs)
+ {
+@@ -4697,13 +5162,24 @@ dxgsharedsyncobj_get_host_nt_handle(struct dxgsharedsyncobject *syncobj,
+ 
+ 	mutex_lock(&syncobj->fd_mutex);
+ 	if (syncobj->host_shared_handle_nt_reference == 0) {
++		/*
++		 * All shared sync objects, including native fences, must use
++		 * DXGSHAREDVMOBJECT wrappers
++		 */
++		DXG_TRACE("SEND CreateNtSharedObject - Type=%d, ObjectHandle=0x%x, HostShared=0x%x",
++			syncobj->type, objecthandle.v, syncobj->host_shared_handle.v);
++
+ 		ret = dxgvmb_send_create_nt_shared_object(process,
+-			objecthandle,
+-			&syncobj->host_shared_handle_nt);
+-		if (ret < 0)
++				objecthandle,
++				&syncobj->host_shared_handle_nt);
++		if (ret < 0) {
++			DXG_ERR("Failed to create DXGSHAREDVMOBJECT wrapper: %d", ret);
+ 			goto cleanup;
+-		DXG_TRACE("Host_shared_handle_ht: %x",
+-			syncobj->host_shared_handle_nt.v);
++		}
++
++		DXG_TRACE("RECV CreateNtSharedObject - NtHandle=0x%x, ret=%d",
++			syncobj->host_shared_handle_nt.v, ret);
++
+ 		kref_get(&syncobj->ssyncobj_kref);
+ 	}
+ 	syncobj->host_shared_handle_nt_reference++;
+@@ -5582,6 +6058,8 @@ static struct ioctl_desc ioctls[] = {
+ 		 LX_DXOPENSYNCOBJECTFROMSYNCFILE},
+ /* 0x48 */	{dxgkio_enum_processes, LX_DXENUMPROCESSES},
+ /* 0x49 */	{dxgkio_is_feature_enabled, LX_ISFEATUREENABLED},
++/* 0x4a */	{dxgkio_create_native_fence, LX_CREATENATIVEFENCE},
++/* 0x4b */	{dxgkio_open_native_fence_object_nt, LX_DXOPENNATIVEFENCEFROMNTHANDLE},
+ };
+ 
+ /*
+diff --git a/include/uapi/misc/d3dkmthk.h b/include/uapi/misc/d3dkmthk.h
+index db40e8ff40b0..16e51d07fd6a 100644
+--- a/include/uapi/misc/d3dkmthk.h
++++ b/include/uapi/misc/d3dkmthk.h
+@@ -66,6 +66,7 @@ struct winluid {
+ #define D3DDDI_MAX_BROADCAST_CONTEXT		64
+ #define D3DDDI_MAX_OBJECT_WAITED_ON		32
+ #define D3DDDI_MAX_OBJECT_SIGNALED		32
++#define D3DDDI_NATIVE_FENCE_PDD_SIZE 64
+ 
+ struct d3dkmt_adapterinfo {
+ 	struct d3dkmthandle		adapter_handle;
+@@ -357,6 +358,15 @@ struct d3dkmt_devicereset_state {
+ 	};
+ };
+ 
++struct d3dkmt_createnativefence_flags {
++	union {
++		struct {
++			__u32 reserved : 32;
++		};
++		__u32 value;
++	};
++};
++
+ struct d3dkmt_devicepagefault_state {
+ 	__u64				faulted_primitive_api_sequence_number;
+ 	enum dxgk_render_pipeline_stage	faulted_pipeline_stage;
+@@ -478,6 +488,7 @@ enum d3dddi_synchronizationobject_type {
+ 	_D3DDDI_CPU_NOTIFICATION		= 4,
+ 	_D3DDDI_MONITORED_FENCE			= 5,
+ 	_D3DDDI_PERIODIC_MONITORED_FENCE	= 6,
++	_D3DDDI_NATIVE_FENCE			= 7,
+ 	_D3DDDI_SYNCHRONIZATION_TYPE_LIMIT
+ };
+ 
+@@ -533,6 +544,74 @@ struct d3dddi_synchronizationobjectinfo2 {
+ 	struct d3dkmthandle			shared_handle;
+ };
+ 
++enum d3dddi_nativefence_type {
++	/* Full CPU and GPU interoperability. */
++	_D3DDDI_NATIVEFENCE_TYPE_DEFAULT = 0,
++	/*
++	 * Special fence type for engine-engine synchronization, which does
++	 * not support any CPU access or CPU wait/signal operations.
++	 */
++	_D3DDDI_NATIVEFENCE_TYPE_INTRA_GPU = 1,
++};
++
++struct d3dddi_nativefencemapping {
++#ifdef __KERNEL__
++	void *current_value_cpu_va;
++#else
++	/* Read-only mapping of the current value for the CPU */
++	__u64 current_value_cpu_va;
++#endif
++	/* Read/write GPU mapping of the current value (current process VA space) */
++	__u64 current_value_gpu_va;
++	/* Read/write GPU mapping of the monitored value (current process VA space) */
++	__u64 monitored_value_gpu_va;
++	__u8 reserved[32];
++};
++
++struct d3dddi_nativefenceinfo {
++	__u64 initial_fence_value;	/* in: initial fence value. */
++	/* in: Defines physical adapters where the GPU VA is mapped */
++	__u32 engine_affinity;
++	enum d3dddi_nativefence_type type;	/* in: Type of the fence */
++	struct d3dddi_synchronizationobject_flags flags;	/* in: Flags. */
++	/* out: process mapping information for the native fence */
++	struct d3dddi_nativefencemapping native_fence_mapping;
++	__u8 reserved[28];
++};
++
++/* D3DKMTCreateNativeFence */
++struct d3dkmt_createnativefence {
++	struct d3dkmthandle device;	/* in: Handle to the device. */
++	/* out: Handle to sync object in this process. */
++	struct d3dkmthandle sync_object;
++	/* in/out: Private driver data passed to/from KMD CreateNativeFence */
++	__u8 private_driver_data[D3DDDI_NATIVE_FENCE_PDD_SIZE];
++	/* in/out: Attributes of the synchronization object (native fence info) */
++	struct d3dddi_nativefenceinfo info;
++	struct d3dkmt_createnativefence_flags flags;
++	__u8 Reserved[28];
++};
++
++/* D3DKMTOpenNativeFenceFromNTHandle */
++struct d3dkmt_opennativefencefromnthandle {
++#ifdef __KERNEL__
++	void *nt_handle;
++#else
++	__u64 nt_handle;	/* in: NT handle for the shared fence object. */
++#endif
++	/* in: Device handle to open this fence object on. */
++	struct d3dkmthandle device;
++	/* in: Defines physical adapters where the GPU VA is mapped */
++	__u32 engine_affinity;
++	struct d3dddi_synchronizationobject_flags flags;	/* in: Flags. */
++	struct d3dkmthandle sync_object;	/* out: Handle to the opened fence object */
++	/* out: process mapping information for the fence object */
++	struct d3dddi_nativefencemapping native_fence_mapping;
++	/* in/out: Private driver data passed to/from KMD DdiOpenNativeFence */
++	__u8 private_driver_data[D3DDDI_NATIVE_FENCE_PDD_SIZE];
++	__u8 reserved[32];
++};
++
+ struct d3dkmt_createsynchronizationobject2 {
+ 	struct d3dkmthandle				device;
+ 	__u32						reserved;
+@@ -1625,6 +1704,7 @@ enum dxgk_feature_id {
+ 	_DXGK_FEATURE_HWSCH				= 0,
+ 	_DXGK_FEATURE_PAGE_BASED_MEMORY_MANAGER		= 32,
+ 	_DXGK_FEATURE_KERNEL_MODE_TESTING		= 33,
++	_DXGK_FEATURE_NATIVE_FENCE		= 36,
+ 	_DXGK_FEATURE_MAX
+ };
+ 
+@@ -1790,5 +1870,9 @@ struct d3dkmt_invalidatecache {
+ 	_IOWR(0x47, 0x48, struct d3dkmt_enumprocesses)
+ #define LX_ISFEATUREENABLED	\
+ 	_IOWR(0x47, 0x49, struct d3dkmt_isfeatureenabled)
++#define LX_CREATENATIVEFENCE	\
++	_IOWR(0x47, 0x4a, struct d3dkmt_createnativefence)
++#define LX_DXOPENNATIVEFENCEFROMNTHANDLE	\
++	_IOWR(0x47, 0x4b, struct d3dkmt_opennativefencefromnthandle)
+ 
+ #endif /* _D3DKMTHK_H */
+-- 
+2.56.0
 
