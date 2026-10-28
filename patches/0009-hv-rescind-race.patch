@@ -1,0 +1,1237 @@
+From 71a123f59db557f5b79d734d1edb8cb4c22253ba Mon Sep 17 00:00:00 2001
+From: Erni Sri Satya Vennela <ernis@linux.microsoft.com>
+Date: Fri, 4 Sep 2026 21:45:21 +0000
+Subject: [PATCH 1/9] Drivers: hv: vmbus: don't free a channel that the rescind
+ handler owns
+
+vmbus_onoffer_rescind() looks the channel up and marks it with
+channel->rescind_ref under channel_mutex, then drops the mutex and keeps
+using the channel until hv_process_channel_removal() removes it.  The
+err_deq_chan path of vmbus_add_channel_work() does not honour that claim:
+it removes the channel from the list, unmaps the relid and frees it
+regardless.  Usually the rescind handler loses the race and returns early
+because relid2channel() no longer finds the channel, but if it takes
+channel_mutex first it is left holding a pointer that err_deq_chan then
+frees, and does a second list_del() on a poisoned entry:
+
+  Oops: general protection fault, probably for non-canonical address
+        0xdead000000000108
+  Workqueue: hv_vmbus_rescind vmbus_onmessage_work
+  RIP: 0010:hv_process_channel_removal+0x7d/0x230
+  RAX: dead000000000122 RDX: dead000000000100
+   vmbus_onoffer_rescind+0x24a/0x250
+   vmbus_onmessage+0x33/0x90
+   vmbus_onmessage_work+0x2a/0x40
+
+hv_process_channel_removal() runs with channel_mutex held, so the fault
+leaves the mutex locked forever and the guest stops responding entirely.
+Hand the channel over instead: if rescind_ref is already set, only publish
+probe_done and return, and let vmbus_onoffer_rescind() do the list
+removal, the relid release and the free.  Restrict this to sub channels;
+for a primary channel the rescind handler has nothing to remove it with,
+because device_obj is either NULL or already gone by that point, so
+handing one over would leak it rather than crash.
+
+Fixes: e4d221b42354 ("Drivers: hv: vmbus: Resolve race condition in vmbus_onoffer_rescind()")
+Signed-off-by: Erni Sri Satya Vennela <ernis@linux.microsoft.com>
+---
+ drivers/hv/channel_mgmt.c | 13 +++++++++++++
+ 1 file changed, 13 insertions(+)
+
+diff --git a/drivers/hv/channel_mgmt.c b/drivers/hv/channel_mgmt.c
+index 5f013d4582d7..528a781d02c3 100644
+--- a/drivers/hv/channel_mgmt.c
++++ b/drivers/hv/channel_mgmt.c
+@@ -569,6 +569,19 @@ static void vmbus_add_channel_work(struct work_struct *work)
+ 	 */
+ 	newchannel->probe_done = true;
+ 
++	/*
++	 * If vmbus_onoffer_rescind() has already claimed this channel it
++	 * removes and frees it once it observes probe_done above, so doing
++	 * that here as well would do both twice.  Only a sub channel can be
++	 * handed over: for a primary channel the rescind handler has nothing
++	 * to remove it with, because device_obj is either NULL or already
++	 * gone by this point.
++	 */
++	if (primary_channel != NULL && newchannel->rescind_ref) {
++		mutex_unlock(&vmbus_connection.channel_mutex);
++		return;
++	}
++
+ 	if (primary_channel == NULL)
+ 		list_del(&newchannel->listentry);
+ 	else
+-- 
+2.56.0
+
+
+From 0ffaf560bd7e9a44f97825482bd65d21783c62c7 Mon Sep 17 00:00:00 2001
+From: Erni Sri Satya Vennela <ernis@linux.microsoft.com>
+Date: Fri, 4 Sep 2026 21:59:52 +0000
+Subject: [PATCH 2/9] Drivers: hv: vmbus: fix the rescind ownership protocol
+ for sub channels
+
+vmbus_disconnect_ring() waits for rescind_event on every rescinded sub
+channel, but vmbus_onoffer_rescind() only completes that event for one
+that is still open; otherwise it frees the channel itself and the closer
+waits forever.  A sub channel is left in CHANNEL_OPEN_STATE on sc_list
+when its vmbus_open() fails, which hot removing a vNIC during sub channel
+setup hits easily.  The hang takes RTNL with it:
+
+  task:kworker/u129:10 state:D
+  Workqueue: hv_vmbus_rescind vmbus_onmessage_work
+   wait_for_completion+0x83/0x120
+   vmbus_disconnect_ring+0xa9/0x120
+   vmbus_close+0x17/0x40
+   netvsc_device_remove+0x15b/0x230 [hv_netvsc]
+   rndis_filter_device_remove+0x195/0x3d0 [hv_netvsc]
+   netvsc_remove+0x153/0x210 [hv_netvsc]
+   vmbus_device_unregister+0x28/0x70
+   vmbus_onoffer_rescind+0x21e/0x250
+
+  task:kworker/0:2 state:D
+  Workqueue: hv_pri_chan vmbus_add_channel_work
+   rtnl_lock+0x19/0x20
+   netvsc_probe+0x299/0x620 [hv_netvsc]
+   vmbus_add_channel_work+0x140/0x1c0
+
+The channel state cannot decide ownership, because it is not stable: a
+sub channel in CHANNEL_OPENING_STATE moves to CHANNEL_OPEN_STATE on the
+__vmbus_open() error path once channel_mutex is dropped.  Claim the
+channel explicitly with closer_owns in the same critical section that
+inspects it; the rescind handler and the error path of
+vmbus_add_channel_work() then only complete rescind_event, and the closer
+frees the rescinded channels itself so their relids are released.
+closer_owns is also the visited marker, so sc_list can be re-read on
+every round rather than caching a next pointer across the sleep.
+
+Fixes: 7fa32e5ec28b ("Drivers: hv: vmbus: Fix a rescind issue")
+Fixes: 192b2d78722f ("Drivers: hv: vmbus: Fix bugs in rescind handling")
+Signed-off-by: Erni Sri Satya Vennela <ernis@linux.microsoft.com>
+---
+ drivers/hv/channel.c      | 71 +++++++++++++++++++++++++++++++++++----
+ drivers/hv/channel_mgmt.c | 24 ++++++++-----
+ include/linux/hyperv.h    |  7 ++++
+ 3 files changed, 88 insertions(+), 14 deletions(-)
+
+diff --git a/drivers/hv/channel.c b/drivers/hv/channel.c
+index 162d6aeece7b..7cfcae5f0d30 100644
+--- a/drivers/hv/channel.c
++++ b/drivers/hv/channel.c
+@@ -961,6 +961,33 @@ static int vmbus_close_internal(struct vmbus_channel *channel)
+ 	return ret;
+ }
+ 
++/*
++ * Claim the next sub channel that has not been visited yet, or NULL once all
++ * of them have been.
++ *
++ * The list is re-read on every round because the caller sleeps, and both
++ * vmbus_onoffer_rescind() and the error path of vmbus_add_channel_work()
++ * remove entries meanwhile, so a cached next pointer can be freed.
++ * closer_owns is both the claim and the visited marker: while it is set,
++ * neither of those paths frees the channel.
++ */
++static struct vmbus_channel *vmbus_claim_next_sc(struct vmbus_channel *primary)
++{
++	struct vmbus_channel *sc, *claimed = NULL;
++
++	mutex_lock(&vmbus_connection.channel_mutex);
++	list_for_each_entry(sc, &primary->sc_list, sc_list) {
++		if (!sc->closer_owns) {
++			sc->closer_owns = true;
++			claimed = sc;
++			break;
++		}
++	}
++	mutex_unlock(&vmbus_connection.channel_mutex);
++
++	return claimed;
++}
++
+ /* disconnect ring - close all channels */
+ int vmbus_disconnect_ring(struct vmbus_channel *channel)
+ {
+@@ -970,20 +997,52 @@ int vmbus_disconnect_ring(struct vmbus_channel *channel)
+ 	if (channel->primary_channel != NULL)
+ 		return -EINVAL;
+ 
+-	list_for_each_entry_safe(cur_channel, tmp, &channel->sc_list, sc_list) {
+-		if (cur_channel->rescind)
++	while ((cur_channel = vmbus_claim_next_sc(channel)) != NULL) {
++		if (cur_channel->rescind) {
++			/*
++			 * The channel is claimed, so the rescind handler only
++			 * completes rescind_event rather than freeing it, and
++			 * this wait always makes progress.
++			 */
+ 			wait_for_completion(&cur_channel->rescind_event);
++		}
+ 
+ 		mutex_lock(&vmbus_connection.channel_mutex);
+-		if (vmbus_close_internal(cur_channel) == 0) {
++
++		ret = vmbus_close_internal(cur_channel);
++		if (ret == 0)
+ 			vmbus_free_ring(cur_channel);
+ 
+-			if (cur_channel->rescind)
+-				hv_process_channel_removal(cur_channel);
+-		}
++		/*
++		 * Free a rescinded channel here, including one the close
++		 * refused because it was never open: the rescind handler left
++		 * the teardown to this thread, and missing it leaks the relid,
++		 * so the next hot-add of the device fails.
++		 */
++		if (cur_channel->rescind)
++			hv_process_channel_removal(cur_channel);
++
+ 		mutex_unlock(&vmbus_connection.channel_mutex);
+ 	}
+ 
++	/*
++	 * Release the claim on the sub channels still listed.  A rescind
++	 * arriving from here on has to be free to tear them down itself; one
++	 * that arrived while they were claimed only completed rescind_event,
++	 * so those are freed here.
++	 */
++	mutex_lock(&vmbus_connection.channel_mutex);
++	list_for_each_entry_safe(cur_channel, tmp, &channel->sc_list, sc_list) {
++		if (!cur_channel->closer_owns)
++			continue;
++
++		if (cur_channel->rescind)
++			hv_process_channel_removal(cur_channel);
++		else
++			cur_channel->closer_owns = false;
++	}
++	mutex_unlock(&vmbus_connection.channel_mutex);
++
+ 	/*
+ 	 * Now close the primary.
+ 	 */
+diff --git a/drivers/hv/channel_mgmt.c b/drivers/hv/channel_mgmt.c
+index 528a781d02c3..6ef194ec4bd7 100644
+--- a/drivers/hv/channel_mgmt.c
++++ b/drivers/hv/channel_mgmt.c
+@@ -570,14 +570,15 @@ static void vmbus_add_channel_work(struct work_struct *work)
+ 	newchannel->probe_done = true;
+ 
+ 	/*
+-	 * If vmbus_onoffer_rescind() has already claimed this channel it
+-	 * removes and frees it once it observes probe_done above, so doing
+-	 * that here as well would do both twice.  Only a sub channel can be
+-	 * handed over: for a primary channel the rescind handler has nothing
+-	 * to remove it with, because device_obj is either NULL or already
+-	 * gone by this point.
++	 * If vmbus_onoffer_rescind() has claimed this channel it frees it once
++	 * it observes probe_done above, and if vmbus_disconnect_ring() has
++	 * claimed it, it tears it down itself; freeing it here would do it
++	 * twice, or leave the closer on freed memory.  Only a sub channel can
++	 * be handed over: for a primary channel the rescind handler has nothing
++	 * to remove it with.
+ 	 */
+-	if (primary_channel != NULL && newchannel->rescind_ref) {
++	if (primary_channel != NULL &&
++	    (newchannel->rescind_ref || newchannel->closer_owns)) {
+ 		mutex_unlock(&vmbus_connection.channel_mutex);
+ 		return;
+ 	}
+@@ -1272,7 +1273,14 @@ static void vmbus_onoffer_rescind(struct vmbus_channel_message_header *hdr)
+ 		 * 2. Then close the primary channel.
+ 		 */
+ 		mutex_lock(&vmbus_connection.channel_mutex);
+-		if (channel->state == CHANNEL_OPEN_STATE) {
++		if (channel->closer_owns) {
++			/*
++			 * The closer has claimed this channel and tears it
++			 * down itself; freeing it here would leave it on freed
++			 * memory.  Publish the completion instead.
++			 */
++			complete(&channel->rescind_event);
++		} else if (channel->state == CHANNEL_OPEN_STATE) {
+ 			/*
+ 			 * The channel is currently not open;
+ 			 * it is safe for us to cleanup the channel.
+diff --git a/include/linux/hyperv.h b/include/linux/hyperv.h
+index a76f556f54a6..3998a6c0f768 100644
+--- a/include/linux/hyperv.h
++++ b/include/linux/hyperv.h
+@@ -801,6 +801,13 @@ struct vmbus_channel {
+ 
+ 	bool rescind; /* got rescind msg */
+ 	bool rescind_ref; /* got rescind msg, got channel reference */
++	/*
++	 * Set by vmbus_disconnect_ring() under channel_mutex to claim a sub
++	 * channel and mark it visited.  While it is set the channel must not
++	 * be freed by anyone else; the rescind handler only completes
++	 * rescind_event and leaves the teardown to the closer.
++	 */
++	bool closer_owns;
+ 	struct completion rescind_event;
+ 
+ 	struct vmbus_gpadl ringbuffer_gpadlhandle;
+-- 
+2.56.0
+
+
+From a9790074b08430f8d73cd80e2f08689edb06f3e4 Mon Sep 17 00:00:00 2001
+From: Erni Sri Satya Vennela <ernis@linux.microsoft.com>
+Date: Fri, 4 Sep 2026 21:45:22 +0000
+Subject: [PATCH 3/9] Drivers: hv: vmbus: allow rescind messages to be handled
+ concurrently
+
+vmbus_connection.rescind_work_queue is created with create_workqueue(),
+i.e. a per-CPU workqueue with max_active = 1, so at most one rescind is
+processed per CPU at any time.  That serialization was never intentional,
+and it deadlocks when several devices are hot-removed at the same time:
+
+  CPU0                             CPU1
+  ----                             ----
+                                   netvsc_probe(NIC B)
+                                     rtnl_lock()            <- acquired
+                                     rndis_filter_device_add()
+                                       vmbus_open(B)
+                                         sends OPEN_CHANNEL
+                                         wait_for_completion()
+  [host rescinds NIC B: it now ignores the OPEN_CHANNEL for B]
+  hv_vmbus_rescind worker
+    vmbus_onoffer_rescind(NIC A)
+      vmbus_rescind_cleanup(A)
+      vmbus_device_unregister(A)
+        netvsc_remove()
+          rtnl_lock()             <- blocks, RTNL held by NIC B probe
+  [rescind(B) queued behind rescind(A), never runs]
+
+vmbus_rescind_cleanup(B) would set channel->rescind and wake the waiter in
+__vmbus_open(), but it never runs, so both tasks are stuck and the guest
+never sends CHANNELMSG_RELID_RELEASED.  Create the workqueue with
+alloc_workqueue() and an unbounded concurrency level instead;
+vmbus_onoffer_rescind() is already safe to run concurrently.  Do not carry
+WQ_MEM_RECLAIM over: rescind processing is device teardown and is not
+needed during memory reclaim, and it flushes workqueues of the drivers it
+tears down, which do not set the flag.  create_workqueue() also sets
+__WQ_LEGACY, which check_flush_dependency() exempts, so keeping
+WQ_MEM_RECLAIM without it makes that pre-existing dependency warn:
+
+  workqueue: WQ_MEM_RECLAIM hv_vmbus_rescind:vmbus_onmessage_work is
+  flushing !WQ_MEM_RECLAIM hv_pci_cfca:0x0
+  WARNING: kernel/workqueue.c:3921 at check_flush_dependency.part.0
+   __flush_workqueue+0x39c/0x1160
+   drain_workqueue+0x14b/0x350
+   destroy_workqueue+0xb5/0x940
+   hv_pci_remove+0x297/0x520
+   vmbus_device_unregister+0x4f/0xf0
+   vmbus_onoffer_rescind+0x5e9/0x700
+   vmbus_onmessage_work+0x47/0x70
+
+Signed-off-by: Erni Sri Satya Vennela <ernis@linux.microsoft.com>
+---
+ drivers/hv/connection.c | 9 ++++++++-
+ 1 file changed, 8 insertions(+), 1 deletion(-)
+
+diff --git a/drivers/hv/connection.c b/drivers/hv/connection.c
+index 4a3bb9ae9250..dc3a503f9f05 100644
+--- a/drivers/hv/connection.c
++++ b/drivers/hv/connection.c
+@@ -195,8 +195,15 @@ int vmbus_connect(void)
+ 		goto cleanup;
+ 	}
+ 
++	/*
++	 * Rescind messages for different devices must be able to make
++	 * progress independently of each other, so this workqueue is
++	 * created with an unbounded concurrency level rather than with
++	 * create_workqueue(), which would limit it to one work item per
++	 * CPU.  vmbus_onoffer_rescind() is safe to run concurrently.
++	 */
+ 	vmbus_connection.rescind_work_queue =
+-		create_workqueue("hv_vmbus_rescind");
++		alloc_workqueue("hv_vmbus_rescind", WQ_UNBOUND, 0);
+ 	if (!vmbus_connection.rescind_work_queue) {
+ 		ret = -ENOMEM;
+ 		goto cleanup;
+-- 
+2.56.0
+
+
+From 3d3dd05c94edd725a48eb4ee92346128bd03835b Mon Sep 17 00:00:00 2001
+From: Erni Sri Satya Vennela <ernis@linux.microsoft.com>
+Date: Fri, 4 Sep 2026 21:45:22 +0000
+Subject: [PATCH 4/9] Drivers: hv: vmbus: fix double kobject_put() on the
+ channel setup error path
+
+vmbus_add_channel_kobj() drops the channel's kobject reference when
+kobject_init_and_add() or sysfs_create_group() fails.  Both callers then
+propagate the error to the err_deq_chan path of vmbus_add_channel_work(),
+which calls free_channel() and drops the reference a second time.  The
+first put already takes the reference to zero, so the channel is handed to
+kfree_rcu() and everything err_deq_chan does afterwards, including
+vmbus_release_relid(), is a use after free:
+
+  kobject: kobject_add_internal failed for 49 (error: -2 parent: channels)
+  kernfs: can not remove 'out_mask', no directory
+  WARNING: fs/kernfs/dir.c:1785 at kernfs_remove_by_name_ns+0xda/0xf0
+  Workqueue: hv_sub_chan vmbus_add_channel_work
+   sysfs_remove_group+0x46/0xa0
+   vmbus_remove_channel_attr_group+0x20/0x30
+   vmbus_add_channel_work+0xcb/0x1a0
+  [ ... one such splat per attribute in the group ... ]
+  refcount_t: underflow; use-after-free.
+  WARNING: lib/refcount.c:28 at refcount_warn_saturate+0x60/0x90
+   kobject_put+0x148/0x220
+   vmbus_add_channel_work+0xd4/0x1a0
+
+kobject_add_internal() fails with -ENOENT when the parent "channels" kset
+has already been unregistered, i.e. when the host rescinds the device
+while a sub channel offer is still being processed.  Leave the reference
+to the caller instead: both callers reach free_channel(), so it is
+released exactly once and the channel stays valid for the rest of the
+error path.  When sysfs_create_group() fails the directory created by
+kobject_init_and_add() must still be removed, so call kobject_del() there,
+and free_channel() must stop removing an attribute group that was never
+created; use kobj.state_in_sysfs to tell the two cases apart.
+
+Fixes: 8bc69f86328e ("Drivers: hv: vmbus: Fix memory leak in vmbus_add_channel_kobj")
+Signed-off-by: Erni Sri Satya Vennela <ernis@linux.microsoft.com>
+---
+ drivers/hv/channel_mgmt.c |  9 ++++++++-
+ drivers/hv/vmbus_drv.c    | 11 +++++++----
+ 2 files changed, 15 insertions(+), 5 deletions(-)
+
+diff --git a/drivers/hv/channel_mgmt.c b/drivers/hv/channel_mgmt.c
+index 6ef194ec4bd7..2d76f6a886a1 100644
+--- a/drivers/hv/channel_mgmt.c
++++ b/drivers/hv/channel_mgmt.c
+@@ -377,7 +377,14 @@ static struct vmbus_channel *alloc_channel(void)
+ static void free_channel(struct vmbus_channel *channel)
+ {
+ 	tasklet_kill(&channel->callback_event);
+-	vmbus_remove_channel_attr_group(channel);
++
++	/*
++	 * The attribute group only exists if vmbus_add_channel_kobj()
++	 * completed successfully.  Removing it otherwise makes kernfs
++	 * complain about every attribute in the group.
++	 */
++	if (channel->kobj.state_in_sysfs)
++		vmbus_remove_channel_attr_group(channel);
+ 
+ 	kobject_put(&channel->kobj);
+ }
+diff --git a/drivers/hv/vmbus_drv.c b/drivers/hv/vmbus_drv.c
+index 1dc371eb5340..8cf55cefe903 100644
+--- a/drivers/hv/vmbus_drv.c
++++ b/drivers/hv/vmbus_drv.c
+@@ -2073,7 +2073,10 @@ int vmbus_add_channel_kobj(struct hv_device *dev, struct vmbus_channel *channel)
+ 	ret = kobject_init_and_add(kobj, &vmbus_chan_ktype, NULL,
+ 				   "%u", relid);
+ 	if (ret) {
+-		kobject_put(kobj);
++		/*
++		 * The channel reference is dropped by the caller's error
++		 * handling path, which calls free_channel().
++		 */
+ 		return ret;
+ 	}
+ 
+@@ -2081,10 +2084,10 @@ int vmbus_add_channel_kobj(struct hv_device *dev, struct vmbus_channel *channel)
+ 
+ 	if (ret) {
+ 		/*
+-		 * The calling functions' error handling paths will cleanup the
+-		 * empty channel directory.
++		 * Remove the empty channel directory here; the channel
++		 * reference is dropped by the caller's error handling path.
+ 		 */
+-		kobject_put(kobj);
++		kobject_del(kobj);
+ 		dev_err(device, "Unable to set up channel sysfs files\n");
+ 		return ret;
+ 	}
+-- 
+2.56.0
+
+
+From f986c5f3cc22e34c56921c2378e3abf4dff221a2 Mon Sep 17 00:00:00 2001
+From: Erni Sri Satya Vennela <ernis@linux.microsoft.com>
+Date: Fri, 4 Sep 2026 21:45:23 +0000
+Subject: [PATCH 5/9] net: hv_netvsc: abort primary channel NVSP waits on
+ rescind
+
+The NVSP setup exchanges in netvsc.c wait for the host with a bare
+wait_for_completion() on net_device->channel_init_wait.  Once the primary
+vmbus channel is rescinded, e.g. because the vNIC is being hot-removed,
+the host stops processing the ring buffer, so the response never arrives
+and the wait never returns.  These waits run below netvsc_device_add(),
+which netvsc_probe() calls with RTNL held, so blocking there also prevents
+the rescind handler from taking RTNL in netvsc_remove(), and the guest
+never sends CHANNELMSG_RELID_RELEASED back to the host:
+
+  task:kworker/0:2 state:D
+  Workqueue: hv_pri_chan vmbus_add_channel_work
+   wait_for_completion+0x8a/0x120
+   netvsc_device_add+0x3f7/0x600 [hv_netvsc]
+   rndis_filter_device_add+0xff/0x8a0 [hv_netvsc]
+   netvsc_probe+0x1e9/0x620 [hv_netvsc]
+   vmbus_device_register+0x96/0x140
+
+  task:kworker/u129:2 state:D
+  Workqueue: hv_vmbus_rescind vmbus_onmessage_work
+   rtnl_lock+0x19/0x20
+   netvsc_remove+0x3f/0x210 [hv_netvsc]
+   vmbus_device_unregister+0x28/0x70
+   vmbus_onoffer_rescind+0x21e/0x250
+
+Setting of chan->rescind by the vmbus driver does not wake the completion,
+so add a netvsc_wait_for_nvsp_response() helper that polls it with a
+timeout and gives up with -ENODEV once the channel is rescinded, and use
+it for the NVSP version negotiation, the NDIS version exchange, the
+receive and send buffer setup in netvsc_init_buf(), and the data path
+switch in netvsc_switch_datapath().
+
+Signed-off-by: Erni Sri Satya Vennela <ernis@linux.microsoft.com>
+---
+ drivers/net/hyperv/netvsc.c | 34 ++++++++++++++++++++++++++++++----
+ 1 file changed, 30 insertions(+), 4 deletions(-)
+
+diff --git a/drivers/net/hyperv/netvsc.c b/drivers/net/hyperv/netvsc.c
+index 073f2b7bd3c0..fbce175d5cb8 100644
+--- a/drivers/net/hyperv/netvsc.c
++++ b/drivers/net/hyperv/netvsc.c
+@@ -29,6 +29,23 @@
+ #include "hyperv_net.h"
+ #include "netvsc_trace.h"
+ 
++static int netvsc_wait_for_nvsp_response(struct hv_device *device,
++					 struct netvsc_device *net_device)
++{
++	struct net_device *ndev = hv_get_drvdata(device);
++
++	while (!wait_for_completion_timeout(&net_device->channel_init_wait, HZ)) {
++		if (device->channel->rescind) {
++			netdev_err(ndev,
++				   "NVSP message 0x%x aborted, channel rescinded\n",
++				   net_device->channel_init_pkt.hdr.msg_type);
++			return -ENODEV;
++		}
++	}
++
++	return 0;
++}
++
+ /*
+  * Switch the data path from the synthetic interface to the VF
+  * interface.
+@@ -85,7 +102,10 @@ int netvsc_switch_datapath(struct net_device *ndev, bool vf)
+ 		}
+ 	}
+ 
+-	wait_for_completion(&nv_dev->channel_init_wait);
++	ret = netvsc_wait_for_nvsp_response(dev, nv_dev);
++	if (ret)
++		return ret;
++
+ 	net_device_ctx->data_path_is_vf = vf;
+ 
+ 	return 0;
+@@ -400,7 +420,9 @@ static int netvsc_init_buf(struct hv_device *device,
+ 		goto cleanup;
+ 	}
+ 
+-	wait_for_completion(&net_device->channel_init_wait);
++	ret = netvsc_wait_for_nvsp_response(device, net_device);
++	if (ret)
++		goto cleanup;
+ 
+ 	/* Check the response */
+ 	resp = &init_packet->msg.v1_msg.send_recv_buf_complete;
+@@ -502,7 +524,9 @@ static int netvsc_init_buf(struct hv_device *device,
+ 		goto cleanup;
+ 	}
+ 
+-	wait_for_completion(&net_device->channel_init_wait);
++	ret = netvsc_wait_for_nvsp_response(device, net_device);
++	if (ret)
++		goto cleanup;
+ 
+ 	/* Check the response */
+ 	if (init_packet->msg.v1_msg.
+@@ -576,7 +600,9 @@ static int negotiate_nvsp_ver(struct hv_device *device,
+ 	if (ret != 0)
+ 		return ret;
+ 
+-	wait_for_completion(&net_device->channel_init_wait);
++	ret = netvsc_wait_for_nvsp_response(device, net_device);
++	if (ret)
++		return ret;
+ 
+ 	if (init_packet->msg.init_msg.init_complete.status !=
+ 	    NVSP_STAT_SUCCESS)
+-- 
+2.56.0
+
+
+From feada8d46a32188a80b635cf772f65f81858ab0d Mon Sep 17 00:00:00 2001
+From: Erni Sri Satya Vennela <ernis@linux.microsoft.com>
+Date: Fri, 4 Sep 2026 21:45:23 +0000
+Subject: [PATCH 6/9] net: hv_netvsc: disable a sub channel NAPI exactly once
+
+napi_disable() leaves NAPI_STATE_SCHED set and spins for as long as it is
+set, so a second call on the same NAPI never returns.  netvsc_sc_open()
+already disables the NAPI of a sub channel whose vmbus_open() failed, so
+netvsc_device_remove() disabling it again hangs the CPU:
+
+  hv_netvsc ... eth0: sub channel open failed: -19
+
+  task:kworker/0:1  state:R  running task
+    napi_disable+0x2e/0x60
+    netvsc_device_remove+0x8f/0x1f0 [hv_netvsc]
+    rndis_filter_device_remove+0x1b8/0x200 [hv_netvsc]
+    netvsc_remove+0x4e/0x140 [hv_netvsc]
+
+The sub channel fallback in netvsc_subchan_work() has the reverse problem:
+it deletes the NAPI of every sub channel, but __netif_napi_del_locked()
+warns unless the NAPI was disabled first, and setup can now be given up
+after some sub channels have already opened:
+
+  WARNING: CPU: 4 PID: 84 at net/core/dev.c:7751 __netif_napi_del_locked
+    __netif_napi_del_locked+0x1f0/0x210
+    netvsc_subchan_work+0xd2/0x180 [hv_netvsc]
+
+The two paths are not serialised against each other, so add a per-channel
+napi_enabled and claim the disable with an atomic cmpxchg.
+
+Signed-off-by: Erni Sri Satya Vennela <ernis@linux.microsoft.com>
+---
+ drivers/net/hyperv/hyperv_net.h   | 18 +++++++++++++++++
+ drivers/net/hyperv/netvsc.c       | 33 ++++++++++++++++++++++++-------
+ drivers/net/hyperv/rndis_filter.c |  3 ++-
+ 3 files changed, 46 insertions(+), 8 deletions(-)
+
+diff --git a/drivers/net/hyperv/hyperv_net.h b/drivers/net/hyperv/hyperv_net.h
+index 7397c693f984..3dfd74d84d10 100644
+--- a/drivers/net/hyperv/hyperv_net.h
++++ b/drivers/net/hyperv/hyperv_net.h
+@@ -1134,6 +1134,7 @@ struct netvsc_channel {
+ 	void *recv_buf; /* buffer to copy packets out from the receive buffer */
+ 	const struct vmpacket_descriptor *desc;
+ 	struct napi_struct napi;
++	atomic_t napi_enabled;
+ 	struct multi_send_data msd;
+ 	struct multi_recv_comp mrc;
+ 	atomic_t queue_sends;
+@@ -1147,6 +1148,23 @@ struct netvsc_channel {
+ 	struct netvsc_stats_rx rx_stats;
+ };
+ 
++/*
++ * Disable a netvsc channel NAPI exactly once.  napi_disable() leaves
++ * NAPI_STATE_SCHED set and spins for as long as it is set, so a second call
++ * never returns, and it spins holding the netdev instance lock, which wedges
++ * every other netdev_lock() user and through them RTNL.  netvsc_sc_open() and
++ * the sub channel setup fallback are not serialised against each other, so
++ * claim the disable atomically.  Return true if this caller performed it.
++ */
++static inline bool netvsc_napi_disable(struct netvsc_channel *nvchan)
++{
++	if (atomic_cmpxchg(&nvchan->napi_enabled, 1, 0) != 1)
++		return false;
++
++	napi_disable(&nvchan->napi);
++	return true;
++}
++
+ /* Per netvsc device */
+ struct netvsc_device {
+ 	u32 nvsp_version;
+diff --git a/drivers/net/hyperv/netvsc.c b/drivers/net/hyperv/netvsc.c
+index fbce175d5cb8..7f30f5f75798 100644
+--- a/drivers/net/hyperv/netvsc.c
++++ b/drivers/net/hyperv/netvsc.c
+@@ -135,8 +135,19 @@ static void netvsc_subchan_work(struct work_struct *w)
+ 			netif_device_attach(rdev->ndev);
+ 		} else {
+ 			/* fallback to only primary channel */
+-			for (i = 1; i < nvdev->num_chn; i++)
+-				netif_napi_del(&nvdev->chan_table[i].napi);
++			for (i = 1; i < nvdev->num_chn; i++) {
++				struct netvsc_channel *nvchan =
++					&nvdev->chan_table[i];
++
++				/*
++				 * netif_napi_del() requires the NAPI to be
++				 * disabled, and some sub channels may have
++				 * opened before the setup was aborted.
++				 */
++				netvsc_napi_disable(nvchan);
++
++				netif_napi_del(&nvchan->napi);
++			}
+ 
+ 			nvdev->max_chn = 1;
+ 			nvdev->num_chn = 1;
+@@ -737,17 +748,24 @@ void netvsc_device_remove(struct hv_device *device)
+ 
+ 	/* Disable NAPI and disassociate its context from the device. */
+ 	for (i = 0; i < net_device->num_chn; i++) {
++		struct netvsc_channel *nvchan = &net_device->chan_table[i];
++
+ 		/* See also vmbus_reset_channel_cb(). */
+-		/* only disable enabled NAPI channel */
+-		if (i < ndev->real_num_rx_queues) {
++		/*
++		 * netvsc_sc_open() already disables the NAPI of a sub channel
++		 * whose vmbus_open() failed, so only disable it if it is still
++		 * enabled.
++		 */
++		if (i < ndev->real_num_rx_queues &&
++		    atomic_read(&nvchan->napi_enabled)) {
+ 			netif_queue_set_napi(ndev, i, NETDEV_QUEUE_TYPE_TX,
+ 					     NULL);
+ 			netif_queue_set_napi(ndev, i, NETDEV_QUEUE_TYPE_RX,
+ 					     NULL);
+-			napi_disable(&net_device->chan_table[i].napi);
++			netvsc_napi_disable(nvchan);
+ 		}
+ 
+-		netif_napi_del(&net_device->chan_table[i].napi);
++		netif_napi_del(&nvchan->napi);
+ 	}
+ 
+ 	/*
+@@ -1850,6 +1868,7 @@ struct netvsc_device *netvsc_device_add(struct hv_device *device,
+ 	/* Enable NAPI handler before init callbacks */
+ 	netif_napi_add(ndev, &net_device->chan_table[0].napi, netvsc_poll);
+ 	napi_enable(&net_device->chan_table[0].napi);
++	atomic_set(&net_device->chan_table[0].napi_enabled, 1);
+ 	netif_queue_set_napi(ndev, 0, NETDEV_QUEUE_TYPE_RX,
+ 			     &net_device->chan_table[0].napi);
+ 	netif_queue_set_napi(ndev, 0, NETDEV_QUEUE_TYPE_TX,
+@@ -1897,7 +1916,7 @@ struct netvsc_device *netvsc_device_add(struct hv_device *device,
+ cleanup:
+ 	netif_queue_set_napi(ndev, 0, NETDEV_QUEUE_TYPE_TX, NULL);
+ 	netif_queue_set_napi(ndev, 0, NETDEV_QUEUE_TYPE_RX, NULL);
+-	napi_disable(&net_device->chan_table[0].napi);
++	netvsc_napi_disable(&net_device->chan_table[0]);
+ 	netif_napi_del(&net_device->chan_table[0].napi);
+ 
+ cleanup2:
+diff --git a/drivers/net/hyperv/rndis_filter.c b/drivers/net/hyperv/rndis_filter.c
+index c35f9685b6bf..b0de39646e03 100644
+--- a/drivers/net/hyperv/rndis_filter.c
++++ b/drivers/net/hyperv/rndis_filter.c
+@@ -1257,6 +1257,7 @@ static void netvsc_sc_open(struct vmbus_channel *new_sc)
+ 	 * out if napi was not enabled.
+ 	 */
+ 	napi_enable(&nvchan->napi);
++	atomic_set(&nvchan->napi_enabled, 1);
+ 	netif_queue_set_napi(ndev, chn_index, NETDEV_QUEUE_TYPE_RX,
+ 			     &nvchan->napi);
+ 	netif_queue_set_napi(ndev, chn_index, NETDEV_QUEUE_TYPE_TX,
+@@ -1271,7 +1272,7 @@ static void netvsc_sc_open(struct vmbus_channel *new_sc)
+ 				     NULL);
+ 		netif_queue_set_napi(ndev, chn_index, NETDEV_QUEUE_TYPE_RX,
+ 				     NULL);
+-		napi_disable(&nvchan->napi);
++		netvsc_napi_disable(nvchan);
+ 	}
+ 
+ 	if (atomic_inc_return(&nvscdev->open_chn) == nvscdev->num_chn)
+-- 
+2.56.0
+
+
+From c4e6a8a0aa3988b1cef46882eca0e5e8e66340bf Mon Sep 17 00:00:00 2001
+From: Erni Sri Satya Vennela <ernis@linux.microsoft.com>
+Date: Fri, 4 Sep 2026 21:45:24 +0000
+Subject: [PATCH 7/9] net: hv_netvsc: give up sub channel setup when no sub
+ channel opened
+
+netvsc_sc_open() increments nvdev->open_chn for every sub channel it is
+called for, whether or not vmbus_open() succeeded, and
+rndis_set_subchannel() only waits for that count to reach num_chn.  The
+wait is therefore satisfied even when every single sub channel failed to
+open, and setup continues into rndis_filter_set_rss_param(), which blocks
+waiting for an RNDIS response from a device that is already gone.  It runs
+with RTNL held, so the rescind handler that would make the channel state
+visible piles up behind it:
+
+  hv_netvsc ... eth1: sub channel open failed: -122      (x15)
+
+  task:kworker/0:5     state:D
+  Workqueue: events netvsc_subchan_work [hv_netvsc]
+    rndis_set_rss_param_msg+0x167/0x1c0 [hv_netvsc]
+    rndis_filter_set_rss_param+0x21/0x40 [hv_netvsc]
+    rndis_set_subchannel+0x2fe/0x450 [hv_netvsc]
+    netvsc_subchan_work+0x49/0x130 [hv_netvsc]
+
+  task:kworker/0:1     state:D
+  Workqueue: hv_vmbus_rescind vmbus_onmessage_work
+    rtnl_lock+0x19/0x20
+    netvsc_remove+0x3f/0x210 [hv_netvsc]
+    vmbus_onoffer_rescind+0x21e/0x250
+
+Count the sub channels that were actually opened and bail out with -ENODEV
+when none of them were, before any further RNDIS request is sent.
+netvsc_subchan_work() already falls back to the primary channel on a
+non-zero return, and dropping RTNL there lets the rescind handler make
+progress again.
+
+Signed-off-by: Erni Sri Satya Vennela <ernis@linux.microsoft.com>
+---
+ drivers/net/hyperv/hyperv_net.h   |  1 +
+ drivers/net/hyperv/rndis_filter.c | 12 ++++++++++++
+ 2 files changed, 13 insertions(+)
+
+diff --git a/drivers/net/hyperv/hyperv_net.h b/drivers/net/hyperv/hyperv_net.h
+index 3dfd74d84d10..bd6b3b13f116 100644
+--- a/drivers/net/hyperv/hyperv_net.h
++++ b/drivers/net/hyperv/hyperv_net.h
+@@ -1201,6 +1201,7 @@ struct netvsc_device {
+ 	u32 netvsc_gso_max_size;
+ 
+ 	atomic_t open_chn;
++	atomic_t open_chn_ok;
+ 	struct work_struct subchan_work;
+ 	wait_queue_head_t subchan_open;
+ 
+diff --git a/drivers/net/hyperv/rndis_filter.c b/drivers/net/hyperv/rndis_filter.c
+index b0de39646e03..aeaa34f8789c 100644
+--- a/drivers/net/hyperv/rndis_filter.c
++++ b/drivers/net/hyperv/rndis_filter.c
+@@ -1273,6 +1273,8 @@ static void netvsc_sc_open(struct vmbus_channel *new_sc)
+ 		netif_queue_set_napi(ndev, chn_index, NETDEV_QUEUE_TYPE_RX,
+ 				     NULL);
+ 		netvsc_napi_disable(nvchan);
++	} else {
++		atomic_inc(&nvscdev->open_chn_ok);
+ 	}
+ 
+ 	if (atomic_inc_return(&nvscdev->open_chn) == nvscdev->num_chn)
+@@ -1330,6 +1332,15 @@ int rndis_set_subchannel(struct net_device *ndev,
+ 	wait_event(nvdev->subchan_open,
+ 		   atomic_read(&nvdev->open_chn) == nvdev->num_chn);
+ 
++	/*
++	 * open_chn counts the sub channels netvsc_sc_open() was called for,
++	 * not the ones that opened.  If none opened, the device is gone.
++	 */
++	if (nvdev->num_chn > 1 && !atomic_read(&nvdev->open_chn_ok)) {
++		netdev_err(ndev, "no sub channel could be opened, device is gone\n");
++		return -ENODEV;
++	}
++
+ 	for (i = 0; i < VRSS_SEND_TAB_SIZE; i++)
+ 		ndev_ctx->tx_table[i] = i % nvdev->num_chn;
+ 
+@@ -1578,6 +1589,7 @@ struct netvsc_device *rndis_filter_device_add(struct hv_device *dev,
+ 	}
+ 
+ 	atomic_set(&net_device->open_chn, 1);
++	atomic_set(&net_device->open_chn_ok, 0);
+ 	vmbus_set_sc_create_callback(dev->channel, netvsc_sc_open);
+ 
+ 	for (i = 1; i < net_device->num_chn; i++) {
+-- 
+2.56.0
+
+
+From 65c3df4d17bf6e9599750d060e8f60fd6bbe8b3a Mon Sep 17 00:00:00 2001
+From: Erni Sri Satya Vennela <ernis@linux.microsoft.com>
+Date: Fri, 4 Sep 2026 21:59:54 +0000
+Subject: [PATCH 8/9] net: hv_netvsc: do not touch queue/NAPI association
+ outside sub channel setup
+
+netvsc_sc_open() calls netif_queue_set_napi(), which requires RTNL, but
+runs on the vmbus "hv_sub_chan" workqueue without taking it.  It relied on
+rndis_set_subchannel() holding RTNL for the whole sub channel setup, which
+no longer holds: that function now returns as soon as the device is being
+rescinded, so RTNL can be dropped while netvsc_sc_open() callbacks are
+still queued.  ASSERT_RTNL() does not report this, because
+rtnl_is_locked() asks whether any task holds RTNL, not this one; the
+per-task lockdep_rtnl_is_held() reports it on the first sub channel:
+
+  netvsc_sc_open: netif_queue_set_napi() without RTNL held by this
+  task (chn 1)
+  WARNING: at netvsc_sc_open+0x191/0x1c0 [hv_netvsc]
+  Workqueue: hv_sub_chan vmbus_add_channel_work
+
+Only associate the queues while the sub channel setup is still running;
+once it is not, the device is being torn down and the association is
+cleared anyway.  The flag is set and cleared under RTNL, which covers
+every return path out of rndis_set_subchannel().
+
+Signed-off-by: Erni Sri Satya Vennela <ernis@linux.microsoft.com>
+---
+ drivers/net/hyperv/hyperv_net.h   |  1 +
+ drivers/net/hyperv/netvsc.c       |  1 +
+ drivers/net/hyperv/netvsc_drv.c   |  1 +
+ drivers/net/hyperv/rndis_filter.c | 27 +++++++++++++++++++--------
+ 4 files changed, 22 insertions(+), 8 deletions(-)
+
+diff --git a/drivers/net/hyperv/hyperv_net.h b/drivers/net/hyperv/hyperv_net.h
+index bd6b3b13f116..e75f3ef62412 100644
+--- a/drivers/net/hyperv/hyperv_net.h
++++ b/drivers/net/hyperv/hyperv_net.h
+@@ -1202,6 +1202,7 @@ struct netvsc_device {
+ 
+ 	atomic_t open_chn;
+ 	atomic_t open_chn_ok;
++	bool subchan_setup_active;
+ 	struct work_struct subchan_work;
+ 	wait_queue_head_t subchan_open;
+ 
+diff --git a/drivers/net/hyperv/netvsc.c b/drivers/net/hyperv/netvsc.c
+index 7f30f5f75798..189c7883fda7 100644
+--- a/drivers/net/hyperv/netvsc.c
++++ b/drivers/net/hyperv/netvsc.c
+@@ -131,6 +131,7 @@ static void netvsc_subchan_work(struct work_struct *w)
+ 	rdev = nvdev->extension;
+ 	if (rdev) {
+ 		ret = rndis_set_subchannel(rdev->ndev, nvdev, NULL);
++		nvdev->subchan_setup_active = false;
+ 		if (ret == 0) {
+ 			netif_device_attach(rdev->ndev);
+ 		} else {
+diff --git a/drivers/net/hyperv/netvsc_drv.c b/drivers/net/hyperv/netvsc_drv.c
+index 25a358524a09..2e2d9b5e4283 100644
+--- a/drivers/net/hyperv/netvsc_drv.c
++++ b/drivers/net/hyperv/netvsc_drv.c
+@@ -1031,6 +1031,7 @@ static int netvsc_attach(struct net_device *ndev,
+ 
+ 	if (nvdev->num_chn > 1) {
+ 		ret = rndis_set_subchannel(ndev, nvdev, dev_info);
++		nvdev->subchan_setup_active = false;
+ 
+ 		/* if unavailable, just proceed with one queue */
+ 		if (ret) {
+diff --git a/drivers/net/hyperv/rndis_filter.c b/drivers/net/hyperv/rndis_filter.c
+index aeaa34f8789c..86af9d982567 100644
+--- a/drivers/net/hyperv/rndis_filter.c
++++ b/drivers/net/hyperv/rndis_filter.c
+@@ -1258,20 +1258,29 @@ static void netvsc_sc_open(struct vmbus_channel *new_sc)
+ 	 */
+ 	napi_enable(&nvchan->napi);
+ 	atomic_set(&nvchan->napi_enabled, 1);
+-	netif_queue_set_napi(ndev, chn_index, NETDEV_QUEUE_TYPE_RX,
+-			     &nvchan->napi);
+-	netif_queue_set_napi(ndev, chn_index, NETDEV_QUEUE_TYPE_TX,
+-			     &nvchan->napi);
++
++	/*
++	 * netif_queue_set_napi() requires RTNL, which this callback does not
++	 * hold once rndis_set_subchannel() has returned early on rescind.
++	 */
++	if (nvscdev->subchan_setup_active) {
++		netif_queue_set_napi(ndev, chn_index, NETDEV_QUEUE_TYPE_RX,
++				     &nvchan->napi);
++		netif_queue_set_napi(ndev, chn_index, NETDEV_QUEUE_TYPE_TX,
++				     &nvchan->napi);
++	}
+ 
+ 	ret = vmbus_open(new_sc, netvsc_ring_bytes,
+ 			 netvsc_ring_bytes, NULL, 0,
+ 			 netvsc_channel_cb, nvchan);
+ 	if (ret != 0) {
+ 		netdev_notice(ndev, "sub channel open failed: %d\n", ret);
+-		netif_queue_set_napi(ndev, chn_index, NETDEV_QUEUE_TYPE_TX,
+-				     NULL);
+-		netif_queue_set_napi(ndev, chn_index, NETDEV_QUEUE_TYPE_RX,
+-				     NULL);
++		if (nvscdev->subchan_setup_active) {
++			netif_queue_set_napi(ndev, chn_index,
++					     NETDEV_QUEUE_TYPE_TX, NULL);
++			netif_queue_set_napi(ndev, chn_index,
++					     NETDEV_QUEUE_TYPE_RX, NULL);
++		}
+ 		netvsc_napi_disable(nvchan);
+ 	} else {
+ 		atomic_inc(&nvscdev->open_chn_ok);
+@@ -1297,6 +1306,8 @@ int rndis_set_subchannel(struct net_device *ndev,
+ 
+ 	ASSERT_RTNL();
+ 
++	nvdev->subchan_setup_active = true;
++
+ 	memset(init_packet, 0, sizeof(struct nvsp_message));
+ 	init_packet->hdr.msg_type = NVSP_MSG5_TYPE_SUBCHANNEL;
+ 	init_packet->msg.v5_msg.subchn_req.op = NVSP_SUBCHANNEL_ALLOCATE;
+-- 
+2.56.0
+
+
+From a05b0191e78f50f77fe74b3322af66e0cf8e0688 Mon Sep 17 00:00:00 2001
+From: Erni Sri Satya Vennela <ernis@linux.microsoft.com>
+Date: Fri, 4 Sep 2026 21:45:26 +0000
+Subject: [PATCH 9/9] net: hv_netvsc: do not wait forever for the host on a
+ rescinded channel
+
+hv_netvsc waits for the host in several places with a bare
+wait_for_completion() or wait_event().  If the primary vmbus channel is
+rescinded while such a wait is outstanding, the host stops processing the
+ring buffer and the channel callback is torn down, so the event can never
+arrive and the wait never returns.  Several of these waits run with RTNL
+held, which turns the missed response into a deadlock with the rescind
+handler, which needs RTNL to tear the device down:
+
+  hv_netvsc ... eth0: sub channel open failed: -19
+
+  task:kworker/1:1  state:D
+  Workqueue: events netvsc_subchan_work [hv_netvsc]
+    wait_for_completion+0x24/0x30
+    rndis_set_rss_param_msg+0x1a3/0x200 [hv_netvsc]
+    rndis_set_subchannel+0x295/0x320 [hv_netvsc]
+    netvsc_subchan_work+0x45/0x120 [hv_netvsc]
+
+  task:kworker/0:3  state:D
+  Workqueue: hv_vmbus_rescind vmbus_onmessage_work
+    rtnl_lock+0x15/0x20
+    netvsc_remove+0x33/0x130 [hv_netvsc]
+    vmbus_device_unregister+0x24/0x60
+    vmbus_onoffer_rescind+0x236/0x250
+
+The wait for outstanding sends to drain fails the same way, with the
+rescind handler itself holding RTNL, so there is no cycle at all:
+
+  task:kworker/0:1  state:D
+  Workqueue: hv_vmbus_rescind vmbus_onmessage_work
+    rndis_filter_device_remove+0x2d0/0x380 [hv_netvsc]
+    netvsc_remove+0xfd/0x3a0 [hv_netvsc]
+    vmbus_device_unregister+0x4f/0xf0
+    vmbus_onoffer_rescind+0x59e/0x6b0
+
+  addrconf_dad_work, netvsc_probe and ip(1044) all block on its RTNL.
+
+Setting of chan->rescind by the vmbus driver does not wake these waiters,
+so the condition has to be polled rather than added to the wait condition.
+Add a netvsc_channel_rescinded() helper and a rndis_wait_for_response()
+wrapper that polls the completion with a timeout and gives up with -ENODEV
+once the primary channel is rescinded, and use it for the six RNDIS
+request waits, for the NVSP_MSG5_TYPE_SUBCHANNEL completion and the
+subchan_open wait in rndis_set_subchannel(), and for the wait_drain
+waitqueue in rndis_filter_halt_device(), which is the wait that keeps the
+guest from sending CHANNELMSG_RELID_RELEASED.  Finally, disable the
+transmit path in netvsc_remove() before tearing the rndis device down, so
+no new packets are queued to an already rescinded channel while the
+outstanding completions are being drained.
+
+Signed-off-by: Erni Sri Satya Vennela <ernis@linux.microsoft.com>
+---
+ drivers/net/hyperv/netvsc_drv.c   |  10 ++-
+ drivers/net/hyperv/rndis_filter.c | 112 ++++++++++++++++++++++++++----
+ 2 files changed, 108 insertions(+), 14 deletions(-)
+
+diff --git a/drivers/net/hyperv/netvsc_drv.c b/drivers/net/hyperv/netvsc_drv.c
+index 2e2d9b5e4283..1ad680160c8f 100644
+--- a/drivers/net/hyperv/netvsc_drv.c
++++ b/drivers/net/hyperv/netvsc_drv.c
+@@ -2687,8 +2687,16 @@ static void netvsc_remove(struct hv_device *dev)
+ 	if (vf_netdev)
+ 		netvsc_unregister_vf(vf_netdev);
+ 
+-	if (nvdev)
++	if (nvdev) {
++		/*
++		 * Stop the tx path before tearing down the rndis device, so
++		 * no new packets are queued to a possibly already-rescinded
++		 * VMBus channel while rndis_filter_device_remove() is
++		 * draining outstanding completions.
++		 */
++		netvsc_tx_disable(nvdev, net);
+ 		rndis_filter_device_remove(dev, nvdev);
++	}
+ 
+ 	unregister_netdevice(net);
+ 	list_del(&ndev_ctx->list);
+diff --git a/drivers/net/hyperv/rndis_filter.c b/drivers/net/hyperv/rndis_filter.c
+index 86af9d982567..652a793e4a8a 100644
+--- a/drivers/net/hyperv/rndis_filter.c
++++ b/drivers/net/hyperv/rndis_filter.c
+@@ -127,6 +127,39 @@ static void put_rndis_request(struct rndis_device *dev,
+ 	kfree(req);
+ }
+ 
++/*
++ * Has the primary vmbus channel been rescinded, e.g. because the vNIC is
++ * being hot-removed?  Once it is, the host stops processing the ring buffer,
++ * so every unbounded wait on host activity in this file has to give up.
++ */
++static bool netvsc_channel_rescinded(struct net_device *ndev)
++{
++	struct net_device_context *ndev_ctx = netdev_priv(ndev);
++
++	return ndev_ctx->device_ctx->channel->rescind;
++}
++
++/*
++ * Wait for the host to respond to an RNDIS request.  Several callers hold
++ * RTNL across this wait, and blocking forever there deadlocks the rescind
++ * handler, which needs RTNL too.  Setting of chan->rescind does not wake the
++ * completion, so poll it.  Returns -ENODEV once the channel is gone.
++ */
++static int rndis_wait_for_response(struct rndis_device *dev,
++				   struct rndis_request *request)
++{
++	while (!wait_for_completion_timeout(&request->wait_event, HZ)) {
++		if (netvsc_channel_rescinded(dev->ndev)) {
++			netdev_err(dev->ndev,
++				   "RNDIS request 0x%x aborted, channel rescinded\n",
++				   request->request_msg.ndis_msg_type);
++			return -ENODEV;
++		}
++	}
++
++	return 0;
++}
++
+ static void dump_rndis_message(struct net_device *netdev,
+ 			       const struct rndis_message *rndis_msg,
+ 			       const void *data)
+@@ -695,7 +728,9 @@ static int rndis_filter_query_device(struct rndis_device *dev,
+ 	if (ret != 0)
+ 		goto cleanup;
+ 
+-	wait_for_completion(&request->wait_event);
++	ret = rndis_wait_for_response(dev, request);
++	if (ret != 0)
++		goto cleanup;
+ 
+ 	/* Copy the response back */
+ 	query_complete = &request->response_msg.msg.query_complete;
+@@ -835,7 +870,9 @@ int rndis_filter_set_device_mac(struct netvsc_device *nvdev,
+ 	if (ret != 0)
+ 		goto cleanup;
+ 
+-	wait_for_completion(&request->wait_event);
++	ret = rndis_wait_for_response(rdev, request);
++	if (ret != 0)
++		goto cleanup;
+ 
+ 	set_complete = &request->response_msg.msg.set_complete;
+ 	if (set_complete->status != RNDIS_STATUS_SUCCESS)
+@@ -891,7 +928,10 @@ rndis_filter_set_offload_params(struct net_device *ndev,
+ 	if (ret != 0)
+ 		goto cleanup;
+ 
+-	wait_for_completion(&request->wait_event);
++	ret = rndis_wait_for_response(rdev, request);
++	if (ret != 0)
++		goto cleanup;
++
+ 	set_complete = &request->response_msg.msg.set_complete;
+ 	if (set_complete->status != RNDIS_STATUS_SUCCESS) {
+ 		netdev_err(ndev, "Fail to set offload on host side:0x%x\n",
+@@ -958,7 +998,10 @@ static int rndis_set_rss_param_msg(struct rndis_device *rdev,
+ 	if (ret != 0)
+ 		goto cleanup;
+ 
+-	wait_for_completion(&request->wait_event);
++	ret = rndis_wait_for_response(rdev, request);
++	if (ret != 0)
++		goto cleanup;
++
+ 	set_complete = &request->response_msg.msg.set_complete;
+ 	if (set_complete->status == RNDIS_STATUS_SUCCESS) {
+ 		if (!(flag & NDIS_RSS_PARAM_FLAG_DISABLE_RSS) &&
+@@ -1046,8 +1089,9 @@ static int rndis_filter_set_packet_filter(struct rndis_device *dev,
+ 
+ 	ret = rndis_filter_send_request(dev, request);
+ 	if (ret == 0) {
+-		wait_for_completion(&request->wait_event);
+-		dev->filter = new_filter;
++		ret = rndis_wait_for_response(dev, request);
++		if (ret == 0)
++			dev->filter = new_filter;
+ 	}
+ 
+ 	put_rndis_request(dev, request);
+@@ -1111,7 +1155,11 @@ static int rndis_filter_init_device(struct rndis_device *dev,
+ 		goto cleanup;
+ 	}
+ 
+-	wait_for_completion(&request->wait_event);
++	ret = rndis_wait_for_response(dev, request);
++	if (ret != 0) {
++		dev->state = RNDIS_DEV_UNINITIALIZED;
++		goto cleanup;
++	}
+ 
+ 	init_complete = &request->response_msg.msg.init_complete;
+ 	status = init_complete->status;
+@@ -1176,8 +1224,21 @@ static void rndis_filter_halt_device(struct netvsc_device *nvdev,
+ 	/* Force flag to be ordered before waiting */
+ 	wmb();
+ 
+-	/* Wait for all send completions */
+-	wait_event(nvdev->wait_drain, netvsc_device_idle(nvdev));
++	/*
++	 * Wait for all send/recv completions to drain.  A rescinded channel
++	 * never delivers them, and this is the wait that keeps the guest from
++	 * sending CHANNELMSG_RELID_RELEASED.  It is on a waitqueue rather than
++	 * a completion, so it cannot use rndis_wait_for_response().
++	 */
++	while (true) {
++		wait_event_timeout(nvdev->wait_drain,
++				   netvsc_device_idle(nvdev) ||
++				   netvsc_channel_rescinded(dev->ndev),
++				   HZ);
++		if (netvsc_device_idle(nvdev) ||
++		    netvsc_channel_rescinded(dev->ndev))
++			break;
++	}
+ 
+ 	if (request)
+ 		put_rndis_request(dev, request);
+@@ -1325,7 +1386,18 @@ int rndis_set_subchannel(struct net_device *ndev,
+ 		return ret;
+ 	}
+ 
+-	wait_for_completion(&nvdev->channel_init_wait);
++	/*
++	 * A rescinded channel never completes this, and this function is
++	 * called with RTNL held, which would block the rescind handler in
++	 * netvsc_remove() forever.  Bail out once the channel is gone.
++	 */
++	while (!wait_for_completion_timeout(&nvdev->channel_init_wait, HZ)) {
++		if (netvsc_channel_rescinded(ndev)) {
++			netdev_err(ndev, "sub channel allocate aborted, channel rescinded\n");
++			return -ENODEV;
++		}
++	}
++
+ 	if (init_packet->msg.v5_msg.subchn_comp.status != NVSP_STAT_SUCCESS) {
+ 		netdev_err(ndev, "sub channel request failed\n");
+ 		return -EIO;
+@@ -1339,9 +1411,23 @@ int rndis_set_subchannel(struct net_device *ndev,
+ 	nvdev->num_chn = 1 +
+ 		init_packet->msg.v5_msg.subchn_comp.num_subchannels;
+ 
+-	/* wait for all sub channels to open */
+-	wait_event(nvdev->subchan_open,
+-		   atomic_read(&nvdev->open_chn) == nvdev->num_chn);
++	/*
++	 * Wait for all sub channels to open.  If the device is rescinded while
++	 * they are being offered, netvsc_sc_open() is not called for the
++	 * remaining ones and open_chn never reaches num_chn.
++	 */
++	while (atomic_read(&nvdev->open_chn) != nvdev->num_chn &&
++	       !netvsc_channel_rescinded(ndev)) {
++		wait_event_timeout(nvdev->subchan_open,
++				   atomic_read(&nvdev->open_chn) == nvdev->num_chn ||
++				   netvsc_channel_rescinded(ndev),
++				   HZ);
++	}
++
++	if (netvsc_channel_rescinded(ndev)) {
++		netdev_err(ndev, "sub channel open aborted, channel rescinded\n");
++		return -ENODEV;
++	}
+ 
+ 	/*
+ 	 * open_chn counts the sub channels netvsc_sc_open() was called for,
+-- 
+2.56.0
+
