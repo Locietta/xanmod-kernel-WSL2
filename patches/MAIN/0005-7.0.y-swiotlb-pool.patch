@@ -1,4 +1,4 @@
-From 947ce43dc1f7048ac2dc0cd1a6376722c6177273 Mon Sep 17 00:00:00 2001
+From 0860cb6b56c0476bac381d0ab36b6b8ee530bb78 Mon Sep 17 00:00:00 2001
 From: Asher Kariv <askariv@microsoft.com>
 Date: Thu, 30 Apr 2026 15:59:50 -0700
 Subject: [PATCH 1/2] swiotlb, hyperv: add dedicated swiotlb pool for Hyper-V
@@ -38,7 +38,7 @@ Signed-off-by: Mitchell Levy <levymitchell0@gmail.com>
  3 files changed, 118 insertions(+)
 
 diff --git a/drivers/pci/controller/pci-hyperv.c b/drivers/pci/controller/pci-hyperv.c
-index 89816a2bd7cd..0ad8ccfab894 100644
+index 85d826f8f68dbaca889a1e68e6f8245a0d5099a7..eb290880310fefb49b7b46b8df84d90ccd6f6591 100644
 --- a/drivers/pci/controller/pci-hyperv.c
 +++ b/drivers/pci/controller/pci-hyperv.c
 @@ -52,6 +52,8 @@
@@ -73,7 +73,7 @@ index 89816a2bd7cd..0ad8ccfab894 100644
  /*
   * Driver specific state.
   */
-@@ -2510,6 +2528,25 @@ static void hv_pci_assign_numa_node(struct hv_pcibus_device *hbus)
+@@ -2531,6 +2549,25 @@ static void hv_pci_assign_numa_node(struct hv_pcibus_device *hbus)
  	}
  }
  
@@ -99,7 +99,7 @@ index 89816a2bd7cd..0ad8ccfab894 100644
  /**
   * create_root_hv_pci_bus() - Expose a new root PCI bus
   * @hbus:	Root PCI bus, as understood by this driver
-@@ -2533,6 +2570,7 @@ static int create_root_hv_pci_bus(struct hv_pcibus_device *hbus)
+@@ -2554,6 +2591,7 @@ static int create_root_hv_pci_bus(struct hv_pcibus_device *hbus)
  	hv_pci_assign_numa_node(hbus);
  	pci_bus_assign_resources(bridge->bus);
  	hv_pci_assign_slots(hbus);
@@ -107,7 +107,7 @@ index 89816a2bd7cd..0ad8ccfab894 100644
  	pci_bus_add_devices(bridge->bus);
  	pci_unlock_rescan_remove();
  	hbus->state = hv_pcibus_installed;
-@@ -2803,6 +2841,7 @@ static void pci_devices_present_work(struct work_struct *work)
+@@ -2825,6 +2863,7 @@ static void pci_devices_present_work(struct work_struct *work)
  		pci_scan_child_bus(hbus->bridge->bus);
  		hv_pci_assign_numa_node(hbus);
  		hv_pci_assign_slots(hbus);
@@ -115,7 +115,7 @@ index 89816a2bd7cd..0ad8ccfab894 100644
  		pci_unlock_rescan_remove();
  		break;
  
-@@ -4176,6 +4215,18 @@ static int __init init_hv_pci_drv(void)
+@@ -4205,6 +4244,18 @@ static int __init init_hv_pci_drv(void)
  	if (!hv_vmbus_exists())
  		return -ENODEV;
  
@@ -135,10 +135,10 @@ index 89816a2bd7cd..0ad8ccfab894 100644
  	if (ret)
  		return ret;
 diff --git a/include/linux/swiotlb.h b/include/linux/swiotlb.h
-index 3dae0f592063..31508f6efd18 100644
+index 2a421241b980cad469889fcf10a7dd94b945e3ec..a6aa4961b708c6f7927ca51448e11582ba2f4ff2 100644
 --- a/include/linux/swiotlb.h
 +++ b/include/linux/swiotlb.h
-@@ -185,6 +185,8 @@ bool is_swiotlb_active(struct device *dev);
+@@ -192,6 +192,8 @@ bool is_swiotlb_active(struct device *dev);
  void __init swiotlb_adjust_size(unsigned long size);
  phys_addr_t default_swiotlb_base(void);
  phys_addr_t default_swiotlb_limit(void);
@@ -148,10 +148,10 @@ index 3dae0f592063..31508f6efd18 100644
  static inline void swiotlb_init(bool addressing_limited, unsigned int flags)
  {
 diff --git a/kernel/dma/swiotlb.c b/kernel/dma/swiotlb.c
-index bd5393133753..d0f61cc91981 100644
+index 5edea93ec635455292401713371365a460977731..638017548b09b2777e9f72169be1da0f63a16ef7 100644
 --- a/kernel/dma/swiotlb.c
 +++ b/kernel/dma/swiotlb.c
-@@ -1906,3 +1906,68 @@ static const struct reserved_mem_ops rmem_swiotlb_ops = {
+@@ -2096,3 +2096,68 @@ static const struct reserved_mem_ops rmem_swiotlb_ops = {
  
  RESERVEDMEM_OF_DECLARE(dma, "restricted-dma-pool", &rmem_swiotlb_ops);
  #endif /* CONFIG_DMA_RESTRICTED_POOL */
@@ -224,7 +224,7 @@ index bd5393133753..d0f61cc91981 100644
 2.56.0
 
 
-From 33354dd129ed1d0b2440efb3803676c49ab9ddb1 Mon Sep 17 00:00:00 2001
+From 676dbebc611f8f766c363c81c60675e4cdaafe30 Mon Sep 17 00:00:00 2001
 From: Ben Hillis <benhillis@microsoft.com>
 Date: Tue, 26 May 2026 13:27:18 -0700
 Subject: [PATCH 2/2] PCI: hv: Reserve hv_pci swiotlb from buddy and publish
@@ -263,7 +263,7 @@ Signed-off-by: Mitchell Levy <levymitchell0@gmail.com>
  1 file changed, 146 insertions(+), 20 deletions(-)
 
 diff --git a/drivers/pci/controller/pci-hyperv.c b/drivers/pci/controller/pci-hyperv.c
-index 0ad8ccfab894..0f5a2e7dc632 100644
+index eb290880310fefb49b7b46b8df84d90ccd6f6591..64ea797fe126bb9aa8196470368109cdfa90c16b 100644
 --- a/drivers/pci/controller/pci-hyperv.c
 +++ b/drivers/pci/controller/pci-hyperv.c
 @@ -53,7 +53,6 @@
@@ -318,8 +318,8 @@ index 0ad8ccfab894..0f5a2e7dc632 100644
  
  static struct io_tlb_mem *hv_pci_swiotlb_pool;
  
-@@ -4196,10 +4215,52 @@ static struct hv_driver hv_pci_drv = {
- 	.resume		= hv_pci_resume,
+@@ -4225,10 +4244,52 @@ static struct hv_driver hv_pci_drv = {
+ 	},
  };
  
 +/* Publish swiotlb_{base,size} so userspace can forward the GPA to the host. */
@@ -371,7 +371,7 @@ index 0ad8ccfab894..0f5a2e7dc632 100644
  	hvpci_block_ops.read_block = NULL;
  	hvpci_block_ops.write_block = NULL;
  	hvpci_block_ops.reg_blk_invalidate = NULL;
-@@ -4215,18 +4276,6 @@ static int __init init_hv_pci_drv(void)
+@@ -4244,18 +4305,6 @@ static int __init init_hv_pci_drv(void)
  	if (!hv_vmbus_exists())
  		return -ENODEV;
  
@@ -390,7 +390,7 @@ index 0ad8ccfab894..0f5a2e7dc632 100644
  	ret = hv_pci_irqchip_init();
  	if (ret)
  		return ret;
-@@ -4236,8 +4285,85 @@ static int __init init_hv_pci_drv(void)
+@@ -4265,8 +4314,85 @@ static int __init init_hv_pci_drv(void)
  	hvpci_block_ops.write_block = hv_write_config_block;
  	hvpci_block_ops.reg_blk_invalidate = hv_register_block_invalidate;
  
@@ -479,4 +479,3 @@ index 0ad8ccfab894..0f5a2e7dc632 100644
  module_exit(exit_hv_pci_drv);
 -- 
 2.56.0
-
